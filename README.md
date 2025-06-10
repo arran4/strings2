@@ -1,0 +1,62 @@
+# strings2
+
+strings2 provides utilities for converting slices of words into various casing conventions. It is intended to supplement Go's standard library `strings` package with helpers for creating formats such as `camelCase`, `PascalCase`, `snake_case` and `kebab-case`.
+
+## Installation
+
+```
+go get github.com/arran4/strings2
+```
+
+Add the module to your project and import it:
+
+```go
+import "github.com/arran4/strings2"
+```
+
+## Usage
+
+Words must implement `fmt.Stringer`. The package defines several helper types which satisfy this interface:
+
+```go
+words := []strings2.Word{
+    strings2.SingleCaseWord("hello"),
+    strings2.SingleCaseWord("world"),
+}
+```
+
+### Case Conversion Functions
+
+```go
+strings2.ToCamelCase(words)  // "helloWorld"
+strings2.ToPascalCase(words) // "HelloWorld"
+strings2.ToKebabCase(words)  // "hello-world"
+strings2.ToSnakeCase(words)  // "hello_world"
+```
+
+### Customising Formatting
+
+Behaviour can be tuned with options passed to each function. Some commonly used options include:
+
+- `OptionDelimiter(string)` – change the delimiter used between words.
+- `OptionCaseMode(CaseMode)` – set the case transformation mode. Modes include:
+  - `CMVerbatim`
+  - `CMFirstTitle`
+  - `CMAllTitle`
+  - `CMFirstLower`
+  - `CMWhispering`
+  - `CMScreaming`
+- `OptionFirstUpper()` – force the result to start with an uppercase letter.
+- `OptionFirstLower()` – force the result to start with a lowercase letter.
+
+Examples:
+
+```go
+// Custom delimiter
+fmt.Println(strings2.ToKebabCase(words, strings2.OptionDelimiter("|")))
+
+// Screaming snake case
+fmt.Println(strings2.ToSnakeCase(words, strings2.OptionCaseMode(strings2.CMScreaming)))
+```
+
+Options are composable so multiple behaviours can be applied at once. See the documentation in `types.go` for details on further options.
