@@ -39,27 +39,36 @@ const (
 	CMScreaming
 )
 
-func (cm CaseMode) Transform(word []Word, wordPos int) []string {
-	if word == nil || len(word) == 0 {
-		return word
+func (cm CaseMode) Transform(words []Word, pos int) []Word {
+	if len(words) == 0 || pos >= len(words) {
+		return words
 	}
+
 	switch cm {
-	case CMVerbatim:
-		return word
 	case CMFirstTitle:
-		switch word[0].(type) {
-		case SingleCaseWord:
-			if wordPos == 0 {
-				word[0] = UpperCaseFirst(word[0])
-			}
+		if pos == 0 {
+			words[pos] = SingleCaseWord(UpperCaseFirst(words[pos].String()))
 		}
+	case CMAllTitle:
+		words[pos] = SingleCaseWord(UpperCaseFirst(words[pos].String()))
+	case CMFirstLower:
+		if pos == 0 {
+			words[pos] = SingleCaseWord(strings.ToLower(words[pos].String()))
+		}
+	case CMWhispering:
+		words[pos] = SingleCaseWord(strings.ToLower(words[pos].String()))
+	case CMScreaming:
+		words[pos] = SingleCaseWord(strings.ToUpper(words[pos].String()))
 	}
+
+	return words
 }
 
 type caseConfig struct {
 	caseMode       CaseMode
 	delimiter      string
 	upperIndicator string
+	firstUpper     bool
 }
 
 func OptionDelimiter(d string) Option {
@@ -68,6 +77,16 @@ func OptionDelimiter(d string) Option {
 
 func OptionCaseMode(caseMode CaseMode) Option {
 	return func(cfg *caseConfig) { cfg.caseMode = caseMode }
+}
+
+// OptionFirstUpper ensures the resulting string begins with an upper case letter.
+func OptionFirstUpper() Option {
+	return func(cfg *caseConfig) { cfg.firstUpper = true }
+}
+
+// OptionFirstLower ensures the resulting string begins with a lower case letter.
+func OptionFirstLower() Option {
+	return func(cfg *caseConfig) { cfg.firstUpper = false }
 }
 
 // ToFormattedCase generates formatted case strings with the given options
@@ -79,26 +98,29 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 	}
 
 	var result []string
-	for _, word := range words {
-		switch word := word.(type) {
-		case SingleCaseWord:
-			w := word.String()
-			if cfg.allUpper || cfg.screaming {
-				w = strings.ToUpper(w)
-			} else if cfg.allLower || cfg.whispering {
-				w = strings.ToLower(w)
+	for i, w := range words {
+		out := w.String()
+
+		switch cfg.caseMode {
+		case CMFirstTitle:
+			if i == 0 {
+				out = UpperCaseFirst(strings.ToLower(out))
+			} else {
+				out = strings.ToLower(out)
 			}
-		case ExactCaseWord:
-			if cfg.mixCaseSupport {
-				w = splitMixCase(w, cfg.delimiter)
+		case CMAllTitle:
+			out = UpperCaseFirst(strings.ToLower(out))
+		case CMFirstLower:
+			if i == 0 {
+				out = strings.ToLower(out)
 			}
-		case FirstUpperCaseWord:
-			if cfg.mixCaseSupport {
-				w = splitMixCase(w, cfg.delimiter)
-			}
+		case CMWhispering:
+			out = strings.ToLower(out)
+		case CMScreaming:
+			out = strings.ToUpper(out)
 		}
 
-		result = append(result, w)
+		result = append(result, out)
 	}
 
 	delimiter := cfg.delimiter
@@ -107,8 +129,7 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 	}
 	final := strings.Join(result, delimiter)
 
-	// Special handling for CamelCase
-	if !cfg.firstUpper {
+	if delimiter == "" && !cfg.firstUpper && len(final) > 0 {
 		final = strings.ToLower(final[:1]) + final[1:]
 	}
 
