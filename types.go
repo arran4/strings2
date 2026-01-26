@@ -3,6 +3,7 @@ package strings2
 import (
 	"fmt"
 	"strings"
+	"unicode"
 )
 
 // Word interface representing a stringer type that can be used in casing conversions.
@@ -146,8 +147,12 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 	}
 
 	delimiter := cfg.delimiter
-	if cfg.upperIndicator == cfg.delimiter {
-		delimiter = cfg.delimiter + cfg.delimiter
+	if cfg.upperIndicator != "" {
+		if cfg.upperIndicator == cfg.delimiter {
+			delimiter = cfg.delimiter + cfg.delimiter
+		} else {
+			delimiter = cfg.upperIndicator
+		}
 	}
 	final := strings.Join(result, delimiter)
 
@@ -167,7 +172,7 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 func splitMixCase(input, delimiter string) string {
 	var result strings.Builder
 	for i, r := range input {
-		if i > 0 && r >= 'A' && r <= 'Z' {
+		if i > 0 && unicode.IsUpper(r) {
 			result.WriteString(delimiter)
 		}
 		result.WriteRune(r)
