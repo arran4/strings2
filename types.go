@@ -21,7 +21,7 @@ func UpperCaseFirst(s string) string {
 	if s == "" {
 		return s
 	}
-	return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
+	return strings.ToUpper(s[:1]) + s[1:]
 }
 func (w ExactCaseWord) String() string { return string(w) }
 
@@ -39,27 +39,17 @@ const (
 	CMScreaming
 )
 
-func (cm CaseMode) Transform(word []Word, wordPos int) []string {
-	if word == nil || len(word) == 0 {
-		return word
-	}
-	switch cm {
-	case CMVerbatim:
-		return word
-	case CMFirstTitle:
-		switch word[0].(type) {
-		case SingleCaseWord:
-			if wordPos == 0 {
-				word[0] = UpperCaseFirst(word[0])
-			}
-		}
-	}
-}
-
 type caseConfig struct {
 	caseMode       CaseMode
 	delimiter      string
 	upperIndicator string
+	allUpper       bool
+	allLower       bool
+	screaming      bool
+	whispering     bool
+	mixCaseSupport bool
+	firstUpper     bool
+	firstLower     bool
 }
 
 func OptionDelimiter(d string) Option {
@@ -70,6 +60,22 @@ func OptionCaseMode(caseMode CaseMode) Option {
 	return func(cfg *caseConfig) { cfg.caseMode = caseMode }
 }
 
+func OptionFirstUpper() Option {
+	return func(cfg *caseConfig) { cfg.firstUpper = true }
+}
+
+func OptionFirstLower() Option {
+	return func(cfg *caseConfig) { cfg.firstLower = true }
+}
+
+func OptionMixCaseSupport() Option {
+	return func(cfg *caseConfig) { cfg.mixCaseSupport = true }
+}
+
+func OptionUpperIndicator(d string) Option {
+	return func(cfg *caseConfig) { cfg.upperIndicator = d }
+}
+
 // ToFormattedCase generates formatted case strings with the given options
 func ToFormattedCase(words []Word, opts ...Option) string {
 	cfg := &caseConfig{delimiter: "-"}
@@ -78,24 +84,42 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 		opt(cfg)
 	}
 
+	switch cfg.caseMode {
+	case CMScreaming:
+		cfg.screaming = true
+	case CMWhispering:
+		cfg.whispering = true
+	case CMFirstLower:
+		cfg.firstLower = true
+	case CMFirstTitle:
+		cfg.firstUpper = true
+	}
+
 	var result []string
 	for _, word := range words {
+		var w string
 		switch word := word.(type) {
 		case SingleCaseWord:
-			w := word.String()
+			w = word.String()
 			if cfg.allUpper || cfg.screaming {
 				w = strings.ToUpper(w)
 			} else if cfg.allLower || cfg.whispering {
 				w = strings.ToLower(w)
+			} else if cfg.caseMode == CMAllTitle {
+				w = UpperCaseFirst(w)
 			}
 		case ExactCaseWord:
+			w = word.String()
 			if cfg.mixCaseSupport {
 				w = splitMixCase(w, cfg.delimiter)
 			}
 		case FirstUpperCaseWord:
+			w = word.String()
 			if cfg.mixCaseSupport {
 				w = splitMixCase(w, cfg.delimiter)
 			}
+		default:
+			w = word.String()
 		}
 
 		result = append(result, w)
@@ -107,9 +131,13 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 	}
 	final := strings.Join(result, delimiter)
 
-	// Special handling for CamelCase
-	if !cfg.firstUpper {
-		final = strings.ToLower(final[:1]) + final[1:]
+	if cfg.firstUpper {
+		final = UpperCaseFirst(final)
+	}
+	if cfg.firstLower {
+		if len(final) > 0 {
+			final = strings.ToLower(final[:1]) + final[1:]
+		}
 	}
 
 	return final
@@ -150,7 +178,7 @@ func ToSnakeCase(words []Word, opts ...Option) string {
 // Options:
 //   - FirstUpper: Ensures the first letter of the result is uppercase.
 func ToPascalCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter(""), OptionFirstUpper())...)...)
+	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))...)...)
 }
 
 // ToCamelCase converts words into camelCase format.
@@ -158,5 +186,5 @@ func ToPascalCase(words []Word, opts ...Option) string {
 // Options:
 //   - FirstUpper: Ensures the first letter of the result is uppercase (default is lowercase).
 func ToCamelCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter(""), OptionFirstLower())...)...)
+	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))...)...)
 }
