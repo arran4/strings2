@@ -5,18 +5,25 @@ import (
 	"strings"
 )
 
-// Word interface representing a stringer type
+// Word interface representing a stringer type that can be used in casing conversions.
 type Word fmt.Stringer
 
 // Word Types
+
+// SingleCaseWord is a word that will be lowercased when stringified.
 type SingleCaseWord string
+
+// FirstUpperCaseWord is a word that will have its first letter uppercased and the rest lowercased when stringified.
 type FirstUpperCaseWord string
+
+// ExactCaseWord is a word that preserves its case when stringified.
 type ExactCaseWord string
 
 // String implementations
 func (w SingleCaseWord) String() string     { return strings.ToLower(string(w)) }
 func (w FirstUpperCaseWord) String() string { return UpperCaseFirst(strings.ToLower(string(w))) }
 
+// UpperCaseFirst uppercases the first character of the string.
 func UpperCaseFirst(s string) string {
 	if s == "" {
 		return s
@@ -28,14 +35,21 @@ func (w ExactCaseWord) String() string { return string(w) }
 // Options
 type Option func(*caseConfig)
 
+// CaseMode defines the casing transformation mode.
 type CaseMode int
 
 const (
+	// CMVerbatim leaves the case as is.
 	CMVerbatim CaseMode = iota
+	// CMFirstTitle uppercases the first character of the first word.
 	CMFirstTitle
+	// CMAllTitle uppercases the first character of every word.
 	CMAllTitle
+	// CMFirstLower lowercases the first character of the first word.
 	CMFirstLower
+	// CMWhispering lowercases all characters (like snake_case or kebab-case usually).
 	CMWhispering
+	// CMScreaming uppercases all characters (like SCREAMING_SNAKE_CASE).
 	CMScreaming
 )
 
@@ -52,26 +66,32 @@ type caseConfig struct {
 	firstLower     bool
 }
 
+// OptionDelimiter sets the delimiter between words.
 func OptionDelimiter(d string) Option {
 	return func(cfg *caseConfig) { cfg.delimiter = d }
 }
 
+// OptionCaseMode sets the case mode.
 func OptionCaseMode(caseMode CaseMode) Option {
 	return func(cfg *caseConfig) { cfg.caseMode = caseMode }
 }
 
+// OptionFirstUpper ensures the very first character of the result is uppercase.
 func OptionFirstUpper() Option {
 	return func(cfg *caseConfig) { cfg.firstUpper = true }
 }
 
+// OptionFirstLower ensures the very first character of the result is lowercase.
 func OptionFirstLower() Option {
 	return func(cfg *caseConfig) { cfg.firstLower = true }
 }
 
+// OptionMixCaseSupport enables splitting of mixed case words (e.g. CamelCase) into separate words based on uppercase letters.
 func OptionMixCaseSupport() Option {
 	return func(cfg *caseConfig) { cfg.mixCaseSupport = true }
 }
 
+// OptionUpperIndicator sets a specific indicator for upper case (often used for double delimiters).
 func OptionUpperIndicator(d string) Option {
 	return func(cfg *caseConfig) { cfg.upperIndicator = d }
 }

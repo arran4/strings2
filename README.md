@@ -1,5 +1,11 @@
 # strings2
 
+[![Test Status](https://github.com/arran4/strings2/actions/workflows/test.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/test.yml)
+[![Vet Status](https://github.com/arran4/strings2/actions/workflows/vet.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/vet.yml)
+[![Lint Status](https://github.com/arran4/strings2/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/golangci-lint.yml)
+[![Fmt Status](https://github.com/arran4/strings2/actions/workflows/fmt.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/fmt.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/arran4/strings2.svg)](https://pkg.go.dev/github.com/arran4/strings2)
+
 strings2 provides utilities for converting slices of words into various casing conventions. It is intended to supplement Go's standard library `strings` package with helpers for creating formats such as `camelCase`, `PascalCase`, `snake_case` and `kebab-case`.
 
 ## Installation
@@ -60,3 +66,7 @@ fmt.Println(strings2.ToSnakeCase(words, strings2.OptionCaseMode(strings2.CMScrea
 ```
 
 Options are composable so multiple behaviours can be applied at once. See the documentation in `types.go` for details on further options.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

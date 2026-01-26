@@ -35,8 +35,8 @@ func TestToCamelCase(t *testing.T) {
 			expected: "hello",
 		},
 		{
-			name: "Empty",
-			words: []Word{},
+			name:     "Empty",
+			words:    []Word{},
 			expected: "",
 		},
 	}
@@ -107,7 +107,7 @@ func TestToKebabCase(t *testing.T) {
 				SingleCaseWord("hello"),
 				SingleCaseWord("world"),
 			},
-			options: []Option{OptionCaseMode(CMScreaming)},
+			options:  []Option{OptionCaseMode(CMScreaming)},
 			expected: "HELLO-WORLD",
 		},
 		{
@@ -116,7 +116,7 @@ func TestToKebabCase(t *testing.T) {
 				SingleCaseWord("hello"),
 				SingleCaseWord("world"),
 			},
-			options: []Option{OptionUpperIndicator("-")},
+			options:  []Option{OptionUpperIndicator("-")},
 			expected: "hello--world",
 		},
 	}
@@ -152,7 +152,7 @@ func TestToSnakeCase(t *testing.T) {
 				SingleCaseWord("hello"),
 				SingleCaseWord("world"),
 			},
-			options: []Option{OptionCaseMode(CMScreaming)},
+			options:  []Option{OptionCaseMode(CMScreaming)},
 			expected: "HELLO_WORLD",
 		},
 		{
@@ -161,7 +161,7 @@ func TestToSnakeCase(t *testing.T) {
 				SingleCaseWord("hello"),
 				SingleCaseWord("world"),
 			},
-			options: []Option{OptionFirstUpper()},
+			options:  []Option{OptionFirstUpper()},
 			expected: "Hello_world",
 		},
 	}
@@ -237,7 +237,7 @@ func TestMixCaseSupport(t *testing.T) {
 				ExactCaseWord("camelCase"),
 				SingleCaseWord("test"),
 			},
-			options: []Option{OptionMixCaseSupport(), OptionDelimiter("-")},
+			options:  []Option{OptionMixCaseSupport(), OptionDelimiter("-")},
 			expected: "camel-Case-test",
 		},
 		{
@@ -245,7 +245,7 @@ func TestMixCaseSupport(t *testing.T) {
 			words: []Word{
 				ExactCaseWord("camelCase"),
 			},
-			options: []Option{OptionMixCaseSupport(), OptionDelimiter("_"), OptionFirstUpper()},
+			options:  []Option{OptionMixCaseSupport(), OptionDelimiter("_"), OptionFirstUpper()},
 			expected: "Camel_Case",
 		},
 	}
