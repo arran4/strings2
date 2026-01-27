@@ -6,8 +6,11 @@ import (
 
 func TestEdgeCases(t *testing.T) {
 	// 1. Unicode in splitMixCase
+	// Even though ExactCaseWord is a single word in the IL, OptionMixCaseSupport
+	// instructs the formatter to split it based on casing.
+	// This test verifies that this splitting works for both ASCII and Unicode.
 	t.Run("Unicode MixCase", func(t *testing.T) {
-		input := []Word{ExactCaseWord("helloWorld")} // ASCII works
+		input := []Word{ExactCaseWord("helloWorld")} // ASCII mixed-case should be split
 		res := ToFormattedCase(input, OptionMixCaseSupport(), OptionDelimiter("-"))
 		if res != "hello-World" {
 			t.Errorf("ASCII MixCase failed: got %q", res)
