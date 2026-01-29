@@ -186,7 +186,10 @@ func splitMixCase(input, delimiter string) string {
 //   - Delimiter: Defaults to "-".
 //   - DoubleDelimiter: Uses a double "-" to signify reused delimiters.
 func ToKebabCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter("-"))...)...)
+	newOpts := make([]Option, 0, len(opts)+1)
+	newOpts = append(newOpts, opts...)
+	newOpts = append(newOpts, OptionDelimiter("-"))
+	return ToFormattedCase(words, newOpts...)
 }
 
 // ToSnakeCase converts words into snake_case format.
@@ -195,7 +198,10 @@ func ToKebabCase(words []Word, opts ...Option) string {
 //   - Delimiter: Defaults to "_".
 //   - Screaming: Converts the entire output to upper case (SCREAMING_SNAKE_CASE).
 func ToSnakeCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter("_"))...)...)
+	newOpts := make([]Option, 0, len(opts)+1)
+	newOpts = append(newOpts, opts...)
+	newOpts = append(newOpts, OptionDelimiter("_"))
+	return ToFormattedCase(words, newOpts...)
 }
 
 // ToPascalCase converts words into PascalCase format.
@@ -203,7 +209,10 @@ func ToSnakeCase(words []Word, opts ...Option) string {
 // Options:
 //   - FirstUpper: Ensures the first letter of the result is uppercase.
 func ToPascalCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))...)...)
+	newOpts := make([]Option, 0, len(opts)+3)
+	newOpts = append(newOpts, opts...)
+	newOpts = append(newOpts, OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))
+	return ToFormattedCase(words, newOpts...)
 }
 
 // ToCamelCase converts words into camelCase format.
@@ -211,5 +220,8 @@ func ToPascalCase(words []Word, opts ...Option) string {
 // Options:
 //   - FirstUpper: Ensures the first letter of the result is uppercase (default is lowercase).
 func ToCamelCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))...)...)
+	newOpts := make([]Option, 0, len(opts)+3)
+	newOpts = append(newOpts, opts...)
+	newOpts = append(newOpts, OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))
+	return ToFormattedCase(words, newOpts...)
 }
