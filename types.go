@@ -116,7 +116,7 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 		cfg.firstUpper = true
 	}
 
-	var result []string
+	result := make([]string, 0, len(words))
 	for _, word := range words {
 		var w string
 		switch word := word.(type) {
