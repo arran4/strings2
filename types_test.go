@@ -268,6 +268,15 @@ func TestUpperCaseFirst_Correctness(t *testing.T) {
 		{"test", "Test"},
 		{"äpfel", "Äpfel"},
 		{"ßeta", "ßeta"},
+		{"", ""},
+		{"a", "A"},
+		{"A", "A"},
+		{"1test", "1test"},
+		{"!test", "!test"},
+		{"Test", "Test"},
+		{"Öpfel", "Öpfel"},
+		{"\xff", "\xff"}, // Invalid UTF-8
+		{"\xe2\x82\x28", "\xe2\x82\x28"}, // Invalid UTF-8 sequence
 	}
 
 	for _, tt := range tests {
