@@ -259,3 +259,21 @@ func TestMixCaseSupport(t *testing.T) {
 		})
 	}
 }
+
+func TestUpperCaseFirst_Correctness(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"test", "Test"},
+		{"äpfel", "Äpfel"},
+		{"ßeta", "ßeta"},
+	}
+
+	for _, tt := range tests {
+		got := UpperCaseFirst(tt.input)
+		if got != tt.expected {
+			t.Errorf("UpperCaseFirst(%q) = %q, want %q", tt.input, got, tt.expected)
+		}
+	}
+}

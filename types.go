@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // Word interface representing a stringer type that can be used in casing conversions.
@@ -29,7 +30,15 @@ func UpperCaseFirst(s string) string {
 	if s == "" {
 		return s
 	}
-	return strings.ToUpper(s[:1]) + s[1:]
+	r, size := utf8.DecodeRuneInString(s)
+	if r == utf8.RuneError {
+		return s
+	}
+	u := unicode.ToUpper(r)
+	if r == u {
+		return s
+	}
+	return string(u) + s[size:]
 }
 func (w ExactCaseWord) String() string { return string(w) }
 
