@@ -125,18 +125,20 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 		cfg.firstUpper = true
 	}
 
-	var result []string
+	result := make([]string, 0, len(words))
 	for _, word := range words {
 		var w string
 		switch word := word.(type) {
 		case SingleCaseWord:
-			w = word.String()
+			w = string(word)
 			if cfg.allUpper || cfg.screaming {
 				w = strings.ToUpper(w)
 			} else if cfg.allLower || cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = UpperCaseFirst(w)
+				w = UpperCaseFirst(strings.ToLower(w))
+			} else {
+				w = strings.ToLower(w)
 			}
 		case ExactCaseWord:
 			w = word.String()
@@ -180,6 +182,7 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 // Helper function to split words in mixed case
 func splitMixCase(input, delimiter string) string {
 	var result strings.Builder
+	result.Grow(len(input))
 	for i, r := range input {
 		if i > 0 && unicode.IsUpper(r) {
 			result.WriteString(delimiter)
@@ -195,7 +198,10 @@ func splitMixCase(input, delimiter string) string {
 //   - Delimiter: Defaults to "-".
 //   - DoubleDelimiter: Uses a double "-" to signify reused delimiters.
 func ToKebabCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter("-"))...)...)
+	newOpts := make([]Option, 0, len(opts)+1)
+	newOpts = append(newOpts, opts...)
+	newOpts = append(newOpts, OptionDelimiter("-"))
+	return ToFormattedCase(words, newOpts...)
 }
 
 // ToSnakeCase converts words into snake_case format.
@@ -204,7 +210,10 @@ func ToKebabCase(words []Word, opts ...Option) string {
 //   - Delimiter: Defaults to "_".
 //   - Screaming: Converts the entire output to upper case (SCREAMING_SNAKE_CASE).
 func ToSnakeCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter("_"))...)...)
+	newOpts := make([]Option, 0, len(opts)+1)
+	newOpts = append(newOpts, opts...)
+	newOpts = append(newOpts, OptionDelimiter("_"))
+	return ToFormattedCase(words, newOpts...)
 }
 
 // ToPascalCase converts words into PascalCase format.
@@ -212,7 +221,10 @@ func ToSnakeCase(words []Word, opts ...Option) string {
 // Options:
 //   - FirstUpper: Ensures the first letter of the result is uppercase.
 func ToPascalCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))...)...)
+	newOpts := make([]Option, 0, len(opts)+3)
+	newOpts = append(newOpts, opts...)
+	newOpts = append(newOpts, OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))
+	return ToFormattedCase(words, newOpts...)
 }
 
 // ToCamelCase converts words into camelCase format.
@@ -220,5 +232,8 @@ func ToPascalCase(words []Word, opts ...Option) string {
 // Options:
 //   - FirstUpper: Ensures the first letter of the result is uppercase (default is lowercase).
 func ToCamelCase(words []Word, opts ...Option) string {
-	return ToFormattedCase(words, append([]Option(nil), append(opts, OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))...)...)
+	newOpts := make([]Option, 0, len(opts)+3)
+	newOpts = append(newOpts, opts...)
+	newOpts = append(newOpts, OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))
+	return ToFormattedCase(words, newOpts...)
 }
