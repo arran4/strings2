@@ -1,6 +1,7 @@
 package strings2
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -284,5 +285,70 @@ func TestUpperCaseFirst_Correctness(t *testing.T) {
 		if got != tt.expected {
 			t.Errorf("UpperCaseFirst(%q) = %q, want %q", tt.input, got, tt.expected)
 		}
+	}
+}
+
+func TestUpperCaseFirstWithErr_Correctness(t *testing.T) {
+	tests := []struct {
+		input       string
+		expected    string
+		expectError bool
+	}{
+		{"test", "Test", false},
+		{"äpfel", "Äpfel", false},
+		{"", "", false},
+		{"\xff", "", true}, // Invalid UTF-8
+		{"\xe2\x82\x28", "", true}, // Invalid UTF-8 sequence
+	}
+
+	for _, tt := range tests {
+		got, err := UpperCaseFirstWithErr(tt.input)
+		if tt.expectError {
+			if err == nil {
+				t.Errorf("UpperCaseFirstWithErr(%q) expected error, got nil", tt.input)
+			}
+			if !errors.Is(err, ErrRune) {
+				t.Errorf("UpperCaseFirstWithErr(%q) expected ErrRune, got %v", tt.input, err)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("UpperCaseFirstWithErr(%q) unexpected error: %v", tt.input, err)
+			}
+			if got != tt.expected {
+				t.Errorf("UpperCaseFirstWithErr(%q) = %q, want %q", tt.input, got, tt.expected)
+			}
+		}
+	}
+}
+
+func TestMustUpperCaseFirst_Correctness(t *testing.T) {
+	tests := []struct {
+		input       string
+		expected    string
+		expectPanic bool
+	}{
+		{"test", "Test", false},
+		{"\xff", "", true}, // Invalid UTF-8
+		{"\xe2\x82\x28", "", true}, // Invalid UTF-8 sequence
+	}
+
+	for _, tt := range tests {
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					if !tt.expectPanic {
+						t.Errorf("MustUpperCaseFirst(%q) panicked unexpectedly: %v", tt.input, r)
+					}
+				} else {
+					if tt.expectPanic {
+						t.Errorf("MustUpperCaseFirst(%q) expected panic, but did not panic", tt.input)
+					}
+				}
+			}()
+			got := MustUpperCaseFirst(tt.input)
+			if !tt.expectPanic && got != tt.expected {
+				t.Errorf("MustUpperCaseFirst(%q) = %q, want %q", tt.input, got, tt.expected)
+			}
+		}()
 	}
 }

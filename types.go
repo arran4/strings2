@@ -1,11 +1,14 @@
 package strings2
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
+
+var ErrRune = errors.New("invalid rune")
 
 // Word interface representing a stringer type that can be used in casing conversions.
 type Word fmt.Stringer
@@ -40,6 +43,41 @@ func UpperCaseFirst(s string) string {
 	}
 	return string(u) + s[size:]
 }
+
+// UpperCaseFirstWithErr uppercases the first character of the string.
+// It returns an error if the first character is an invalid rune.
+func UpperCaseFirstWithErr(s string) (string, error) {
+	if s == "" {
+		return s, nil
+	}
+	r, size := utf8.DecodeRuneInString(s)
+	if r == utf8.RuneError {
+		return "", fmt.Errorf("%w: %q", ErrRune, r)
+	}
+	u := unicode.ToUpper(r)
+	if r == u {
+		return s, nil
+	}
+	return string(u) + s[size:], nil
+}
+
+// MustUpperCaseFirst uppercases the first character of the string.
+// It panics if the first character is an invalid rune.
+func MustUpperCaseFirst(s string) string {
+	if s == "" {
+		return s
+	}
+	r, size := utf8.DecodeRuneInString(s)
+	if r == utf8.RuneError {
+		panic(s)
+	}
+	u := unicode.ToUpper(r)
+	if r == u {
+		return s
+	}
+	return string(u) + s[size:]
+}
+
 func (w ExactCaseWord) String() string { return string(w) }
 
 // Options
