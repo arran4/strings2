@@ -259,3 +259,30 @@ func TestMixCaseSupport(t *testing.T) {
 		})
 	}
 }
+
+func TestUpperCaseFirst_Correctness(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"test", "Test"},
+		{"äpfel", "Äpfel"},
+		{"ßeta", "ßeta"},
+		{"", ""},
+		{"a", "A"},
+		{"A", "A"},
+		{"1test", "1test"},
+		{"!test", "!test"},
+		{"Test", "Test"},
+		{"Öpfel", "Öpfel"},
+		{"\xff", "\xff"}, // Invalid UTF-8
+		{"\xe2\x82\x28", "\xe2\x82\x28"}, // Invalid UTF-8 sequence
+	}
+
+	for _, tt := range tests {
+		got := UpperCaseFirst(tt.input)
+		if got != tt.expected {
+			t.Errorf("UpperCaseFirst(%q) = %q, want %q", tt.input, got, tt.expected)
+		}
+	}
+}
