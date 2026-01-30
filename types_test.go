@@ -352,3 +352,105 @@ func TestMustUpperCaseFirst_Correctness(t *testing.T) {
 		}()
 	}
 }
+
+func TestLowerCaseFirst_Correctness(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"Test", "test"},
+		{"Äpfel", "äpfel"},
+		{"ßeta", "ßeta"}, // ß doesn't change
+		{"", ""},
+		{"A", "a"},
+		{"a", "a"},
+		{"1test", "1test"},
+		{"!test", "!test"},
+		{"test", "test"},
+		{"Öpfel", "öpfel"},
+		{"\xff", "\xff"}, // Invalid UTF-8
+		{"\xe2\x82\x28", "\xe2\x82\x28"}, // Invalid UTF-8 sequence
+	}
+
+	for _, tt := range tests {
+		got := LowerCaseFirst(tt.input)
+		if got != tt.expected {
+			t.Errorf("LowerCaseFirst(%q) = %q, want %q", tt.input, got, tt.expected)
+		}
+	}
+}
+
+func TestLowerCaseFirstWithErr_Correctness(t *testing.T) {
+	tests := []struct {
+		input       string
+		expected    string
+		expectError bool
+	}{
+		{"Test", "test", false},
+		{"Äpfel", "äpfel", false},
+		{"", "", false},
+		{"\xff", "", true}, // Invalid UTF-8
+		{"\xe2\x82\x28", "", true}, // Invalid UTF-8 sequence
+	}
+
+	for _, tt := range tests {
+		got, err := LowerCaseFirstWithErr(tt.input)
+		if tt.expectError {
+			if err == nil {
+				t.Errorf("LowerCaseFirstWithErr(%q) expected error, got nil", tt.input)
+			}
+			if !errors.Is(err, ErrRune) {
+				t.Errorf("LowerCaseFirstWithErr(%q) expected ErrRune, got %v", tt.input, err)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("LowerCaseFirstWithErr(%q) unexpected error: %v", tt.input, err)
+			}
+			if got != tt.expected {
+				t.Errorf("LowerCaseFirstWithErr(%q) = %q, want %q", tt.input, got, tt.expected)
+			}
+		}
+	}
+}
+
+func TestMustLowerCaseFirst_Correctness(t *testing.T) {
+	tests := []struct {
+		input       string
+		expected    string
+		expectPanic bool
+	}{
+		{"Test", "test", false},
+		{"\xff", "", true}, // Invalid UTF-8
+		{"\xe2\x82\x28", "", true}, // Invalid UTF-8 sequence
+	}
+
+	for _, tt := range tests {
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					if !tt.expectPanic {
+						t.Errorf("MustLowerCaseFirst(%q) panicked unexpectedly: %v", tt.input, r)
+					}
+				} else {
+					if tt.expectPanic {
+						t.Errorf("MustLowerCaseFirst(%q) expected panic, but did not panic", tt.input)
+					}
+				}
+			}()
+			got := MustLowerCaseFirst(tt.input)
+			if !tt.expectPanic && got != tt.expected {
+				t.Errorf("MustLowerCaseFirst(%q) = %q, want %q", tt.input, got, tt.expected)
+			}
+		}()
+	}
+}
+
+func TestToFormattedCase_MultibyteFirstLower(t *testing.T) {
+    // Tests that OptionFirstLower correctly handles multibyte characters.
+    words := []Word{ExactCaseWord("Äpfel")}
+    got := ToFormattedCase(words, OptionFirstLower())
+    want := "äpfel"
+    if got != want {
+        t.Errorf("ToFormattedCase with OptionFirstLower for %q = %q, want %q", "Äpfel", got, want)
+    }
+}
