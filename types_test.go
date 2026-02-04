@@ -276,7 +276,7 @@ func TestUpperCaseFirst_Correctness(t *testing.T) {
 		{"!test", "!test"},
 		{"Test", "Test"},
 		{"Öpfel", "Öpfel"},
-		{"\xff", "\xff"}, // Invalid UTF-8
+		{"\xff", "\xff"},                 // Invalid UTF-8
 		{"\xe2\x82\x28", "\xe2\x82\x28"}, // Invalid UTF-8 sequence
 	}
 
@@ -297,7 +297,7 @@ func TestUpperCaseFirstWithErr_Correctness(t *testing.T) {
 		{"test", "Test", false},
 		{"äpfel", "Äpfel", false},
 		{"", "", false},
-		{"\xff", "", true}, // Invalid UTF-8
+		{"\xff", "", true},         // Invalid UTF-8
 		{"\xe2\x82\x28", "", true}, // Invalid UTF-8 sequence
 	}
 
@@ -328,7 +328,7 @@ func TestMustUpperCaseFirst_Correctness(t *testing.T) {
 		expectPanic bool
 	}{
 		{"test", "Test", false},
-		{"\xff", "", true}, // Invalid UTF-8
+		{"\xff", "", true},         // Invalid UTF-8
 		{"\xe2\x82\x28", "", true}, // Invalid UTF-8 sequence
 	}
 
@@ -368,7 +368,7 @@ func TestLowerCaseFirst_Correctness(t *testing.T) {
 		{"!test", "!test"},
 		{"test", "test"},
 		{"Öpfel", "öpfel"},
-		{"\xff", "\xff"}, // Invalid UTF-8
+		{"\xff", "\xff"},                 // Invalid UTF-8
 		{"\xe2\x82\x28", "\xe2\x82\x28"}, // Invalid UTF-8 sequence
 	}
 
@@ -389,7 +389,7 @@ func TestLowerCaseFirstWithErr_Correctness(t *testing.T) {
 		{"Test", "test", false},
 		{"Äpfel", "äpfel", false},
 		{"", "", false},
-		{"\xff", "", true}, // Invalid UTF-8
+		{"\xff", "", true},         // Invalid UTF-8
 		{"\xe2\x82\x28", "", true}, // Invalid UTF-8 sequence
 	}
 
@@ -420,7 +420,7 @@ func TestMustLowerCaseFirst_Correctness(t *testing.T) {
 		expectPanic bool
 	}{
 		{"Test", "test", false},
-		{"\xff", "", true}, // Invalid UTF-8
+		{"\xff", "", true},         // Invalid UTF-8
 		{"\xe2\x82\x28", "", true}, // Invalid UTF-8 sequence
 	}
 
@@ -446,11 +446,11 @@ func TestMustLowerCaseFirst_Correctness(t *testing.T) {
 }
 
 func TestToFormattedCase_MultibyteFirstLower(t *testing.T) {
-    // Tests that OptionFirstLower correctly handles multibyte characters.
-    words := []Word{ExactCaseWord("Äpfel")}
-    got := ToFormattedCase(words, OptionFirstLower())
-    want := "äpfel"
-    if got != want {
-        t.Errorf("ToFormattedCase with OptionFirstLower for %q = %q, want %q", "Äpfel", got, want)
-    }
+	// Tests that OptionFirstLower correctly handles multibyte characters.
+	words := []Word{ExactCaseWord("Äpfel")}
+	got := ToFormattedCase(words, OptionFirstLower())
+	want := "äpfel"
+	if got != want {
+		t.Errorf("ToFormattedCase with OptionFirstLower for %q = %q, want %q", "Äpfel", got, want)
+	}
 }

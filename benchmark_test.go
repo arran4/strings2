@@ -29,7 +29,7 @@ func BenchmarkUpperCaseFirst_Empty(b *testing.B) {
 	s := ""
 	for i := 0; i < b.N; i++ {
 		UpperCaseFirst(s)
-  }
+	}
 }
 
 func BenchmarkToFormattedCase(b *testing.B) {
@@ -49,7 +49,7 @@ func BenchmarkToFormattedCase(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ToFormattedCase(words, OptionDelimiter("-"))
-  }
+	}
 }
 
 var benchWords = []Word{
@@ -84,7 +84,7 @@ func BenchmarkToKebabCase_WithManyOptions(b *testing.B) {
 	}
 	for i := 0; i < b.N; i++ {
 		ToKebabCase(benchWords, opts...)
-  }
+	}
 }
 
 func BenchmarkToFormattedCase_Screaming(b *testing.B) {
