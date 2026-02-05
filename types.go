@@ -24,9 +24,18 @@ type FirstUpperCaseWord string
 // ExactCaseWord is a word that preserves its case when stringified.
 type ExactCaseWord string
 
+// AcronymWord is a word that represents an acronym.
+// It is usually preserved in case, but can be configured otherwise.
+type AcronymWord string
+
+// UpperCaseWord is a word that was originally all uppercase.
+type UpperCaseWord string
+
 // String implementations
 func (w SingleCaseWord) String() string     { return strings.ToLower(string(w)) }
 func (w FirstUpperCaseWord) String() string { return UpperCaseFirst(strings.ToLower(string(w))) }
+func (w AcronymWord) String() string        { return string(w) }
+func (w UpperCaseWord) String() string      { return strings.ToUpper(string(w)) }
 
 func performCaseFirst(s string, fn func(rune) rune) (string, rune, bool) {
 	if s == "" {
@@ -210,6 +219,24 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 			w = word.String()
 			if cfg.mixCaseSupport {
 				w = splitMixCase(w, cfg.delimiter)
+			}
+		case AcronymWord:
+			w = word.String()
+			if cfg.screaming {
+				w = strings.ToUpper(w)
+			} else if cfg.whispering {
+				w = strings.ToLower(w)
+			}
+		case UpperCaseWord:
+			w = word.String()
+			if cfg.allUpper || cfg.screaming {
+				w = strings.ToUpper(w)
+			} else if cfg.allLower || cfg.whispering {
+				w = strings.ToLower(w)
+			} else if cfg.caseMode == CMAllTitle {
+				w = UpperCaseFirst(strings.ToLower(w))
+			} else {
+				w = strings.ToLower(w)
 			}
 		default:
 			w = word.String()
