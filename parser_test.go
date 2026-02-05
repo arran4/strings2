@@ -67,6 +67,19 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			name:  "Contextual Dash",
+			input: "Hello to all the good-doers out there",
+			expected: []strings2.Word{
+				strings2.FirstUpperCaseWord("Hello"),
+				strings2.SingleCaseWord("to"),
+				strings2.SingleCaseWord("all"),
+				strings2.SingleCaseWord("the"),
+				strings2.SingleCaseWord("good-doers"), // Dash not treated as split because Space wins
+				strings2.SingleCaseWord("out"),
+				strings2.SingleCaseWord("there"),
+			},
+		},
+		{
 			name:  "Acronyms with dots",
 			input: "N.E.W. World",
 			expected: []strings2.Word{
@@ -131,38 +144,44 @@ func TestParse_Options(t *testing.T) {
 		}
 	})
 
-	t.Run("Disable SnakeCase", func(t *testing.T) {
-		input := "hello_world" // Snake
-		// Disable SnakeCase detection
-		got, _ := strings2.Parse(input, strings2.ParserSnakeCase(false))
+	t.Run("Disable SnakeCase Delimiter", func(t *testing.T) {
+		input := "hello_world"
+		// Remove '_' from delimiters
+		got, _ := strings2.Parse(input, strings2.ParserDelimiters('-', ' ', '.'))
 
-		// Should NOT detect SnakeCase.
-		// "hello_world" -> SingleCaseWord (all lower letters + underscore treated as normal char if not handling separator?)
+		// '_' is not a delimiter. CamelCase is on by default.
+		// "hello_world": all lower. No case change.
+		// Result: Single word.
+
+		expected := []strings2.Word{strings2.ExactCaseWord("hello_world")} // Classifies as Exact because '_' is not letter, so isAllLower=false?
 		// Wait, classify logic:
-		// "hello_world" -> isAllLower?
-		// unicode.IsLetter('_') is false.
-		// So isAllLower will be false?
-		// "hello_world" -> ExactCaseWord.
-
-		// Let's verify classify logic in parser.go:
-		// for i, r := range runes {
-		//   if !unicode.IsUpper(r) && unicode.IsLetter(r) { isAllUpper = false }
-		//   if !unicode.IsLower(r) && unicode.IsLetter(r) { isAllLower = false }
-		// }
 		// '_' is not Letter.
-		// So if input is "hello_world":
-		// 'h': Lower, Letter -> ok
-		// '_': Not Letter. Doesn't trigger !IsLower check because of IsLetter check.
-		// So isAllLower remains true?
+		// isAllLower check: !unicode.IsLower(r) && unicode.IsLetter(r)
+		// '_' fails IsLetter, so it doesn't flip isAllLower to false.
+		// So isAllLower stays true?
+		// Let's re-read classify:
+		// isAllLower = true
+		// Loop:
+		//   if !IsLower(r) && IsLetter(r) -> isAllLower = false.
+		//   '_': IsLetter=false.
+		// End loop.
+		// isAllLower is still true.
+		// So it should be SingleCaseWord.
 
-		// Let's check:
-		// if !unicode.IsLower(r) && unicode.IsLetter(r)
-		// '_' is not letter, so condition is false.
+		expected = []strings2.Word{strings2.SingleCaseWord("hello_world")}
 
-		// So "hello_world" should be SingleCaseWord.
+		if !reflect.DeepEqual(got, expected) {
+			t.Errorf("Parse() = %#v, want %#v", got, expected)
+		}
+	})
 
-		expected := []strings2.Word{strings2.SingleCaseWord("hello_world")}
-
+	t.Run("Custom Delimiter", func(t *testing.T) {
+		input := "hello|world"
+		got, _ := strings2.Parse(input, strings2.ParserDelimiters('|'))
+		expected := []strings2.Word{
+			strings2.SingleCaseWord("hello"),
+			strings2.SingleCaseWord("world"),
+		}
 		if !reflect.DeepEqual(got, expected) {
 			t.Errorf("Parse() = %#v, want %#v", got, expected)
 		}

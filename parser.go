@@ -3,31 +3,17 @@ package strings2
 import (
 	"strings"
 	"unicode"
-	"unicode/utf8"
-)
-
-// Format defines the known string formats.
-type Format int
-
-const (
-	FormatUnknown Format = iota
-	FormatCamelCase
-	FormatPascalCase
-	FormatSnakeCase
-	FormatKebabCase
-	FormatScreamingSnakeCase
-	FormatSentence
 )
 
 // Parser is a configurable string parser.
 type Parser struct {
 	SmartAcronyms bool
 
-	// Feature flags
-	CamelCase bool
-	SnakeCase bool
-	KebabCase bool
-	Sentence  bool
+	// Delimiters is a list of characters that can be used as word separators.
+	Delimiters []rune
+
+	// SplitCamelCase enables splitting on case transitions (e.g. lower->Upper).
+	SplitCamelCase bool
 }
 
 // ParserOption defines a function to configure the Parser.
@@ -40,50 +26,33 @@ func ParserSmartAcronyms(enabled bool) ParserOption {
 	}
 }
 
-// ParserCamelCase enables or disables CamelCase and PascalCase detection.
-func ParserCamelCase(enabled bool) ParserOption {
+// ParserDelimiters sets the allowed delimiters for detection.
+// Common delimiters are '_', '-', ' ', '.'.
+func ParserDelimiters(delims ...rune) ParserOption {
 	return func(p *Parser) {
-		p.CamelCase = enabled
+		p.Delimiters = delims
 	}
 }
 
-// ParserSnakeCase enables or disables SnakeCase detection (including ScreamingSnakeCase).
-func ParserSnakeCase(enabled bool) ParserOption {
+// ParserSplitCamelCase enables or disables splitting on casing transitions.
+func ParserSplitCamelCase(enabled bool) ParserOption {
 	return func(p *Parser) {
-		p.SnakeCase = enabled
-	}
-}
-
-// ParserKebabCase enables or disables KebabCase detection.
-func ParserKebabCase(enabled bool) ParserOption {
-	return func(p *Parser) {
-		p.KebabCase = enabled
-	}
-}
-
-// ParserSentence enables or disables Sentence detection.
-func ParserSentence(enabled bool) ParserOption {
-	return func(p *Parser) {
-		p.Sentence = enabled
+		p.SplitCamelCase = enabled
 	}
 }
 
 // Parse parses the input string into a slice of Words based on detected or provided configuration.
 func Parse(input string, opts ...ParserOption) ([]Word, error) {
 	p := &Parser{
-		SmartAcronyms: true,
-		CamelCase:     true,
-		SnakeCase:     true,
-		KebabCase:     true,
-		Sentence:      true,
+		SmartAcronyms:  true,
+		SplitCamelCase: true,
+		Delimiters:     []rune{'_', '-', ' '},
 	}
 	for _, opt := range opts {
 		opt(p)
 	}
 
-	format := p.detectFormat(input)
-
-	parts := p.split(input, format)
+	parts := p.split(input)
 
 	words := make([]Word, len(parts))
 	for i, part := range parts {
@@ -93,49 +62,45 @@ func Parse(input string, opts ...ParserOption) ([]Word, error) {
 	return words, nil
 }
 
-func (p *Parser) detectFormat(input string) Format {
-	if p.SnakeCase && strings.Contains(input, "_") {
-		if input == strings.ToUpper(input) {
-			return FormatScreamingSnakeCase
-		}
-		return FormatSnakeCase
-	}
-	if p.KebabCase && strings.Contains(input, "-") {
-		return FormatKebabCase
-	}
-	if p.Sentence && strings.Contains(input, " ") {
-		return FormatSentence
-	}
+func (p *Parser) split(input string) []string {
 	if input == "" {
-		return FormatUnknown
+		return []string{""}
 	}
 
-	if p.CamelCase {
-		firstRune, _ := utf8.DecodeRuneInString(input)
-		if unicode.IsUpper(firstRune) {
-			return FormatPascalCase
+	// Heuristic: Find the delimiter with the highest occurrence count.
+	var bestDelim rune
+	maxCount := 0
+
+	for _, d := range p.Delimiters {
+		count := strings.Count(input, string(d))
+		if count > maxCount {
+			maxCount = count
+			bestDelim = d
 		}
-		return FormatCamelCase
 	}
 
-	return FormatUnknown
-}
+	// If a delimiter is found, use it.
+	if maxCount > 0 {
+		// Special handling for "Screaming Snake Case" or similar where purely splitting might need case adjustment?
+		// But for now, just split.
+		// Note: strings.Fields is special for space, but strings.Split is strict.
+		// User mentioned "context", sticking to strict split by best delim for now.
+		// If delimiter is space, use Fields to handle multiple spaces nicely?
+		if bestDelim == ' ' {
+			return strings.Fields(input)
+		}
+		return strings.Split(input, string(bestDelim))
+	}
 
-func (p *Parser) split(input string, format Format) []string {
-	switch format {
-	case FormatSnakeCase, FormatScreamingSnakeCase:
-		return strings.Split(input, "_")
-	case FormatKebabCase:
-		return strings.Split(input, "-")
-	case FormatSentence:
-		return strings.Fields(input)
-	case FormatCamelCase, FormatPascalCase:
+	// If no delimiters found, check for CamelCase if enabled.
+	if p.SplitCamelCase {
+		// Only try CamelCase if we see mixed casing?
+		// Actually, splitCamelCase handles the logic.
 		return splitCamelCase(input)
-	default:
-		// Fallback for Unknown: Return whole string or try to split by non-alphanum?
-		// Returning whole string as one part seems safest.
-		return []string{input}
 	}
+
+	// Fallback: Return whole string.
+	return []string{input}
 }
 
 func splitCamelCase(input string) []string {
@@ -174,7 +139,7 @@ func (p *Parser) classify(part string) Word {
 		return ExactCaseWord("")
 	}
 
-	// Check for dots -> Acronym
+	// Check for dots -> Acronym (unless dot was the delimiter, but split removes delimiters)
 	if strings.Contains(part, ".") {
 		return AcronymWord(part)
 	}
@@ -185,7 +150,7 @@ func (p *Parser) classify(part string) Word {
 	isTitle := false
 
 	runes := []rune(part)
-	if unicode.IsUpper(runes[0]) {
+	if len(runes) > 0 && unicode.IsUpper(runes[0]) {
 		isTitle = true
 	}
 
