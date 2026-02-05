@@ -3,6 +3,7 @@ package strings2_test
 import (
 	"reflect"
 	"testing"
+	"unicode"
 
 	"github.com/arran4/strings2"
 )
@@ -167,6 +168,64 @@ func TestParse_Options(t *testing.T) {
 			strings2.SingleCaseWord("hello"),
 			strings2.SingleCaseWord("world"),
 		}
+		if !reflect.DeepEqual(got, expected) {
+			t.Errorf("Parse() = %#v, want %#v", got, expected)
+		}
+	})
+
+	t.Run("Custom SubPart Logic", func(t *testing.T) {
+		input := "ABC-DEF"
+		// Custom logic: split after 'C' (effectively split every 3 chars if we wanted, but let's do explicit index)
+		// Or split on '-' without using delimiter? No, IsNewSubPart is for transition logic.
+		// Let's pretend '-' is a letter for a moment but we want to split after it.
+
+		// Let's do a real case: Split on numeric transitions. "File123Name" -> File, 123, Name
+		input = "File123Name"
+
+		isDigit := func(r rune) bool { return unicode.IsDigit(r) }
+
+		customSplit := func(pos int, runes []rune) bool {
+			if pos == 0 { return false }
+			prev := runes[pos-1]
+			curr := runes[pos]
+			// Split if transitioning from digit to letter or letter to digit
+			if isDigit(prev) != isDigit(curr) {
+				return true
+			}
+			// Use default camel case logic too?
+			if strings2.DefaultSplitCamelCase(pos, runes) {
+				return true
+			}
+			return false
+		}
+
+		got, _ := strings2.Parse(input, strings2.ParserIsNewSubPart(customSplit))
+		expected := []strings2.Word{
+			strings2.FirstUpperCaseWord("File"),
+			strings2.SingleCaseWord("123"), // Classify sees all "lower" or just not upper? 123 are not letters.
+			strings2.FirstUpperCaseWord("Name"),
+		}
+
+		// Let's trace classify for "123"
+		// isAllUpper = true (start)
+		// loop:
+		// '1': !IsUpper && !IsLetter -> OK.
+		// '1': !IsLower && !IsLetter -> OK.
+		// So isAllUpper = true, isAllLower = true.
+		// if isAllUpper -> AcronymWord or UpperCaseWord.
+		// Wait, if !IsUpper && IsLetter -> isAllUpper = false.
+		// '1' is not letter. So isAllUpper remains true.
+		// '1' is not letter. So isAllLower remains true.
+		// So it hits isAllUpper first.
+		// p.SmartAcronyms is true by default.
+		// len("123") > 1 -> AcronymWord("123").
+
+		expected = []strings2.Word{
+			strings2.FirstUpperCaseWord("File"),
+			strings2.AcronymWord("123"),
+			strings2.FirstUpperCaseWord("Name"),
+		}
+
 		if !reflect.DeepEqual(got, expected) {
 			t.Errorf("Parse() = %#v, want %#v", got, expected)
 		}

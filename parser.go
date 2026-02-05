@@ -179,6 +179,8 @@ func (p *Parser) split(input string) []string {
 
 	if start < len(runes) {
 		parts = append(parts, string(runes[start:]))
+	} else if start == len(runes) && (p.IsDelimiter != nil && p.IsDelimiter(runes[len(runes)-1])) {
+		// Trailing delimiter
 	}
 
 	return parts
