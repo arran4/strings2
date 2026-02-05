@@ -184,6 +184,11 @@ func (p *Parser) split(input string) []string {
 	return parts
 }
 
+// WordClassifier is a function that classifies a string part into a Word.
+type WordClassifier func(part string) Word
+
+// classify converts a string part into a Word based on its content and the parser's configuration.
+// It currently handles AcronymWord, UpperCaseWord, SingleCaseWord, FirstUpperCaseWord, and ExactCaseWord.
 func (p *Parser) classify(part string) Word {
 	if part == "" {
 		return ExactCaseWord("")
