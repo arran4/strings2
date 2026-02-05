@@ -5,200 +5,109 @@ import (
 	"unicode"
 )
 
-// Parser is a configurable string parser.
-type Parser struct {
-	// SmartAcronyms enables intelligent acronym detection (e.g. treating all-caps words as AcronymWord).
-	SmartAcronyms bool
-
-	// Delimiters is a list of characters that can be used as word separators.
-	Delimiters []rune
-
-	// SplitCamelCase enables splitting on case transitions (e.g. lower->Upper).
-	SplitCamelCase bool
-
-	// IsDelimiter is a function that checks if a rune is a delimiter.
-	IsDelimiter func(r rune) bool
-
-	// IsNewSubPart is a function that determines if a new sub-part starts at the given position.
-	IsNewSubPart func(pos int, surrounding []rune) bool
-}
-
-// ParserOption defines a function to configure the Parser.
-type ParserOption interface {
-	Apply(*Parser)
-}
-
-type funcParserOption func(*Parser)
-
-func (f funcParserOption) Apply(p *Parser) {
-	f(p)
-}
-
-// ParserSmartAcronyms enables intelligent acronym detection (e.g. treating all-caps words as AcronymWord).
-type ParserSmartAcronyms bool
-
-func (b ParserSmartAcronyms) Apply(p *Parser) {
-	p.SmartAcronyms = bool(b)
-}
-
-// ParserDelimiters sets the allowed delimiters for detection.
-type ParserDelimiters []rune
-
-func (d ParserDelimiters) Apply(p *Parser) {
-	p.Delimiters = d
-}
-
-// ParserSplitCamelCase enables or disables splitting on casing transitions.
-type ParserSplitCamelCase bool
-
-func (b ParserSplitCamelCase) Apply(p *Parser) {
-	p.SplitCamelCase = bool(b)
-}
-
-// ParserIsDelimiter sets a custom function to check if a rune is a delimiter.
-type ParserIsDelimiter func(r rune) bool
-
-func (f ParserIsDelimiter) Apply(p *Parser) {
-	p.IsDelimiter = f
-}
-
-// ParserIsNewSubPart sets a custom function to determine sub-part boundaries.
-type ParserIsNewSubPart func(pos int, surrounding []rune) bool
-
-func (f ParserIsNewSubPart) Apply(p *Parser) {
-	p.IsNewSubPart = f
-}
-
-// Parse parses the input string into a slice of Words based on detected or provided configuration.
+// Parse parses the input string into a slice of Words based on detection or provided options.
+// It follows the pipeline: String -> SubParts -> Parts -> Words.
 func Parse(input string, opts ...ParserOption) ([]Word, error) {
-	p := &Parser{
-		SmartAcronyms:  true,
-		SplitCamelCase: true,
-		Delimiters:     []rune{'_', '-', ' '},
-	}
+	// Level 5: Scan
+	subs, stats := StringToSubParts(input)
 
+	p := &ParserConfig{}
 	for _, opt := range opts {
 		opt.Apply(p)
 	}
 
-	// Ensure IsDelimiter is set if Delimiters is used (default behavior)
-	if p.IsDelimiter == nil && len(p.Delimiters) > 0 {
-		// Heuristic: Find the primary delimiter (highest frequency in input)
-		// If multiple delimiters exist, we only want to split by the primary one (or ones that act as delimiters in this context).
-		// The test "Contextual Dash" implies that if Space is the primary delimiter, Dash should NOT be treated as a delimiter unless it's also high frequency?
-		// Actually, the test "Hello to all the good-doers out there" expects "good-doers" to remain intact.
-		// This means we should detect the DOMINANT delimiter and only use that.
-
-		primaryDelim := detectPrimaryDelimiter(input, p.Delimiters)
-
-		p.IsDelimiter = func(r rune) bool {
-			return r == primaryDelim
-		}
+	// Level 4: Partition
+	// If partitioner is not set, try to detect
+	partitioner := p.Partitioner
+	if partitioner == nil {
+		partitioner = DetectPartitioner(stats)
 	}
 
-	// Default CamelCase splitter if not provided but enabled
-	if p.IsNewSubPart == nil && p.SplitCamelCase {
-		p.IsNewSubPart = DefaultSplitCamelCase
-	}
+	parts := SubPartsToParts(subs, partitioner)
 
-	parts := p.split(input)
-
-	words := make([]Word, len(parts))
-	for i, part := range parts {
-		words[i] = p.classify(part)
-	}
+	// Level 3: Words
+	words := PartsToWords(parts)
 
 	return words, nil
 }
 
-// DefaultSplitCamelCase is the default implementation for checking CamelCase transitions.
-// It detects transitions from lower to upper case, and sequence of upper cases followed by lower case.
-func DefaultSplitCamelCase(pos int, runes []rune) bool {
-	if pos == 0 {
-		return false
-	}
-	r := runes[pos]
-	prev := runes[pos-1]
-
-	// Case 1: lower -> Upper
-	if unicode.IsLower(prev) && unicode.IsUpper(r) {
-		return true
-	}
-
-	// Case 2: Upper -> Upper -> lower (e.g. PDFLoader, split at L)
-	if pos+1 < len(runes) {
-		next := runes[pos+1]
-		if unicode.IsUpper(prev) && unicode.IsUpper(r) && unicode.IsLower(next) {
-			return true
-		}
-	}
-	return false
+// ParserConfig holds configuration for the parsing pipeline.
+type ParserConfig struct {
+	Partitioner Partitioner
 }
 
-func detectPrimaryDelimiter(input string, delimiters []rune) rune {
-	maxCount := 0
-	var primary rune
-	for _, d := range delimiters {
-		count := strings.Count(input, string(d))
-		if count > maxCount {
-			maxCount = count
-			primary = d
-		}
-	}
-	// If no delimiters found, just return 0 (null char), IsDelimiter will return false.
-	return primary
+// ParserOption configures the parser.
+type ParserOption interface {
+	Apply(*ParserConfig)
 }
 
-func (p *Parser) split(input string) []string {
-	if input == "" {
-		return []string{""}
+type funcParserOption func(*ParserConfig)
+func (f funcParserOption) Apply(p *ParserConfig) { f(p) }
+
+// WithPartitioner sets a specific partitioner strategy.
+func WithPartitioner(pt Partitioner) ParserOption {
+	return funcParserOption(func(p *ParserConfig) {
+		p.Partitioner = pt
+	})
+}
+
+// DetectPartitioner uses stats to guess the best partitioner.
+func DetectPartitioner(stats Stats) Partitioner {
+	// Heuristic:
+	// If underscores > 0, likely SnakeCase
+	if stats.SymbolCounts['_'] > 0 {
+		return SnakeCasePartitioner
 	}
-
-	runes := []rune(input)
-	var parts []string
-	start := 0
-
-	for i := 0; i < len(runes); i++ {
-		// Check for delimiter split
-		if p.IsDelimiter != nil && p.IsDelimiter(runes[i]) {
-			if i > start {
-				parts = append(parts, string(runes[start:i]))
+	// If hyphens > 0, likely KebabCase
+	if stats.SymbolCounts['-'] > 0 {
+		return KebabCasePartitioner
+	}
+	// If spaces > 0, likely Sentence
+	if stats.Spaces > 0 {
+		return func(subs []SubPart) []Part {
+			// Space partitioner
+			var parts []Part
+			var current []SubPart
+			for _, s := range subs {
+				if s.IsSpace() {
+					if len(current) > 0 {
+						parts = append(parts, &WordPart{BasePart{Subs: current}})
+						current = nil
+					}
+				} else {
+					current = append(current, s)
+				}
 			}
-			start = i + 1
-			continue
-		}
-
-		// Check for sub-part split (CamelCase)
-		if p.IsNewSubPart != nil && p.IsNewSubPart(i, runes) {
-			if i > start {
-				parts = append(parts, string(runes[start:i]))
+			if len(current) > 0 {
+				parts = append(parts, &WordPart{BasePart{Subs: current}})
 			}
-			start = i
+			return parts
 		}
 	}
 
-	if start < len(runes) {
-		parts = append(parts, string(runes[start:]))
-	} else if start == len(runes) && (p.IsDelimiter != nil && p.IsDelimiter(runes[len(runes)-1])) {
-		// Trailing delimiter
-	}
-
-	return parts
+	// Default to CamelCase
+	return CamelCasePartitioner
 }
 
-// WordClassifier is a function that classifies a string part into a Word.
-type WordClassifier func(part string) Word
+// PartsToWords converts Parts to Words using classification logic.
+func PartsToWords(parts []Part) []Word {
+	var words []Word
+	for _, part := range parts {
+		words = append(words, ClassifyPart(part))
+	}
+	return words
+}
 
-// classify converts a string part into a Word based on its content and the parser's configuration.
-// It currently handles AcronymWord, UpperCaseWord, SingleCaseWord, FirstUpperCaseWord, and ExactCaseWord.
-func (p *Parser) classify(part string) Word {
-	if part == "" {
+// ClassifyPart converts a Part into a Word.
+func ClassifyPart(part Part) Word {
+	s := part.String()
+	if s == "" {
 		return ExactCaseWord("")
 	}
 
 	// Check for dots -> Acronym
-	if strings.Contains(part, ".") {
-		return AcronymWord(part)
+	if strings.Contains(s, ".") {
+		return AcronymWord(s)
 	}
 
 	// Check casing
@@ -206,7 +115,7 @@ func (p *Parser) classify(part string) Word {
 	isAllLower := true
 	isTitle := false
 
-	runes := []rune(part)
+	runes := []rune(s)
 	if len(runes) > 0 && unicode.IsUpper(runes[0]) {
 		isTitle = true
 	}
@@ -219,24 +128,44 @@ func (p *Parser) classify(part string) Word {
 			isAllLower = false
 		}
 		if i > 0 && unicode.IsUpper(r) {
-			isTitle = false // Title case has only first upper
+			isTitle = false
 		}
 	}
 
 	if isAllUpper {
-		if p.SmartAcronyms && len(runes) > 1 {
-			return AcronymWord(part)
+		if len(runes) > 1 {
+			return AcronymWord(s)
 		}
-		return UpperCaseWord(part)
+		return UpperCaseWord(s)
 	}
 
 	if isAllLower {
-		return SingleCaseWord(part)
+		return SingleCaseWord(s)
 	}
 
 	if isTitle {
-		return FirstUpperCaseWord(part)
+		return FirstUpperCaseWord(s)
 	}
 
-	return ExactCaseWord(part)
+	return ExactCaseWord(s)
+}
+
+// Level 1 / 2 Helpers
+
+func ParseSnakeCase(input string) []Word {
+	subs, _ := StringToSubParts(input)
+	parts := SubPartsToParts(subs, SnakeCasePartitioner)
+	return PartsToWords(parts)
+}
+
+func ParseCamelCase(input string) []Word {
+	subs, _ := StringToSubParts(input)
+	parts := SubPartsToParts(subs, CamelCasePartitioner)
+	return PartsToWords(parts)
+}
+
+func ParseKebabCase(input string) []Word {
+	subs, _ := StringToSubParts(input)
+	parts := SubPartsToParts(subs, KebabCasePartitioner)
+	return PartsToWords(parts)
 }
