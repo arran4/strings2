@@ -1,11 +1,14 @@
 package strings2
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
+
+var ErrRune = errors.New("invalid rune")
 
 // Word interface representing a stringer type that can be used in casing conversions.
 type Word fmt.Stringer
@@ -25,21 +28,79 @@ type ExactCaseWord string
 func (w SingleCaseWord) String() string     { return strings.ToLower(string(w)) }
 func (w FirstUpperCaseWord) String() string { return UpperCaseFirst(strings.ToLower(string(w))) }
 
-// UpperCaseFirst uppercases the first character of the string.
-func UpperCaseFirst(s string) string {
+func performCaseFirst(s string, fn func(rune) rune) (string, rune, bool) {
 	if s == "" {
-		return s
+		return s, 0, true
 	}
 	r, size := utf8.DecodeRuneInString(s)
 	if r == utf8.RuneError {
-		return s
+		return "", r, false
 	}
-	u := unicode.ToUpper(r)
+	u := fn(r)
 	if r == u {
+		return s, 0, true
+	}
+	return string(u) + s[size:], 0, true
+}
+
+// UpperCaseFirst uppercases the first character of the string.
+func UpperCaseFirst(s string) string {
+	res, _, ok := performCaseFirst(s, unicode.ToUpper)
+	if !ok {
 		return s
 	}
-	return string(u) + s[size:]
+	return res
 }
+
+// UpperCaseFirstWithErr uppercases the first character of the string.
+// It returns an error if the first character is an invalid rune.
+func UpperCaseFirstWithErr(s string) (string, error) {
+	res, r, ok := performCaseFirst(s, unicode.ToUpper)
+	if !ok {
+		return "", fmt.Errorf("%w: %q", ErrRune, r)
+	}
+	return res, nil
+}
+
+// MustUpperCaseFirst uppercases the first character of the string.
+// It panics if the first character is an invalid rune.
+func MustUpperCaseFirst(s string) string {
+	res, _, ok := performCaseFirst(s, unicode.ToUpper)
+	if !ok {
+		panic(s)
+	}
+	return res
+}
+
+// LowerCaseFirst lowercases the first character of the string.
+func LowerCaseFirst(s string) string {
+	res, _, ok := performCaseFirst(s, unicode.ToLower)
+	if !ok {
+		return s
+	}
+	return res
+}
+
+// LowerCaseFirstWithErr lowercases the first character of the string.
+// It returns an error if the first character is an invalid rune.
+func LowerCaseFirstWithErr(s string) (string, error) {
+	res, r, ok := performCaseFirst(s, unicode.ToLower)
+	if !ok {
+		return "", fmt.Errorf("%w: %q", ErrRune, r)
+	}
+	return res, nil
+}
+
+// MustLowerCaseFirst lowercases the first character of the string.
+// It panics if the first character is an invalid rune.
+func MustLowerCaseFirst(s string) string {
+	res, _, ok := performCaseFirst(s, unicode.ToLower)
+	if !ok {
+		panic(s)
+	}
+	return res
+}
+
 func (w ExactCaseWord) String() string { return string(w) }
 
 // Options
@@ -171,9 +232,7 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 		final = UpperCaseFirst(final)
 	}
 	if cfg.firstLower {
-		if len(final) > 0 {
-			final = strings.ToLower(final[:1]) + final[1:]
-		}
+		final = LowerCaseFirst(final)
 	}
 
 	return final
