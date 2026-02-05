@@ -147,28 +147,13 @@ func TestParse_Options(t *testing.T) {
 	t.Run("Disable SnakeCase Delimiter", func(t *testing.T) {
 		input := "hello_world"
 		// Remove '_' from delimiters
-		got, _ := strings2.Parse(input, strings2.ParserDelimiters('-', ' ', '.'))
+		got, _ := strings2.Parse(input, strings2.ParserDelimiters{'-', ' ', '.'})
 
 		// '_' is not a delimiter. CamelCase is on by default.
 		// "hello_world": all lower. No case change.
 		// Result: Single word.
 
-		expected := []strings2.Word{strings2.ExactCaseWord("hello_world")} // Classifies as Exact because '_' is not letter, so isAllLower=false?
-		// Wait, classify logic:
-		// '_' is not Letter.
-		// isAllLower check: !unicode.IsLower(r) && unicode.IsLetter(r)
-		// '_' fails IsLetter, so it doesn't flip isAllLower to false.
-		// So isAllLower stays true?
-		// Let's re-read classify:
-		// isAllLower = true
-		// Loop:
-		//   if !IsLower(r) && IsLetter(r) -> isAllLower = false.
-		//   '_': IsLetter=false.
-		// End loop.
-		// isAllLower is still true.
-		// So it should be SingleCaseWord.
-
-		expected = []strings2.Word{strings2.SingleCaseWord("hello_world")}
+		expected := []strings2.Word{strings2.SingleCaseWord("hello_world")}
 
 		if !reflect.DeepEqual(got, expected) {
 			t.Errorf("Parse() = %#v, want %#v", got, expected)
@@ -177,7 +162,7 @@ func TestParse_Options(t *testing.T) {
 
 	t.Run("Custom Delimiter", func(t *testing.T) {
 		input := "hello|world"
-		got, _ := strings2.Parse(input, strings2.ParserDelimiters('|'))
+		got, _ := strings2.Parse(input, strings2.ParserDelimiters{'|'})
 		expected := []strings2.Word{
 			strings2.SingleCaseWord("hello"),
 			strings2.SingleCaseWord("world"),
