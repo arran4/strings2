@@ -7,6 +7,7 @@ import (
 
 // Parser is a configurable string parser.
 type Parser struct {
+	// SmartAcronyms enables intelligent acronym detection (e.g. treating all-caps words as AcronymWord).
 	SmartAcronyms bool
 
 	// Delimiters is a list of characters that can be used as word separators.
@@ -97,27 +98,7 @@ func Parse(input string, opts ...ParserOption) ([]Word, error) {
 
 	// Default CamelCase splitter if not provided but enabled
 	if p.IsNewSubPart == nil && p.SplitCamelCase {
-		p.IsNewSubPart = func(pos int, runes []rune) bool {
-			if pos == 0 {
-				return false
-			}
-			r := runes[pos]
-			prev := runes[pos-1]
-
-			// Case 1: lower -> Upper
-			if unicode.IsLower(prev) && unicode.IsUpper(r) {
-				return true
-			}
-
-			// Case 2: Upper -> Upper -> lower (e.g. PDFLoader, split at L)
-			if pos+1 < len(runes) {
-				next := runes[pos+1]
-				if unicode.IsUpper(prev) && unicode.IsUpper(r) && unicode.IsLower(next) {
-					return true
-				}
-			}
-			return false
-		}
+		p.IsNewSubPart = DefaultSplitCamelCase
 	}
 
 	parts := p.split(input)
@@ -128,6 +109,30 @@ func Parse(input string, opts ...ParserOption) ([]Word, error) {
 	}
 
 	return words, nil
+}
+
+// DefaultSplitCamelCase is the default implementation for checking CamelCase transitions.
+// It detects transitions from lower to upper case, and sequence of upper cases followed by lower case.
+func DefaultSplitCamelCase(pos int, runes []rune) bool {
+	if pos == 0 {
+		return false
+	}
+	r := runes[pos]
+	prev := runes[pos-1]
+
+	// Case 1: lower -> Upper
+	if unicode.IsLower(prev) && unicode.IsUpper(r) {
+		return true
+	}
+
+	// Case 2: Upper -> Upper -> lower (e.g. PDFLoader, split at L)
+	if pos+1 < len(runes) {
+		next := runes[pos+1]
+		if unicode.IsUpper(prev) && unicode.IsUpper(r) && unicode.IsLower(next) {
+			return true
+		}
+	}
+	return false
 }
 
 func detectPrimaryDelimiter(input string, delimiters []rune) rune {
@@ -174,9 +179,7 @@ func (p *Parser) split(input string) []string {
 
 	if start < len(runes) {
 		parts = append(parts, string(runes[start:]))
-	} else if start == len(runes) && (p.IsDelimiter != nil && p.IsDelimiter(runes[len(runes)-1])) {
-         // If ends with delimiter, ignoring empty trailing part usually desired
-    }
+	}
 
 	return parts
 }
