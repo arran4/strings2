@@ -25,8 +25,8 @@ func (p BasePart) String() string {
 func (p BasePart) SubParts() []SubPart { return p.Subs }
 
 // Concrete Part types
-type WordPart struct { BasePart }
-type SeparatorPart struct { BasePart }
+type WordPart struct{ BasePart }
+type SeparatorPart struct{ BasePart }
 
 // Partitioner defines a function that groups SubParts into Parts.
 type Partitioner func([]SubPart) []Part

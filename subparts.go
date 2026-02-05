@@ -19,18 +19,18 @@ type BaseSubPart struct {
 	Val rune
 }
 
-func (b BaseSubPart) Rune() rune { return b.Val }
-func (b BaseSubPart) IsDigit() bool { return unicode.IsDigit(b.Val) }
+func (b BaseSubPart) Rune() rune     { return b.Val }
+func (b BaseSubPart) IsDigit() bool  { return unicode.IsDigit(b.Val) }
 func (b BaseSubPart) IsLetter() bool { return unicode.IsLetter(b.Val) }
-func (b BaseSubPart) IsUpper() bool { return unicode.IsUpper(b.Val) }
-func (b BaseSubPart) IsLower() bool { return unicode.IsLower(b.Val) }
-func (b BaseSubPart) IsSpace() bool { return unicode.IsSpace(b.Val) }
+func (b BaseSubPart) IsUpper() bool  { return unicode.IsUpper(b.Val) }
+func (b BaseSubPart) IsLower() bool  { return unicode.IsLower(b.Val) }
+func (b BaseSubPart) IsSpace() bool  { return unicode.IsSpace(b.Val) }
 func (b BaseSubPart) IsSymbol() bool { return !b.IsDigit() && !b.IsLetter() && !b.IsSpace() }
 
-type LetterSubPart struct { BaseSubPart }
-type DigitSubPart struct { BaseSubPart }
-type SpaceSubPart struct { BaseSubPart }
-type SymbolSubPart struct { BaseSubPart }
+type LetterSubPart struct{ BaseSubPart }
+type DigitSubPart struct{ BaseSubPart }
+type SpaceSubPart struct{ BaseSubPart }
+type SymbolSubPart struct{ BaseSubPart }
 
 // Stats contains statistics about the scanned string.
 type Stats struct {

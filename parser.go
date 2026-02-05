@@ -42,6 +42,7 @@ type ParserOption interface {
 }
 
 type funcParserOption func(*ParserConfig)
+
 func (f funcParserOption) Apply(p *ParserConfig) { f(p) }
 
 // WithPartitioner sets a specific partitioner strategy.

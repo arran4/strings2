@@ -220,25 +220,25 @@ func TestCircularConsistency(t *testing.T) {
 // TestInternalFlagsConsistency ensures that options set flags that are internally consistent
 // or that conflicting flags are handled deterministically (Meta Data logic).
 func TestInternalFlagsConsistency(t *testing.T) {
-    // This tests the logic inside ToFormattedCase that derives internal flags from CaseMode
+	// This tests the logic inside ToFormattedCase that derives internal flags from CaseMode
 	// We can't access local variables inside ToFormattedCase, but we can verify the outcome
 	// matches the expected behavior of those flags.
 
-    // Case 1: CMScreaming sets cfg.screaming = true.
-    // SingleCaseWord should be Uppercased.
-    t.Run("CMScreaming implies screaming", func(t *testing.T) {
-        res := ToFormattedCase([]Word{SingleCaseWord("hello")}, OptionCaseMode(CMScreaming))
-        if res != "HELLO" {
-             t.Errorf("CMScreaming did not result in screaming output: %q", res)
-        }
-    })
+	// Case 1: CMScreaming sets cfg.screaming = true.
+	// SingleCaseWord should be Uppercased.
+	t.Run("CMScreaming implies screaming", func(t *testing.T) {
+		res := ToFormattedCase([]Word{SingleCaseWord("hello")}, OptionCaseMode(CMScreaming))
+		if res != "HELLO" {
+			t.Errorf("CMScreaming did not result in screaming output: %q", res)
+		}
+	})
 
-    // Case 2: CMWhispering implies whispering.
-    // SingleCaseWord should be Lowercased (even if input is upper).
-    t.Run("CMWhispering implies whispering", func(t *testing.T) {
-        res := ToFormattedCase([]Word{SingleCaseWord("HELLO")}, OptionCaseMode(CMWhispering))
-        if res != "hello" {
-             t.Errorf("CMWhispering did not result in whispering output: %q", res)
-        }
-    })
+	// Case 2: CMWhispering implies whispering.
+	// SingleCaseWord should be Lowercased (even if input is upper).
+	t.Run("CMWhispering implies whispering", func(t *testing.T) {
+		res := ToFormattedCase([]Word{SingleCaseWord("HELLO")}, OptionCaseMode(CMWhispering))
+		if res != "hello" {
+			t.Errorf("CMWhispering did not result in whispering output: %q", res)
+		}
+	})
 }
