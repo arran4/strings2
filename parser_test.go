@@ -131,13 +131,35 @@ func TestParse_Options(t *testing.T) {
 		}
 	})
 
-	t.Run("Restricted Format", func(t *testing.T) {
+	t.Run("Disable SnakeCase", func(t *testing.T) {
 		input := "hello_world" // Snake
-		// Allow only Camel
-		got, _ := strings2.Parse(input, strings2.ParserAllowedFormats(strings2.FormatCamelCase))
-		// Should detect Unknown or fail to match Snake logic.
-		// Fallback to single string.
-		// "hello_world" -> SingleCaseWord (all lower letters)
+		// Disable SnakeCase detection
+		got, _ := strings2.Parse(input, strings2.ParserSnakeCase(false))
+
+		// Should NOT detect SnakeCase.
+		// "hello_world" -> SingleCaseWord (all lower letters + underscore treated as normal char if not handling separator?)
+		// Wait, classify logic:
+		// "hello_world" -> isAllLower?
+		// unicode.IsLetter('_') is false.
+		// So isAllLower will be false?
+		// "hello_world" -> ExactCaseWord.
+
+		// Let's verify classify logic in parser.go:
+		// for i, r := range runes {
+		//   if !unicode.IsUpper(r) && unicode.IsLetter(r) { isAllUpper = false }
+		//   if !unicode.IsLower(r) && unicode.IsLetter(r) { isAllLower = false }
+		// }
+		// '_' is not Letter.
+		// So if input is "hello_world":
+		// 'h': Lower, Letter -> ok
+		// '_': Not Letter. Doesn't trigger !IsLower check because of IsLetter check.
+		// So isAllLower remains true?
+
+		// Let's check:
+		// if !unicode.IsLower(r) && unicode.IsLetter(r)
+		// '_' is not letter, so condition is false.
+
+		// So "hello_world" should be SingleCaseWord.
 
 		expected := []strings2.Word{strings2.SingleCaseWord("hello_world")}
 

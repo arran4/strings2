@@ -21,19 +21,17 @@ const (
 
 // Parser is a configurable string parser.
 type Parser struct {
-	AllowedFormats []Format
-	SmartAcronyms  bool
+	SmartAcronyms bool
+
+	// Feature flags
+	CamelCase bool
+	SnakeCase bool
+	KebabCase bool
+	Sentence  bool
 }
 
 // ParserOption defines a function to configure the Parser.
 type ParserOption func(*Parser)
-
-// ParserAllowedFormats sets the allowed formats for detection.
-func ParserAllowedFormats(formats ...Format) ParserOption {
-	return func(p *Parser) {
-		p.AllowedFormats = formats
-	}
-}
 
 // ParserSmartAcronyms enables intelligent acronym detection (e.g. treating all-caps words as AcronymWord).
 func ParserSmartAcronyms(enabled bool) ParserOption {
@@ -42,10 +40,42 @@ func ParserSmartAcronyms(enabled bool) ParserOption {
 	}
 }
 
+// ParserCamelCase enables or disables CamelCase and PascalCase detection.
+func ParserCamelCase(enabled bool) ParserOption {
+	return func(p *Parser) {
+		p.CamelCase = enabled
+	}
+}
+
+// ParserSnakeCase enables or disables SnakeCase detection (including ScreamingSnakeCase).
+func ParserSnakeCase(enabled bool) ParserOption {
+	return func(p *Parser) {
+		p.SnakeCase = enabled
+	}
+}
+
+// ParserKebabCase enables or disables KebabCase detection.
+func ParserKebabCase(enabled bool) ParserOption {
+	return func(p *Parser) {
+		p.KebabCase = enabled
+	}
+}
+
+// ParserSentence enables or disables Sentence detection.
+func ParserSentence(enabled bool) ParserOption {
+	return func(p *Parser) {
+		p.Sentence = enabled
+	}
+}
+
 // Parse parses the input string into a slice of Words based on detected or provided configuration.
 func Parse(input string, opts ...ParserOption) ([]Word, error) {
 	p := &Parser{
 		SmartAcronyms: true,
+		CamelCase:     true,
+		SnakeCase:     true,
+		KebabCase:     true,
+		Sentence:      true,
 	}
 	for _, opt := range opts {
 		opt(p)
@@ -64,59 +94,31 @@ func Parse(input string, opts ...ParserOption) ([]Word, error) {
 }
 
 func (p *Parser) detectFormat(input string) Format {
-	if len(p.AllowedFormats) > 0 {
-		for _, f := range p.AllowedFormats {
-			if p.matchesFormat(input, f) {
-				return f
-			}
-		}
-		// If explicit formats are allowed but none match, what to do?
-		// Maybe fallback to unknown or try default?
-		// Assuming we return Unknown if no match found.
-		return FormatUnknown
-	}
-
-	if strings.Contains(input, "_") {
+	if p.SnakeCase && strings.Contains(input, "_") {
 		if input == strings.ToUpper(input) {
 			return FormatScreamingSnakeCase
 		}
 		return FormatSnakeCase
 	}
-	if strings.Contains(input, "-") {
+	if p.KebabCase && strings.Contains(input, "-") {
 		return FormatKebabCase
 	}
-	if strings.Contains(input, " ") {
+	if p.Sentence && strings.Contains(input, " ") {
 		return FormatSentence
 	}
 	if input == "" {
 		return FormatUnknown
 	}
 
-	firstRune, _ := utf8.DecodeRuneInString(input)
-	if unicode.IsUpper(firstRune) {
-		return FormatPascalCase
+	if p.CamelCase {
+		firstRune, _ := utf8.DecodeRuneInString(input)
+		if unicode.IsUpper(firstRune) {
+			return FormatPascalCase
+		}
+		return FormatCamelCase
 	}
-	return FormatCamelCase
-}
 
-func (p *Parser) matchesFormat(input string, f Format) bool {
-	switch f {
-	case FormatSnakeCase:
-		return strings.Contains(input, "_") && input != strings.ToUpper(input)
-	case FormatScreamingSnakeCase:
-		return strings.Contains(input, "_") && input == strings.ToUpper(input)
-	case FormatKebabCase:
-		return strings.Contains(input, "-")
-	case FormatSentence:
-		return strings.Contains(input, " ")
-	case FormatPascalCase:
-		r, _ := utf8.DecodeRuneInString(input)
-		return unicode.IsUpper(r) && !strings.ContainsAny(input, "_- ")
-	case FormatCamelCase:
-		r, _ := utf8.DecodeRuneInString(input)
-		return unicode.IsLower(r) && !strings.ContainsAny(input, "_- ")
-	}
-	return false
+	return FormatUnknown
 }
 
 func (p *Parser) split(input string, format Format) []string {
