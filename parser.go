@@ -11,7 +11,9 @@ func Parse(input string, opts ...ParserOption) ([]Word, error) {
 	// Level 5: Scan
 	subs, stats := StringToSubParts(input)
 
-	p := &ParserConfig{}
+	p := &ParserConfig{
+		SmartAcronyms: true,
+	}
 	for _, opt := range opts {
 		opt.Apply(p)
 	}
@@ -26,14 +28,15 @@ func Parse(input string, opts ...ParserOption) ([]Word, error) {
 	parts := SubPartsToParts(subs, partitioner)
 
 	// Level 3: Words
-	words := PartsToWords(parts)
+	words := PartsToWords(parts, p)
 
 	return words, nil
 }
 
 // ParserConfig holds configuration for the parsing pipeline.
 type ParserConfig struct {
-	Partitioner Partitioner
+	Partitioner   Partitioner
+	SmartAcronyms bool
 }
 
 // ParserOption configures the parser.
@@ -52,18 +55,17 @@ func WithPartitioner(pt Partitioner) ParserOption {
 	})
 }
 
+// WithSmartAcronyms enables or disables smart acronym detection.
+func WithSmartAcronyms(enabled bool) ParserOption {
+	return funcParserOption(func(p *ParserConfig) {
+		p.SmartAcronyms = enabled
+	})
+}
+
 // DetectPartitioner uses stats to guess the best partitioner.
 func DetectPartitioner(stats Stats) Partitioner {
 	// Heuristic:
-	// If underscores > 0, likely SnakeCase
-	if stats.SymbolCounts['_'] > 0 {
-		return SnakeCasePartitioner
-	}
-	// If hyphens > 0, likely KebabCase
-	if stats.SymbolCounts['-'] > 0 {
-		return KebabCasePartitioner
-	}
-	// If spaces > 0, likely Sentence
+	// If spaces > 0, likely Sentence (Sentence usually beats Kebab/Snake if mixed)
 	if stats.Spaces > 0 {
 		return func(subs []SubPart) []Part {
 			// Space partitioner
@@ -85,22 +87,30 @@ func DetectPartitioner(stats Stats) Partitioner {
 			return parts
 		}
 	}
+	// If underscores > 0, likely SnakeCase
+	if stats.SymbolCounts['_'] > 0 {
+		return SnakeCasePartitioner
+	}
+	// If hyphens > 0, likely KebabCase
+	if stats.SymbolCounts['-'] > 0 {
+		return KebabCasePartitioner
+	}
 
 	// Default to CamelCase
 	return CamelCasePartitioner
 }
 
 // PartsToWords converts Parts to Words using classification logic.
-func PartsToWords(parts []Part) []Word {
+func PartsToWords(parts []Part, config *ParserConfig) []Word {
 	var words []Word
 	for _, part := range parts {
-		words = append(words, ClassifyPart(part))
+		words = append(words, ClassifyPart(part, config))
 	}
 	return words
 }
 
 // ClassifyPart converts a Part into a Word.
-func ClassifyPart(part Part) Word {
+func ClassifyPart(part Part, config *ParserConfig) Word {
 	s := part.String()
 	if s == "" {
 		return ExactCaseWord("")
@@ -134,7 +144,13 @@ func ClassifyPart(part Part) Word {
 	}
 
 	if isAllUpper {
-		if len(runes) > 1 {
+		// Use SmartAcronyms config or default
+		smartAcronyms := true
+		if config != nil {
+			smartAcronyms = config.SmartAcronyms
+		}
+
+		if smartAcronyms && len(runes) > 1 {
 			return AcronymWord(s)
 		}
 		return UpperCaseWord(s)
@@ -156,17 +172,17 @@ func ClassifyPart(part Part) Word {
 func ParseSnakeCase(input string) []Word {
 	subs, _ := StringToSubParts(input)
 	parts := SubPartsToParts(subs, SnakeCasePartitioner)
-	return PartsToWords(parts)
+	return PartsToWords(parts, nil)
 }
 
 func ParseCamelCase(input string) []Word {
 	subs, _ := StringToSubParts(input)
 	parts := SubPartsToParts(subs, CamelCasePartitioner)
-	return PartsToWords(parts)
+	return PartsToWords(parts, nil)
 }
 
 func ParseKebabCase(input string) []Word {
 	subs, _ := StringToSubParts(input)
 	parts := SubPartsToParts(subs, KebabCasePartitioner)
-	return PartsToWords(parts)
+	return PartsToWords(parts, nil)
 }
