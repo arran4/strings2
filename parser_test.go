@@ -131,7 +131,7 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name: "Dash doesn't break (lossy, default)",
+			name:  "Dash doesn't break (lossy, default)",
 			input: "good-doers",
 			// KebabCase partitioner splits on dash
 			// If we use auto-detect, dash is a delimiter.
@@ -141,11 +141,11 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name: "Dash passed through as partition (lossless)",
+			name:  "Dash passed through as partition (lossless)",
 			input: "good-doers",
 			opts: []any{
 				strings2.NewPartitioner(strings2.PartitionerConfig{
-					Delimiters: map[rune]bool{'-': true},
+					Delimiters:  map[rune]bool{'-': true},
 					PreserveSep: true,
 				}),
 			},

@@ -62,7 +62,7 @@ func TestCircularRestoration(t *testing.T) {
 			formatFunc: func(words []strings2.Word, opts ...strings2.Option) (string, error) {
 				return strings2.ToSnakeCase(words, opts...)
 			},
-			formatDelim:      "_",
+			formatDelim: "_",
 		},
 	}
 
