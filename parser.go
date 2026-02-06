@@ -11,19 +11,23 @@ import (
 // opts can be:
 // - ParserOption interface
 // - Partitioner function
+// - PartitionerConfig
 // - ParserSmartAcronyms bool
 func Parse(input string, opts ...any) ([]Word, error) {
 	// Level 5: Scan
 	subs, stats := StringToSubParts(input)
 
 	p := &ParserConfig{
-		SmartAcronyms: true,
+		SmartAcronyms:   true,
+		NumberSplitting: false,
 	}
 
 	for _, opt := range opts {
 		switch o := opt.(type) {
 		case Partitioner:
 			p.Partitioner = o
+		case PartitionerConfig:
+			p.Partitioner = NewPartitioner(o)
 		case ParserOption:
 			o.Apply(p)
 		}
@@ -33,7 +37,7 @@ func Parse(input string, opts ...any) ([]Word, error) {
 	// If partitioner is not set, try to detect
 	partitioner := p.Partitioner
 	if partitioner == nil {
-		partitioner = DetectPartitioner(stats)
+		partitioner = DetectPartitioner(stats, p)
 	}
 
 	parts := SubPartsToParts(subs, partitioner)
@@ -51,6 +55,8 @@ type ParserConfig struct {
 	// should be treated as AcronymWord instead of UpperCaseWord.
 	// Defaults to true.
 	SmartAcronyms bool
+	// NumberSplitting controls whether to split on letter-digit boundaries.
+	NumberSplitting bool
 }
 
 // ParserOption configures the parser.
@@ -84,42 +90,49 @@ func WithSmartAcronyms(enabled bool) ParserOption {
 	})
 }
 
+// WithNumberSplitting enables or disables splitting on letter-digit boundaries.
+func WithNumberSplitting(enabled bool) ParserOption {
+	return funcParserOption(func(p *ParserConfig) {
+		p.NumberSplitting = enabled
+	})
+}
+
 // DetectPartitioner uses stats to guess the best partitioner.
-func DetectPartitioner(stats Stats) Partitioner {
-	// Heuristic:
-	// If spaces > 0, likely Sentence (Sentence usually beats Kebab/Snake if mixed)
+// config is optional, if provided it uses settings like NumberSplitting.
+func DetectPartitioner(stats Stats, config ...*ParserConfig) Partitioner {
+	delimiters := make(map[rune]bool)
 	if stats.Spaces > 0 {
-		return func(subs []SubPart) []Part {
-			// Space partitioner
-			var parts []Part
-			var current []SubPart
-			for _, s := range subs {
-				if s.IsSpace() {
-					if len(current) > 0 {
-						parts = append(parts, &WordPart{BasePart{Subs: current}})
-						current = nil
-					}
-				} else {
-					current = append(current, s)
-				}
-			}
-			if len(current) > 0 {
-				parts = append(parts, &WordPart{BasePart{Subs: current}})
-			}
-			return parts
-		}
-	}
-	// If underscores > 0, likely SnakeCase
-	if stats.SymbolCounts['_'] > 0 {
-		return SnakeCasePartitioner
-	}
-	// If hyphens > 0, likely KebabCase
-	if stats.SymbolCounts['-'] > 0 {
-		return KebabCasePartitioner
+		delimiters[' '] = true
 	}
 
-	// Default to CamelCase
-	return CamelCasePartitioner
+	// Add known delimiters if present
+	known := []rune{'_', '-', '+', '/', '\\', '|', ',', ';', ':'}
+	for _, r := range known {
+		if stats.SymbolCounts[r] > 0 {
+			delimiters[r] = true
+		}
+	}
+
+	// Check for dots.
+	// If we have spaces, dots might be punctuation (end of sentence).
+	// If no spaces, dots are likely delimiters (user.id).
+	if stats.SymbolCounts['.'] > 0 {
+		if stats.Spaces == 0 {
+			// likely delimiter
+			delimiters['.'] = true
+		}
+	}
+
+	splitNumber := false
+	if len(config) > 0 && config[0] != nil {
+		splitNumber = config[0].NumberSplitting
+	}
+
+	return NewPartitioner(PartitionerConfig{
+		Delimiters:  delimiters,
+		SplitCamel:  true,
+		SplitNumber: splitNumber,
+	})
 }
 
 // PartsToWords converts Parts to Words using classification logic.
@@ -134,6 +147,11 @@ func PartsToWords(parts []Part, config *ParserConfig) []Word {
 // ClassifyPart converts a Part into a Word.
 func ClassifyPart(part Part, config *ParserConfig) Word {
 	s := part.String()
+	// Separator handling: if we have SeparatorPart, we might return it as a SeparatorWord?
+	if _, ok := part.(*SeparatorPart); ok {
+		return SeparatorWord(s)
+	}
+
 	if s == "" {
 		return ExactCaseWord("")
 	}
@@ -191,20 +209,28 @@ func ClassifyPart(part Part, config *ParserConfig) Word {
 
 // Level 1 / 2 Helpers
 
-func ParseSnakeCase(input string) []Word {
-	subs, _ := StringToSubParts(input)
-	parts := SubPartsToParts(subs, SnakeCasePartitioner)
-	return PartsToWords(parts, nil)
+func ParseSnakeCase(input string, opts ...any) ([]Word, error) {
+	// Snake case implies split by underscore.
+	// Users might want to override this or add other options.
+	// But essentially we want to enforce the SnakeCasePartitioner.
+
+	// We can reuse Parse logic but force the partitioner?
+
+	// Default options for SnakeCase
+	combinedOpts := []any{SnakeCasePartitioner}
+	combinedOpts = append(combinedOpts, opts...)
+
+	return Parse(input, combinedOpts...)
 }
 
-func ParseCamelCase(input string) []Word {
-	subs, _ := StringToSubParts(input)
-	parts := SubPartsToParts(subs, CamelCasePartitioner)
-	return PartsToWords(parts, nil)
+func ParseCamelCase(input string, opts ...any) ([]Word, error) {
+	combinedOpts := []any{CamelCasePartitioner}
+	combinedOpts = append(combinedOpts, opts...)
+	return Parse(input, combinedOpts...)
 }
 
-func ParseKebabCase(input string) []Word {
-	subs, _ := StringToSubParts(input)
-	parts := SubPartsToParts(subs, KebabCasePartitioner)
-	return PartsToWords(parts, nil)
+func ParseKebabCase(input string, opts ...any) ([]Word, error) {
+	combinedOpts := []any{KebabCasePartitioner}
+	combinedOpts = append(combinedOpts, opts...)
+	return Parse(input, combinedOpts...)
 }

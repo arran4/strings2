@@ -11,7 +11,8 @@ func ExampleToCamelCase() {
 		strings2.SingleCaseWord("hello"),
 		strings2.SingleCaseWord("world"),
 	}
-	fmt.Println(strings2.ToCamelCase(words))
+	res, _ := strings2.ToCamelCase(words)
+	fmt.Println(res)
 	// Output: helloWorld
 }
 
@@ -20,7 +21,8 @@ func ExampleToPascalCase() {
 		strings2.SingleCaseWord("hello"),
 		strings2.SingleCaseWord("world"),
 	}
-	fmt.Println(strings2.ToPascalCase(words))
+	res, _ := strings2.ToPascalCase(words)
+	fmt.Println(res)
 	// Output: HelloWorld
 }
 
@@ -29,7 +31,8 @@ func ExampleToKebabCase() {
 		strings2.SingleCaseWord("hello"),
 		strings2.SingleCaseWord("world"),
 	}
-	fmt.Println(strings2.ToKebabCase(words))
+	res, _ := strings2.ToKebabCase(words)
+	fmt.Println(res)
 	// Output: hello-world
 }
 
@@ -38,7 +41,8 @@ func ExampleToSnakeCase() {
 		strings2.SingleCaseWord("hello"),
 		strings2.SingleCaseWord("world"),
 	}
-	fmt.Println(strings2.ToSnakeCase(words))
+	res, _ := strings2.ToSnakeCase(words)
+	fmt.Println(res)
 	// Output: hello_world
 }
 

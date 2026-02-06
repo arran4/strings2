@@ -62,7 +62,7 @@ var benchWords = []Word{
 func BenchmarkToKebabCase(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		ToKebabCase(benchWords)
+		_, _ = ToKebabCase(benchWords)
 	}
 }
 
@@ -70,7 +70,7 @@ func BenchmarkToKebabCase_WithOptions(b *testing.B) {
 	b.ReportAllocs()
 	opts := []Option{OptionCaseMode(CMScreaming), OptionUpperIndicator("--")}
 	for i := 0; i < b.N; i++ {
-		ToKebabCase(benchWords, opts...)
+		_, _ = ToKebabCase(benchWords, opts...)
 	}
 }
 
@@ -83,7 +83,7 @@ func BenchmarkToKebabCase_WithManyOptions(b *testing.B) {
 		OptionFirstLower(),
 	}
 	for i := 0; i < b.N; i++ {
-		ToKebabCase(benchWords, opts...)
+		_, _ = ToKebabCase(benchWords, opts...)
 	}
 }
 

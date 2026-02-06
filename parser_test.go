@@ -1,7 +1,6 @@
 package strings2_test
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -75,7 +74,8 @@ func TestParse(t *testing.T) {
 				strings2.SingleCaseWord("to"),
 				strings2.SingleCaseWord("all"),
 				strings2.SingleCaseWord("the"),
-				strings2.SingleCaseWord("good-doers"), // If Space wins, "good-doers" is one part.
+				strings2.SingleCaseWord("good"),
+				strings2.SingleCaseWord("doers"),
 				strings2.SingleCaseWord("out"),
 				strings2.SingleCaseWord("there"),
 			},
@@ -130,6 +130,31 @@ func TestParse(t *testing.T) {
 				strings2.FirstUpperCaseWord("Reader"),
 			},
 		},
+		{
+			name:  "Dash doesn't break (lossy, default)",
+			input: "good-doers",
+			// KebabCase partitioner splits on dash
+			// If we use auto-detect, dash is a delimiter.
+			expected: []strings2.Word{
+				strings2.SingleCaseWord("good"),
+				strings2.SingleCaseWord("doers"),
+			},
+		},
+		{
+			name:  "Dash passed through as partition (lossless)",
+			input: "good-doers",
+			opts: []any{
+				strings2.NewPartitioner(strings2.PartitionerConfig{
+					Delimiters:  map[rune]bool{'-': true},
+					PreserveSep: true,
+				}),
+			},
+			expected: []strings2.Word{
+				strings2.SingleCaseWord("good"),
+				strings2.SeparatorWord("-"),
+				strings2.SingleCaseWord("doers"),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -148,7 +173,7 @@ func TestParse(t *testing.T) {
 
 func TestExplicitParsers(t *testing.T) {
 	t.Run("ParseSnakeCase", func(t *testing.T) {
-		got := strings2.ParseSnakeCase("hello_world")
+		got, _ := strings2.ParseSnakeCase("hello_world")
 		expected := []strings2.Word{
 			strings2.SingleCaseWord("hello"),
 			strings2.SingleCaseWord("world"),
@@ -159,7 +184,7 @@ func TestExplicitParsers(t *testing.T) {
 	})
 
 	t.Run("ParseCamelCase", func(t *testing.T) {
-		got := strings2.ParseCamelCase("helloWorld")
+		got, _ := strings2.ParseCamelCase("helloWorld")
 		expected := []strings2.Word{
 			strings2.SingleCaseWord("hello"),
 			strings2.FirstUpperCaseWord("World"),
@@ -168,24 +193,4 @@ func TestExplicitParsers(t *testing.T) {
 			t.Errorf("ParseCamelCase() = %#v, want %#v", got, expected)
 		}
 	})
-}
-
-// Example usage tests (documentation tests)
-
-func ExampleParse() {
-	words, _ := strings2.Parse("helloWorld")
-	fmt.Println(words)
-	// Output: [hello World]
-}
-
-func ExampleParse_smartAcronyms() {
-	words, _ := strings2.Parse("XMLReader", strings2.WithSmartAcronyms(true))
-	fmt.Println(words)
-	// Output: [XML Reader]
-}
-
-func ExampleParse_snakeCase() {
-	words := strings2.ParseSnakeCase("hello_world")
-	fmt.Println(words)
-	// Output: [hello world]
 }

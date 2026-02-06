@@ -53,65 +53,89 @@ func KebabCasePartitioner(subs []SubPart) []Part {
 
 // SplitByDelimiter is a helper to split SubParts by a specific rune delimiter.
 func SplitByDelimiter(subs []SubPart, delim rune) []Part {
-	var parts []Part
-	var current []SubPart
-
-	for _, s := range subs {
-		if s.Rune() == delim {
-			if len(current) > 0 {
-				parts = append(parts, &WordPart{BasePart{Subs: current}})
-				current = nil
-			}
-			// We usually discard the delimiter in casing conversions, or make it a SeparatorPart?
-			// For "ToWords", we usually want the content.
-			// Let's discard for now, or maybe make it configurable?
-			// The user said "SubParts... count of things such as SpaceDelimiterCount...".
-			// But for "Parts", usually we want the words.
-		} else {
-			current = append(current, s)
-		}
-	}
-	if len(current) > 0 {
-		parts = append(parts, &WordPart{BasePart{Subs: current}})
-	}
-	return parts
+	return NewPartitioner(PartitionerConfig{
+		Delimiters: map[rune]bool{delim: true},
+	})(subs)
 }
 
 // CamelCasePartitioner splits on case transitions.
 func CamelCasePartitioner(subs []SubPart) []Part {
-	var parts []Part
-	var current []SubPart
+	return NewPartitioner(PartitionerConfig{
+		SplitCamel: true,
+	})(subs)
+}
 
-	for i, s := range subs {
-		// Transition check
-		isSplit := false
-		if i > 0 {
-			prev := subs[i-1]
+type PartitionerConfig struct {
+	Delimiters  map[rune]bool
+	SplitCamel  bool
+	SplitNumber bool
+	PreserveSep bool // If true, delimiters are returned as SeparatorPart instead of discarded
+}
 
-			// lower -> Upper
-			if prev.IsLower() && s.IsUpper() {
-				isSplit = true
+// NewPartitioner creates a partitioner with specific configuration.
+func NewPartitioner(cfg PartitionerConfig) Partitioner {
+	return func(subs []SubPart) []Part {
+		var parts []Part
+		var current []SubPart
+
+		for i, s := range subs {
+			// Check if current rune is a delimiter
+			if cfg.Delimiters != nil && cfg.Delimiters[s.Rune()] {
+				if len(current) > 0 {
+					parts = append(parts, &WordPart{BasePart{Subs: current}})
+					current = nil
+				}
+				if cfg.PreserveSep {
+					parts = append(parts, &SeparatorPart{BasePart{Subs: []SubPart{s}}})
+				}
+				continue
 			}
 
-			// Upper -> Upper -> lower (PDFLoader split at L)
-			if i+1 < len(subs) {
-				next := subs[i+1]
-				if prev.IsUpper() && s.IsUpper() && next.IsLower() {
-					isSplit = true
+			// Transition check
+			isSplit := false
+			if (cfg.SplitCamel || cfg.SplitNumber) && i > 0 && len(current) > 0 {
+				prev := subs[i-1]
+				// Note: if prev was delimiter, current is empty or started anew.
+				// We rely on current being non-empty to check transitions within a word chunk.
+
+				if cfg.SplitCamel {
+					// lower -> Upper
+					if prev.IsLower() && s.IsUpper() {
+						isSplit = true
+					}
+
+					// Upper -> Upper -> lower (PDFLoader split at L)
+					if i+1 < len(subs) {
+						next := subs[i+1]
+						if prev.IsUpper() && s.IsUpper() && next.IsLower() {
+							isSplit = true
+						}
+					}
+				}
+
+				if cfg.SplitNumber {
+					// Letter -> Digit -> Split.
+					// Digit -> Letter -> Split.
+					if prev.IsLetter() && s.IsDigit() {
+						isSplit = true
+					}
+					if prev.IsDigit() && s.IsLetter() {
+						isSplit = true
+					}
 				}
 			}
-		}
 
-		if isSplit {
-			if len(current) > 0 {
-				parts = append(parts, &WordPart{BasePart{Subs: current}})
-				current = nil
+			if isSplit {
+				if len(current) > 0 {
+					parts = append(parts, &WordPart{BasePart{Subs: current}})
+					current = nil
+				}
 			}
+			current = append(current, s)
 		}
-		current = append(current, s)
+		if len(current) > 0 {
+			parts = append(parts, &WordPart{BasePart{Subs: current}})
+		}
+		return parts
 	}
-	if len(current) > 0 {
-		parts = append(parts, &WordPart{BasePart{Subs: current}})
-	}
-	return parts
 }
