@@ -236,6 +236,8 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 				w = strings.ToUpper(w)
 			} else if cfg.whispering {
 				w = strings.ToLower(w)
+			} else if cfg.caseMode == CMAllTitle {
+				w = UpperCaseFirst(strings.ToLower(w))
 			}
 		case UpperCaseWord:
 			w = word.String()
