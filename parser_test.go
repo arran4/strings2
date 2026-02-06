@@ -75,7 +75,8 @@ func TestParse(t *testing.T) {
 				strings2.SingleCaseWord("to"),
 				strings2.SingleCaseWord("all"),
 				strings2.SingleCaseWord("the"),
-				strings2.SingleCaseWord("good-doers"), // If Space wins, "good-doers" is one part.
+				strings2.SingleCaseWord("good"),
+				strings2.SingleCaseWord("doers"),
 				strings2.SingleCaseWord("out"),
 				strings2.SingleCaseWord("there"),
 			},

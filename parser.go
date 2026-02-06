@@ -18,6 +18,7 @@ func Parse(input string, opts ...any) ([]Word, error) {
 
 	p := &ParserConfig{
 		SmartAcronyms: true,
+		NumberSplitting: false, // Default to false to preserve http200
 	}
 
 	for _, opt := range opts {
@@ -33,7 +34,7 @@ func Parse(input string, opts ...any) ([]Word, error) {
 	// If partitioner is not set, try to detect
 	partitioner := p.Partitioner
 	if partitioner == nil {
-		partitioner = DetectPartitioner(stats)
+		partitioner = DetectPartitioner(stats, p)
 	}
 
 	parts := SubPartsToParts(subs, partitioner)
@@ -51,6 +52,8 @@ type ParserConfig struct {
 	// should be treated as AcronymWord instead of UpperCaseWord.
 	// Defaults to true.
 	SmartAcronyms bool
+	// NumberSplitting controls whether to split on letter-digit boundaries.
+	NumberSplitting bool
 }
 
 // ParserOption configures the parser.
@@ -84,42 +87,45 @@ func WithSmartAcronyms(enabled bool) ParserOption {
 	})
 }
 
+// WithNumberSplitting enables or disables splitting on letter-digit boundaries.
+func WithNumberSplitting(enabled bool) ParserOption {
+	return funcParserOption(func(p *ParserConfig) {
+		p.NumberSplitting = enabled
+	})
+}
+
 // DetectPartitioner uses stats to guess the best partitioner.
-func DetectPartitioner(stats Stats) Partitioner {
-	// Heuristic:
-	// If spaces > 0, likely Sentence (Sentence usually beats Kebab/Snake if mixed)
+// config is optional, if provided it uses settings like NumberSplitting.
+func DetectPartitioner(stats Stats, config ...*ParserConfig) Partitioner {
+	delimiters := make(map[rune]bool)
 	if stats.Spaces > 0 {
-		return func(subs []SubPart) []Part {
-			// Space partitioner
-			var parts []Part
-			var current []SubPart
-			for _, s := range subs {
-				if s.IsSpace() {
-					if len(current) > 0 {
-						parts = append(parts, &WordPart{BasePart{Subs: current}})
-						current = nil
-					}
-				} else {
-					current = append(current, s)
-				}
-			}
-			if len(current) > 0 {
-				parts = append(parts, &WordPart{BasePart{Subs: current}})
-			}
-			return parts
-		}
-	}
-	// If underscores > 0, likely SnakeCase
-	if stats.SymbolCounts['_'] > 0 {
-		return SnakeCasePartitioner
-	}
-	// If hyphens > 0, likely KebabCase
-	if stats.SymbolCounts['-'] > 0 {
-		return KebabCasePartitioner
+		delimiters[' '] = true
 	}
 
-	// Default to CamelCase
-	return CamelCasePartitioner
+	// Add known delimiters if present
+	known := []rune{'_', '-', '+', '/', '\\', '|', ',', ';', ':'}
+	for _, r := range known {
+		if stats.SymbolCounts[r] > 0 {
+			delimiters[r] = true
+		}
+	}
+
+	// Check for dots.
+	// If we have spaces, dots might be punctuation (end of sentence).
+	// If no spaces, dots are likely delimiters (user.id).
+	if stats.SymbolCounts['.'] > 0 {
+		if stats.Spaces == 0 {
+			// likely delimiter
+			delimiters['.'] = true
+		}
+	}
+
+	splitNumber := false
+	if len(config) > 0 && config[0] != nil {
+		splitNumber = config[0].NumberSplitting
+	}
+
+	return NewPartitioner(delimiters, true, splitNumber)
 }
 
 // PartsToWords converts Parts to Words using classification logic.

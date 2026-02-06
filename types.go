@@ -215,10 +215,20 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 			if cfg.mixCaseSupport {
 				w = splitMixCase(w, cfg.delimiter)
 			}
+			if cfg.allUpper || cfg.screaming {
+				w = strings.ToUpper(w)
+			} else if cfg.allLower || cfg.whispering {
+				w = strings.ToLower(w)
+			}
 		case FirstUpperCaseWord:
 			w = word.String()
 			if cfg.mixCaseSupport {
 				w = splitMixCase(w, cfg.delimiter)
+			}
+			if cfg.allUpper || cfg.screaming {
+				w = strings.ToUpper(w)
+			} else if cfg.allLower || cfg.whispering {
+				w = strings.ToLower(w)
 			}
 		case AcronymWord:
 			w = word.String()
