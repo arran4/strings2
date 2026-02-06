@@ -66,10 +66,10 @@ func CamelCasePartitioner(subs []SubPart) []Part {
 }
 
 type PartitionerConfig struct {
-	Delimiters   map[rune]bool
-	SplitCamel   bool
-	SplitNumber  bool
-	PreserveSep  bool // If true, delimiters are returned as SeparatorPart instead of discarded
+	Delimiters  map[rune]bool
+	SplitCamel  bool
+	SplitNumber bool
+	PreserveSep bool // If true, delimiters are returned as SeparatorPart instead of discarded
 }
 
 // NewPartitioner creates a partitioner with specific configuration.

@@ -120,7 +120,7 @@ var comparisonTests = []TestCase{
 
 	// gobeam/stringy
 	{"ThisIsOne___messed up string. Can we Really Snake Case It?", "This_Is_One_messed_up_string_Can_we_Really_Snake_Case_It", "Snake", "gobeam"},
-    {"ThisIsOne___messed up string. Can we Really camel-case It ?##", "thisIsOneMessedUpStringCanWeReallyCamelCaseIt", "Camel", "gobeam"},
+	{"ThisIsOne___messed up string. Can we Really camel-case It ?##", "thisIsOneMessedUpStringCanWeReallyCamelCaseIt", "Camel", "gobeam"},
 }
 
 func getParseOptions(provider string) []any {
@@ -135,13 +135,6 @@ func getParseOptions(provider string) []any {
 		}))
 	} else if provider == "iancoleman" {
 		opts = append(opts, WithSmartAcronyms(false), WithNumberSplitting(true))
-	} else if provider == "searKing" {
-		// searKing seems to strip leading delimiters?
-		// "_my_field_name_2" -> "xMyFieldName2" (why x? Maybe empty word mapped to X?)
-		// Actually the test said: "_my_field_name_2" -> "xMyFieldName2".
-		// Our parser: _, my, field, name, 2.
-		// If we use SnakeCase partitioner it might help?
-		// For now let's try defaults.
 	}
 	return opts
 }

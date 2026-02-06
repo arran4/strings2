@@ -129,8 +129,8 @@ func DetectPartitioner(stats Stats, config ...*ParserConfig) Partitioner {
 	}
 
 	return NewPartitioner(PartitionerConfig{
-		Delimiters: delimiters,
-		SplitCamel: true,
+		Delimiters:  delimiters,
+		SplitCamel:  true,
 		SplitNumber: splitNumber,
 	})
 }

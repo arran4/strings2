@@ -29,17 +29,17 @@ func TestCircularRestoration(t *testing.T) {
 }
 
 func TestFromSentenceToSentence(t *testing.T) {
-    input := "Hello to all the good-doers out there"
+	input := "Hello to all the good-doers out there"
 
-    delims := map[rune]bool{' ': true, '-': true}
-    words, _ := strings2.Parse(input, strings2.PartitionerConfig{
-        Delimiters:  delims,
-        PreserveSep: true,
-    })
+	delims := map[rune]bool{' ': true, '-': true}
+	words, _ := strings2.Parse(input, strings2.PartitionerConfig{
+		Delimiters:  delims,
+		PreserveSep: true,
+	})
 
-    restored := strings2.ToFormattedCase(words, strings2.OptionDelimiter(""))
+	restored := strings2.ToFormattedCase(words, strings2.OptionDelimiter(""))
 
-    if restored != input {
-        t.Errorf("FromSentenceToSentence failed.\nInput:    %q\nRestored: %q", input, restored)
-    }
+	if restored != input {
+		t.Errorf("FromSentenceToSentence failed.\nInput:    %q\nRestored: %q", input, restored)
+	}
 }
