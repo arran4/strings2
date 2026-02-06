@@ -11,6 +11,7 @@ import (
 // opts can be:
 // - ParserOption interface
 // - Partitioner function
+// - PartitionerConfig
 // - ParserSmartAcronyms bool
 func Parse(input string, opts ...any) ([]Word, error) {
 	// Level 5: Scan
@@ -18,13 +19,15 @@ func Parse(input string, opts ...any) ([]Word, error) {
 
 	p := &ParserConfig{
 		SmartAcronyms:   true,
-		NumberSplitting: false, // Default to false to preserve http200
+		NumberSplitting: false,
 	}
 
 	for _, opt := range opts {
 		switch o := opt.(type) {
 		case Partitioner:
 			p.Partitioner = o
+		case PartitionerConfig:
+			p.Partitioner = NewPartitioner(o)
 		case ParserOption:
 			o.Apply(p)
 		}
@@ -125,7 +128,11 @@ func DetectPartitioner(stats Stats, config ...*ParserConfig) Partitioner {
 		splitNumber = config[0].NumberSplitting
 	}
 
-	return NewPartitioner(delimiters, true, splitNumber)
+	return NewPartitioner(PartitionerConfig{
+		Delimiters: delimiters,
+		SplitCamel: true,
+		SplitNumber: splitNumber,
+	})
 }
 
 // PartsToWords converts Parts to Words using classification logic.
@@ -140,6 +147,11 @@ func PartsToWords(parts []Part, config *ParserConfig) []Word {
 // ClassifyPart converts a Part into a Word.
 func ClassifyPart(part Part, config *ParserConfig) Word {
 	s := part.String()
+	// Separator handling: if we have SeparatorPart, we might return it as a SeparatorWord?
+	if _, ok := part.(*SeparatorPart); ok {
+		return SeparatorWord(s)
+	}
+
 	if s == "" {
 		return ExactCaseWord("")
 	}

@@ -31,11 +31,15 @@ type AcronymWord string
 // UpperCaseWord is a word that was originally all uppercase.
 type UpperCaseWord string
 
+// SeparatorWord is a delimiter or separator preserved from the input.
+type SeparatorWord string
+
 // String implementations
 func (w SingleCaseWord) String() string     { return strings.ToLower(string(w)) }
 func (w FirstUpperCaseWord) String() string { return UpperCaseFirst(strings.ToLower(string(w))) }
 func (w AcronymWord) String() string        { return string(w) }
 func (w UpperCaseWord) String() string      { return strings.ToUpper(string(w)) }
+func (w SeparatorWord) String() string      { return string(w) }
 
 func performCaseFirst(s string, fn func(rune) rune) (string, rune, bool) {
 	if s == "" {
@@ -250,6 +254,8 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 			} else {
 				w = strings.ToLower(w)
 			}
+		case SeparatorWord:
+			w = word.String()
 		default:
 			w = word.String()
 		}

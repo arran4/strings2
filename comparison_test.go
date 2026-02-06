@@ -129,7 +129,10 @@ func getParseOptions(provider string) []any {
 		delims := map[rune]bool{
 			' ': true, '_': true, '-': true, '?': true, '#': true, '.': true,
 		}
-		opts = append(opts, NewPartitioner(delims, true, false))
+		opts = append(opts, NewPartitioner(PartitionerConfig{
+			Delimiters: delims,
+			SplitCamel: true,
+		}))
 	} else if provider == "iancoleman" {
 		opts = append(opts, WithSmartAcronyms(false), WithNumberSplitting(true))
 	} else if provider == "searKing" {

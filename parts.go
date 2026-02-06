@@ -53,45 +53,52 @@ func KebabCasePartitioner(subs []SubPart) []Part {
 
 // SplitByDelimiter is a helper to split SubParts by a specific rune delimiter.
 func SplitByDelimiter(subs []SubPart, delim rune) []Part {
-	return NewPartitioner(map[rune]bool{delim: true}, false, false)(subs)
+	return NewPartitioner(PartitionerConfig{
+		Delimiters: map[rune]bool{delim: true},
+	})(subs)
 }
 
 // CamelCasePartitioner splits on case transitions.
 func CamelCasePartitioner(subs []SubPart) []Part {
-	return NewPartitioner(nil, true, false)(subs)
+	return NewPartitioner(PartitionerConfig{
+		SplitCamel: true,
+	})(subs)
 }
 
-// NewPartitioner creates a partitioner with specific delimiters and camel case splitting enabled.
-func NewPartitioner(delimiters map[rune]bool, splitCamel bool, splitNumber bool) Partitioner {
+type PartitionerConfig struct {
+	Delimiters   map[rune]bool
+	SplitCamel   bool
+	SplitNumber  bool
+	PreserveSep  bool // If true, delimiters are returned as SeparatorPart instead of discarded
+}
+
+// NewPartitioner creates a partitioner with specific configuration.
+func NewPartitioner(cfg PartitionerConfig) Partitioner {
 	return func(subs []SubPart) []Part {
 		var parts []Part
 		var current []SubPart
 
 		for i, s := range subs {
 			// Check if current rune is a delimiter
-			if delimiters != nil && delimiters[s.Rune()] {
+			if cfg.Delimiters != nil && cfg.Delimiters[s.Rune()] {
 				if len(current) > 0 {
 					parts = append(parts, &WordPart{BasePart{Subs: current}})
 					current = nil
 				}
-				// We discard delimiters
+				if cfg.PreserveSep {
+					parts = append(parts, &SeparatorPart{BasePart{Subs: []SubPart{s}}})
+				}
 				continue
 			}
 
-			// Transition check for CamelCase
+			// Transition check
 			isSplit := false
-			if (splitCamel || splitNumber) && i > 0 && len(current) > 0 {
+			if (cfg.SplitCamel || cfg.SplitNumber) && i > 0 && len(current) > 0 {
 				prev := subs[i-1]
-				// If prev was a delimiter, we effectively started a new word, so no split check needed based on transition from it?
-				// But we skipped it. So current[len-1] is the last NON-delimiter.
-				// However, `CamelCasePartitioner` logic uses `subs[i-1]`.
-				// If `subs[i-1]` was a delimiter, `len(current)` is 0 (handled above) OR we appended `s`.
-				// Wait, if `subs[i-1]` was delimiter, we did `continue`.
-				// So `current` is empty.
-				// If `current` is NOT empty, then `subs[i-1]` was NOT a delimiter (or we are in a run of characters).
-				// So we can safely use `prev`.
+				// Note: if prev was delimiter, current is empty or started anew.
+				// We rely on current being non-empty to check transitions within a word chunk.
 
-				if splitCamel {
+				if cfg.SplitCamel {
 					// lower -> Upper
 					if prev.IsLower() && s.IsUpper() {
 						isSplit = true
@@ -106,7 +113,7 @@ func NewPartitioner(delimiters map[rune]bool, splitCamel bool, splitNumber bool)
 					}
 				}
 
-				if splitNumber {
+				if cfg.SplitNumber {
 					// Letter -> Digit -> Split.
 					// Digit -> Letter -> Split.
 					if prev.IsLetter() && s.IsDigit() {
