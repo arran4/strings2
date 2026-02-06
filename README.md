@@ -31,6 +31,22 @@ words := []strings2.Word{
 }
 ```
 
+### Parsing
+
+The library includes a robust parser to convert strings into typed `Word` objects, distinguishing between acronyms, casing, and delimiters.
+
+```go
+// Auto-detect format and parse
+words, err := strings2.Parse("helloWorld")
+// Result: [SingleCaseWord("hello"), FirstUpperCaseWord("World")]
+
+// Parse specific format
+words = strings2.ParseSnakeCase("hello_world")
+
+// Configure parser
+words, err = strings2.Parse("N.E.W. World", strings2.ParserSmartAcronyms(true))
+```
+
 ### Case Conversion Functions
 
 ```go
