@@ -24,6 +24,24 @@ func TestCircularRestoration(t *testing.T) {
 			formatDelim: "",
 		},
 		{
+			name:  "Complex delimiters",
+			input: "user_name.with-mixed@delimiters",
+			partitionerCfg: strings2.PartitionerConfig{
+				Delimiters:  map[rune]bool{'_': true, '.': true, '-': true, '@': true},
+				PreserveSep: true,
+			},
+			formatDelim: "",
+		},
+		{
+			name:  "Consecutive delimiters",
+			input: "item1,,item2--item3",
+			partitionerCfg: strings2.PartitionerConfig{
+				Delimiters:  map[rune]bool{',': true, '-': true},
+				PreserveSep: true,
+			},
+			formatDelim: "",
+		},
+		{
 			name:  "Lossy conversion (eats separators)",
 			input: "Hello-world",
 			// No PreserveSep, so '-' is lost
