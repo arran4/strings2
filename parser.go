@@ -7,15 +7,31 @@ import (
 
 // Parse parses the input string into a slice of Words based on detection or provided options.
 // It follows the pipeline: String -> SubParts -> Parts -> Words.
-func Parse(input string, opts ...ParserOption) ([]Word, error) {
+//
+// opts can be:
+// - ParserOption interface
+// - Partitioner function
+// - ParserSmartAcronyms bool
+func Parse(input string, opts ...any) ([]Word, error) {
 	// Level 5: Scan
 	subs, stats := StringToSubParts(input)
 
 	p := &ParserConfig{
 		SmartAcronyms: true,
 	}
+
 	for _, opt := range opts {
-		opt.Apply(p)
+		switch o := opt.(type) {
+		case ParserOption:
+			o.Apply(p)
+		case Partitioner:
+			p.Partitioner = o
+		case ParserSmartAcronyms:
+			o.Apply(p)
+		}
+
+		// Also check if it implements ParserOption directly (if not caught by switch case above, though ParserOption case should cover it if interface match)
+		// But in Go, type switch cases on interface type will match if concrete type implements it.
 	}
 
 	// Level 4: Partition
@@ -36,6 +52,9 @@ func Parse(input string, opts ...ParserOption) ([]Word, error) {
 // ParserConfig holds configuration for the parsing pipeline.
 type ParserConfig struct {
 	Partitioner   Partitioner
+	// SmartAcronyms controls whether all-uppercase words (longer than 1 char)
+	// should be treated as AcronymWord instead of UpperCaseWord.
+	// Defaults to true.
 	SmartAcronyms bool
 }
 
@@ -47,6 +66,15 @@ type ParserOption interface {
 type funcParserOption func(*ParserConfig)
 
 func (f funcParserOption) Apply(p *ParserConfig) { f(p) }
+
+// ParserSmartAcronyms is a typed option for SmartAcronyms configuration.
+// It allows passing a boolean-like type directly to Parse.
+type ParserSmartAcronyms bool
+
+func (b ParserSmartAcronyms) Apply(p *ParserConfig) {
+	p.SmartAcronyms = bool(b)
+}
+
 
 // WithPartitioner sets a specific partitioner strategy.
 func WithPartitioner(pt Partitioner) ParserOption {
