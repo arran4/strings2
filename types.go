@@ -181,11 +181,28 @@ func OptionUpperIndicator(d string) Option {
 }
 
 // ToFormattedCase generates formatted case strings with the given options
+// Deprecated: Use WordsToFormattedCase
 func ToFormattedCase(words []Word, opts ...Option) string {
+	res, _ := WordsToFormattedCase(words, convertOptions(opts)...)
+	return res
+}
+
+func convertOptions(opts []Option) []any {
+	var out []any
+	for _, o := range opts {
+		out = append(out, o)
+	}
+	return out
+}
+
+// WordsToFormattedCase generates formatted case strings with the given options
+func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 	cfg := &caseConfig{delimiter: "-"}
 
 	for _, opt := range opts {
-		opt(cfg)
+		if o, ok := opt.(Option); ok {
+			o(cfg)
+		}
 	}
 
 	switch cfg.caseMode {
@@ -280,7 +297,66 @@ func ToFormattedCase(words []Word, opts ...Option) string {
 		final = LowerCaseFirst(final)
 	}
 
-	return final
+	return final, nil
+}
+
+// PartsToFormattedCase converts Parts to words then formats them.
+func PartsToFormattedCase(parts []Part, opts ...any) (string, error) {
+	// We need config to classify parts? Assuming defaults or passed via opts?
+	// ClassifyPart needs ParserConfig which comes from opts usually.
+
+	// Extract ParserConfig from opts or create default
+	p := &ParserConfig{
+		SmartAcronyms:   true,
+		NumberSplitting: false,
+	}
+	for _, opt := range opts {
+		if o, ok := opt.(ParserOption); ok {
+			o.Apply(p)
+		}
+	}
+
+	words := PartsToWords(parts, p)
+	return WordsToFormattedCase(words, opts...)
+}
+
+// ToFormattedCaseV2 converts string to formatted case (generic entry point).
+// Renaming to ToFormattedCase might conflict with deprecated one if signature differs.
+// Let's call it ToFormattedString for now or keep existing Parse -> Words -> Format flow helpers.
+// The user asked for "func ToFormatedCase(s string, ops...any) (string, error)"
+func ToFormattedString(s string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptionsAny(opts)
+	words, err := Parse(s, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	// Re-merge opts for formatter? Or separate?
+	// WordsToFormattedCase takes ...any, so we can pass fmtOpts
+	return WordsToFormattedCase(words, fmtOpts...)
+}
+
+// FromFormattedString is alias for ToFormattedString?
+// "FromFormattedCaseToFormatedCase" -> string to string.
+func FromFormattedString(s string, opts ...any) (string, error) {
+	return ToFormattedString(s, opts...)
+}
+
+// Helper to split ...any into parse opts and format opts (returning as []any for flexibility)
+func separateOptionsAny(opts []any) ([]any, []any) {
+	var parseOpts []any
+	var fmtOpts []any
+
+	for _, o := range opts {
+		switch v := o.(type) {
+		case Option:
+			fmtOpts = append(fmtOpts, v)
+		case ParserOption, Partitioner, PartitionerConfig:
+			parseOpts = append(parseOpts, v)
+		default:
+			// Assume it might be for formatter if unknown? Or ignore?
+		}
+	}
+	return parseOpts, fmtOpts
 }
 
 // Helper function to split words in mixed case
@@ -297,47 +373,25 @@ func splitMixCase(input, delimiter string) string {
 }
 
 // ToKebabCase converts words into kebab-case format.
-//
-// Options:
-//   - Delimiter: Defaults to "-".
-//   - DoubleDelimiter: Uses a double "-" to signify reused delimiters.
 func ToKebabCase(words []Word, opts ...Option) string {
-	newOpts := make([]Option, 0, len(opts)+1)
-	newOpts = append(newOpts, opts...)
-	newOpts = append(newOpts, OptionDelimiter("-"))
-	return ToFormattedCase(words, newOpts...)
+	res, _ := WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter("-"))...)
+	return res
 }
 
 // ToSnakeCase converts words into snake_case format.
-//
-// Options:
-//   - Delimiter: Defaults to "_".
-//   - Screaming: Converts the entire output to upper case (SCREAMING_SNAKE_CASE).
 func ToSnakeCase(words []Word, opts ...Option) string {
-	newOpts := make([]Option, 0, len(opts)+1)
-	newOpts = append(newOpts, opts...)
-	newOpts = append(newOpts, OptionDelimiter("_"))
-	return ToFormattedCase(words, newOpts...)
+	res, _ := WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter("_"))...)
+	return res
 }
 
 // ToPascalCase converts words into PascalCase format.
-//
-// Options:
-//   - FirstUpper: Ensures the first letter of the result is uppercase.
 func ToPascalCase(words []Word, opts ...Option) string {
-	newOpts := make([]Option, 0, len(opts)+3)
-	newOpts = append(newOpts, opts...)
-	newOpts = append(newOpts, OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))
-	return ToFormattedCase(words, newOpts...)
+	res, _ := WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))...)
+	return res
 }
 
 // ToCamelCase converts words into camelCase format.
-//
-// Options:
-//   - FirstUpper: Ensures the first letter of the result is uppercase (default is lowercase).
 func ToCamelCase(words []Word, opts ...Option) string {
-	newOpts := make([]Option, 0, len(opts)+3)
-	newOpts = append(newOpts, opts...)
-	newOpts = append(newOpts, OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))
-	return ToFormattedCase(words, newOpts...)
+	res, _ := WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))...)
+	return res
 }

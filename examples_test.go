@@ -42,13 +42,15 @@ func ExampleNewPartitioner_customFormat() {
 	words, _ := strings2.Parse(input, partitioner)
 
 	// Convert to Snake Case
-	snake := strings2.ToSnakeCase(words)
+	// Using CMWhispering to force lowercase, otherwise ExactCaseWord preserves case by default
+	snake := strings2.ToSnakeCase(words, strings2.OptionCaseMode(strings2.CMWhispering))
 	fmt.Println(snake)
 	// Output: user_profile_settings
 }
 
 func ExampleToSnake_options() {
 	// Converting Camel to Screaming Snake
+	// ToSnake forces delimiter to "_". CMScreaming forces upper.
 	input := "camelCase"
 	output, _ := strings2.ToSnake(input, strings2.OptionCaseMode(strings2.CMScreaming))
 	fmt.Println(output)

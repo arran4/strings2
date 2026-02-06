@@ -1,7 +1,6 @@
 package strings2_test
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 

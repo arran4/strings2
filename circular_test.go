@@ -1,7 +1,6 @@
 package strings2_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/arran4/strings2"
@@ -63,8 +62,7 @@ func TestCircularRestoration(t *testing.T) {
 			formatFunc: func(words []strings2.Word, opts ...strings2.Option) string {
 				return strings2.ToSnakeCase(words, opts...)
 			},
-			formatDelim:      "_", // SnakeCase formatter uses "_" implicitly, but we might check if we can pass it explicitly or if defaults matter.
-            // ToSnakeCase default delim is "_".
+			formatDelim:      "_",
 		},
 	}
 
@@ -79,7 +77,18 @@ func TestCircularRestoration(t *testing.T) {
 			if tc.formatFunc != nil {
 				restored = tc.formatFunc(words)
 			} else {
-				restored = strings2.ToFormattedCase(words, strings2.OptionDelimiter(tc.formatDelim))
+				// Use the new generic WordsToFormattedCase
+				// Assuming WordsToFormattedCase is what ToFormattedCase was doing but error aware
+				// Since ToFormattedCase is deprecated, we should use WordsToFormattedCase if we can,
+				// or ToFormattedCase for backward compat in this test context?
+				// The test logic here uses ToFormattedCase wrapper from earlier.
+				// Let's use WordsToFormattedCase and ignore error for this test as we don't expect formatting errors here.
+
+				// Need to convert OptionDelimiter to ...any or ...Option
+				// WordsToFormattedCase accepts ...any
+
+				res, _ := strings2.WordsToFormattedCase(words, strings2.OptionDelimiter(tc.formatDelim))
+				restored = res
 			}
 
 			expected := tc.input
