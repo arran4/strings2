@@ -22,16 +22,11 @@ func Parse(input string, opts ...any) ([]Word, error) {
 
 	for _, opt := range opts {
 		switch o := opt.(type) {
-		case ParserOption:
-			o.Apply(p)
 		case Partitioner:
 			p.Partitioner = o
-		case ParserSmartAcronyms:
+		case ParserOption:
 			o.Apply(p)
 		}
-
-		// Also check if it implements ParserOption directly (if not caught by switch case above, though ParserOption case should cover it if interface match)
-		// But in Go, type switch cases on interface type will match if concrete type implements it.
 	}
 
 	// Level 4: Partition
@@ -51,7 +46,7 @@ func Parse(input string, opts ...any) ([]Word, error) {
 
 // ParserConfig holds configuration for the parsing pipeline.
 type ParserConfig struct {
-	Partitioner   Partitioner
+	Partitioner Partitioner
 	// SmartAcronyms controls whether all-uppercase words (longer than 1 char)
 	// should be treated as AcronymWord instead of UpperCaseWord.
 	// Defaults to true.
@@ -74,7 +69,6 @@ type ParserSmartAcronyms bool
 func (b ParserSmartAcronyms) Apply(p *ParserConfig) {
 	p.SmartAcronyms = bool(b)
 }
-
 
 // WithPartitioner sets a specific partitioner strategy.
 func WithPartitioner(pt Partitioner) ParserOption {
