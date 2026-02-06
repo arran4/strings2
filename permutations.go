@@ -51,10 +51,18 @@ func FromWordsToPascal(words []Word, opts ...Option) string { return ToPascalCas
 
 // FromXToWords
 
-func FromCamelToWords(input string, opts ...any) ([]Word, error)  { return ParseCamelCase(input, opts...) }
-func FromSnakeToWords(input string, opts ...any) ([]Word, error)  { return ParseSnakeCase(input, opts...) }
-func FromKebabToWords(input string, opts ...any) ([]Word, error)  { return ParseKebabCase(input, opts...) }
-func FromPascalToWords(input string, opts ...any) ([]Word, error) { return ParseCamelCase(input, opts...) }
+func FromCamelToWords(input string, opts ...any) ([]Word, error) {
+	return ParseCamelCase(input, opts...)
+}
+func FromSnakeToWords(input string, opts ...any) ([]Word, error) {
+	return ParseSnakeCase(input, opts...)
+}
+func FromKebabToWords(input string, opts ...any) ([]Word, error) {
+	return ParseKebabCase(input, opts...)
+}
+func FromPascalToWords(input string, opts ...any) ([]Word, error) {
+	return ParseCamelCase(input, opts...)
+}
 
 // FromXToY
 
