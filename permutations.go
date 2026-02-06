@@ -28,36 +28,36 @@ func ToPascal(input string) string {
 
 // FromWordsToY
 
-func FromWordsToCamel(words []Word) string { return ToCamelCase(words) }
-func FromWordsToSnake(words []Word) string { return ToSnakeCase(words) }
-func FromWordsToKebab(words []Word) string { return ToKebabCase(words) }
+func FromWordsToCamel(words []Word) string  { return ToCamelCase(words) }
+func FromWordsToSnake(words []Word) string  { return ToSnakeCase(words) }
+func FromWordsToKebab(words []Word) string  { return ToKebabCase(words) }
 func FromWordsToPascal(words []Word) string { return ToPascalCase(words) }
 
 // FromXToWords
 
-func FromCamelToWords(input string) []Word { return ParseCamelCase(input) }
-func FromSnakeToWords(input string) []Word { return ParseSnakeCase(input) }
-func FromKebabToWords(input string) []Word { return ParseKebabCase(input) }
+func FromCamelToWords(input string) []Word  { return ParseCamelCase(input) }
+func FromSnakeToWords(input string) []Word  { return ParseSnakeCase(input) }
+func FromKebabToWords(input string) []Word  { return ParseKebabCase(input) }
 func FromPascalToWords(input string) []Word { return ParseCamelCase(input) } // Pascal uses same transitions as Camel
 
 // FromXToY
 
 // FromCamelTo...
 
-func FromCamelToSnake(input string) string { return ToSnakeCase(ParseCamelCase(input)) }
-func FromCamelToKebab(input string) string { return ToKebabCase(ParseCamelCase(input)) }
+func FromCamelToSnake(input string) string  { return ToSnakeCase(ParseCamelCase(input)) }
+func FromCamelToKebab(input string) string  { return ToKebabCase(ParseCamelCase(input)) }
 func FromCamelToPascal(input string) string { return ToPascalCase(ParseCamelCase(input)) }
 
 // FromSnakeTo...
 
-func FromSnakeToCamel(input string) string { return ToCamelCase(ParseSnakeCase(input)) }
-func FromSnakeToKebab(input string) string { return ToKebabCase(ParseSnakeCase(input)) }
+func FromSnakeToCamel(input string) string  { return ToCamelCase(ParseSnakeCase(input)) }
+func FromSnakeToKebab(input string) string  { return ToKebabCase(ParseSnakeCase(input)) }
 func FromSnakeToPascal(input string) string { return ToPascalCase(ParseSnakeCase(input)) }
 
 // FromKebabTo...
 
-func FromKebabToCamel(input string) string { return ToCamelCase(ParseKebabCase(input)) }
-func FromKebabToSnake(input string) string { return ToSnakeCase(ParseKebabCase(input)) }
+func FromKebabToCamel(input string) string  { return ToCamelCase(ParseKebabCase(input)) }
+func FromKebabToSnake(input string) string  { return ToSnakeCase(ParseKebabCase(input)) }
 func FromKebabToPascal(input string) string { return ToPascalCase(ParseKebabCase(input)) }
 
 // FromPascalTo...

@@ -17,7 +17,7 @@ func Parse(input string, opts ...any) ([]Word, error) {
 	subs, stats := StringToSubParts(input)
 
 	p := &ParserConfig{
-		SmartAcronyms: true,
+		SmartAcronyms:   true,
 		NumberSplitting: false, // Default to false to preserve http200
 	}
 

@@ -120,7 +120,7 @@ var comparisonTests = []TestCase{
 
 	// gobeam/stringy
 	{"ThisIsOne___messed up string. Can we Really Snake Case It?", "This_Is_One_messed_up_string_Can_we_Really_Snake_Case_It", "Snake", "gobeam"},
-    {"ThisIsOne___messed up string. Can we Really camel-case It ?##", "thisIsOneMessedUpStringCanWeReallyCamelCaseIt", "Camel", "gobeam"},
+	{"ThisIsOne___messed up string. Can we Really camel-case It ?##", "thisIsOneMessedUpStringCanWeReallyCamelCaseIt", "Camel", "gobeam"},
 }
 
 func TestComparisons(t *testing.T) {
