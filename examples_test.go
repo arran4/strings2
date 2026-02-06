@@ -2,6 +2,7 @@ package strings2_test
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/arran4/strings2"
 )
@@ -52,4 +53,32 @@ func ExampleToSnake_options() {
 	output, _ := strings2.ToSnake(input, strings2.OptionCaseMode(strings2.CMScreaming))
 	fmt.Println(output)
 	// Output: CAMEL_CASE
+}
+
+func ExampleToFormattedCase_customSpongeCase() {
+	// Custom formatting: SpongeBob Case (sPoNgEbOb cAsE)
+	// This demonstrates iterating over words and applying custom logic.
+
+	input := "hello world"
+	words, _ := strings2.Parse(input)
+
+	var sb strings.Builder
+	for i, word := range words {
+		if i > 0 {
+			sb.WriteString(" ")
+		}
+		s := word.String()
+		for j, r := range s {
+			// Simple alternating case logic relative to the whole string start or word start
+			// Let's do word-local alternating
+			if j%2 == 0 {
+				sb.WriteString(strings.ToLower(string(r)))
+			} else {
+				sb.WriteString(strings.ToUpper(string(r)))
+			}
+		}
+	}
+
+	fmt.Println(sb.String())
+	// Output: hElLo wOrLd
 }

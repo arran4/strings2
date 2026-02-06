@@ -1,17 +1,20 @@
 package strings2_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/arran4/strings2"
 )
 
 func TestCircularRestoration(t *testing.T) {
+	s := "Helloworld"
 	tests := []struct {
 		name             string
 		input            string
 		expectedOverride *string // If set, expects this output instead of input (lossy)
 		partitionerCfg   strings2.PartitionerConfig
+		formatFunc       func([]strings2.Word, ...strings2.Option) string // Allow custom formatter
 		formatDelim      string
 	}{
 		{
@@ -48,11 +51,20 @@ func TestCircularRestoration(t *testing.T) {
 			partitionerCfg: strings2.PartitionerConfig{
 				Delimiters: map[rune]bool{'-': true},
 			},
-			formatDelim: "",
-			expectedOverride: func() *string {
-				s := "Helloworld"
-				return &s
-			}(),
+			formatDelim:      "",
+			expectedOverride: &s,
+		},
+		{
+			name:  "Snake to Snake Roundtrip",
+			input: "hello_world_test",
+			partitionerCfg: strings2.PartitionerConfig{
+				Delimiters: map[rune]bool{'_': true},
+			},
+			formatFunc: func(words []strings2.Word, opts ...strings2.Option) string {
+				return strings2.ToSnakeCase(words, opts...)
+			},
+			formatDelim:      "_", // SnakeCase formatter uses "_" implicitly, but we might check if we can pass it explicitly or if defaults matter.
+            // ToSnakeCase default delim is "_".
 		},
 	}
 
@@ -63,7 +75,12 @@ func TestCircularRestoration(t *testing.T) {
 				t.Fatalf("Parse failed: %v", err)
 			}
 
-			restored := strings2.ToFormattedCase(words, strings2.OptionDelimiter(tc.formatDelim))
+			var restored string
+			if tc.formatFunc != nil {
+				restored = tc.formatFunc(words)
+			} else {
+				restored = strings2.ToFormattedCase(words, strings2.OptionDelimiter(tc.formatDelim))
+			}
 
 			expected := tc.input
 			if tc.expectedOverride != nil {
