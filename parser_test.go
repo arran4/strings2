@@ -130,6 +130,31 @@ func TestParse(t *testing.T) {
 				strings2.FirstUpperCaseWord("Reader"),
 			},
 		},
+		{
+			name: "Dash doesn't break (lossy, default)",
+			input: "good-doers",
+			// KebabCase partitioner splits on dash
+			// If we use auto-detect, dash is a delimiter.
+			expected: []strings2.Word{
+				strings2.SingleCaseWord("good"),
+				strings2.SingleCaseWord("doers"),
+			},
+		},
+		{
+			name: "Dash passed through as partition (lossless)",
+			input: "good-doers",
+			opts: []any{
+				strings2.NewPartitioner(strings2.PartitionerConfig{
+					Delimiters: map[rune]bool{'-': true},
+					PreserveSep: true,
+				}),
+			},
+			expected: []strings2.Word{
+				strings2.SingleCaseWord("good"),
+				strings2.SeparatorWord("-"),
+				strings2.SingleCaseWord("doers"),
+			},
+		},
 	}
 
 	for _, tt := range tests {

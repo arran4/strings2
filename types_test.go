@@ -44,7 +44,7 @@ func TestToCamelCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ToCamelCase(tt.words, tt.options...)
+			result, _ := ToCamelCase(tt.words, tt.options...)
 			if result != tt.expected {
 				t.Errorf("got %q, want %q", result, tt.expected)
 			}
@@ -79,7 +79,7 @@ func TestToPascalCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ToPascalCase(tt.words, tt.options...)
+			result, _ := ToPascalCase(tt.words, tt.options...)
 			if result != tt.expected {
 				t.Errorf("got %q, want %q", result, tt.expected)
 			}
@@ -124,7 +124,7 @@ func TestToKebabCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ToKebabCase(tt.words, tt.options...)
+			result, _ := ToKebabCase(tt.words, tt.options...)
 			if result != tt.expected {
 				t.Errorf("got %q, want %q", result, tt.expected)
 			}
@@ -169,7 +169,7 @@ func TestToSnakeCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ToSnakeCase(tt.words, tt.options...)
+			result, _ := ToSnakeCase(tt.words, tt.options...)
 			if result != tt.expected {
 				t.Errorf("got %q, want %q", result, tt.expected)
 			}

@@ -43,7 +43,7 @@ func ExampleNewPartitioner_customFormat() {
 
 	// Convert to Snake Case
 	// Using CMWhispering to force lowercase, otherwise ExactCaseWord preserves case by default
-	snake := strings2.ToSnakeCase(words, strings2.OptionCaseMode(strings2.CMWhispering))
+	snake, _ := strings2.ToSnakeCase(words, strings2.OptionCaseMode(strings2.CMWhispering))
 	fmt.Println(snake)
 	// Output: user_profile_settings
 }

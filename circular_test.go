@@ -13,7 +13,7 @@ func TestCircularRestoration(t *testing.T) {
 		input            string
 		expectedOverride *string // If set, expects this output instead of input (lossy)
 		partitionerCfg   strings2.PartitionerConfig
-		formatFunc       func([]strings2.Word, ...strings2.Option) string // Allow custom formatter
+		formatFunc       func([]strings2.Word, ...strings2.Option) (string, error) // Allow custom formatter
 		formatDelim      string
 	}{
 		{
@@ -59,7 +59,7 @@ func TestCircularRestoration(t *testing.T) {
 			partitionerCfg: strings2.PartitionerConfig{
 				Delimiters: map[rune]bool{'_': true},
 			},
-			formatFunc: func(words []strings2.Word, opts ...strings2.Option) string {
+			formatFunc: func(words []strings2.Word, opts ...strings2.Option) (string, error) {
 				return strings2.ToSnakeCase(words, opts...)
 			},
 			formatDelim:      "_",
@@ -75,20 +75,13 @@ func TestCircularRestoration(t *testing.T) {
 
 			var restored string
 			if tc.formatFunc != nil {
-				restored = tc.formatFunc(words)
+				restored, err = tc.formatFunc(words)
 			} else {
-				// Use the new generic WordsToFormattedCase
-				// Assuming WordsToFormattedCase is what ToFormattedCase was doing but error aware
-				// Since ToFormattedCase is deprecated, we should use WordsToFormattedCase if we can,
-				// or ToFormattedCase for backward compat in this test context?
-				// The test logic here uses ToFormattedCase wrapper from earlier.
-				// Let's use WordsToFormattedCase and ignore error for this test as we don't expect formatting errors here.
-
-				// Need to convert OptionDelimiter to ...any or ...Option
-				// WordsToFormattedCase accepts ...any
-
-				res, _ := strings2.WordsToFormattedCase(words, strings2.OptionDelimiter(tc.formatDelim))
-				restored = res
+				// Use generic formatted case helper which returns (string, error) now
+				restored, err = strings2.WordsToFormattedCase(words, strings2.OptionDelimiter(tc.formatDelim))
+			}
+			if err != nil {
+				t.Fatalf("Format failed: %v", err)
 			}
 
 			expected := tc.input

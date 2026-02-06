@@ -120,7 +120,7 @@ var comparisonTests = []TestCase{
 
 	// gobeam/stringy
 	{"ThisIsOne___messed up string. Can we Really Snake Case It?", "This_Is_One_messed_up_string_Can_we_Really_Snake_Case_It", "Snake", "gobeam"},
-	{"ThisIsOne___messed up string. Can we Really camel-case It ?##", "thisIsOneMessedUpStringCanWeReallyCamelCaseIt", "Camel", "gobeam"},
+    {"ThisIsOne___messed up string. Can we Really camel-case It ?##", "thisIsOneMessedUpStringCanWeReallyCamelCaseIt", "Camel", "gobeam"},
 }
 
 func getParseOptions(provider string) []any {
@@ -160,28 +160,36 @@ func TestComparisons(t *testing.T) {
 
 			opts := getFormatOptions(test.Provider, test.Format)
 			var got string
+			var err error
 
 			switch test.Format {
 			case "Snake":
 				if test.Provider == "gobeam" {
-					got = ToSnakeCase(words) // Preserve case for gobeam
+					got, err = ToSnakeCase(words) // Preserve case for gobeam
 				} else {
-					got = ToSnakeCase(words, opts...)
+					got, err = ToSnakeCase(words, opts...)
 				}
 			case "ScreamingSnake":
-				got = ToSnakeCase(words, append(opts, OptionCaseMode(CMScreaming))...)
+				got, err = ToSnakeCase(words, append(opts, OptionCaseMode(CMScreaming))...)
 			case "Kebab":
-				got = ToKebabCase(words, opts...)
+				got, err = ToKebabCase(words, opts...)
 			case "ScreamingKebab":
-				got = ToKebabCase(words, append(opts, OptionCaseMode(CMScreaming))...)
+				got, err = ToKebabCase(words, append(opts, OptionCaseMode(CMScreaming))...)
 			case "Camel":
-				got = ToCamelCase(words, opts...)
+				got, err = ToCamelCase(words, opts...)
 			case "Pascal":
-				got = ToPascalCase(words, opts...)
+				got, err = ToPascalCase(words, opts...)
 			case "Title":
-				got = ToFormattedCase(words, append(opts, OptionDelimiter(" "), OptionCaseMode(CMAllTitle))...)
+				// ToFormattedCase wrapper suppresses error, but let's use WordsToFormattedCase if we can,
+				// or stick to ToFormattedCase if backward compat test.
+				// Here we want to verify correctness.
+				got, err = WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter(" "), OptionCaseMode(CMAllTitle))...)
 			default:
 				t.Fatalf("Unknown format: %s", test.Format)
+			}
+
+			if err != nil {
+				t.Errorf("Error during format: %v", err)
 			}
 
 			if got != test.Expected {
