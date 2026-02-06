@@ -149,7 +149,7 @@ func TestParse(t *testing.T) {
 
 func TestExplicitParsers(t *testing.T) {
 	t.Run("ParseSnakeCase", func(t *testing.T) {
-		got := strings2.ParseSnakeCase("hello_world")
+		got, _ := strings2.ParseSnakeCase("hello_world")
 		expected := []strings2.Word{
 			strings2.SingleCaseWord("hello"),
 			strings2.SingleCaseWord("world"),
@@ -160,7 +160,7 @@ func TestExplicitParsers(t *testing.T) {
 	})
 
 	t.Run("ParseCamelCase", func(t *testing.T) {
-		got := strings2.ParseCamelCase("helloWorld")
+		got, _ := strings2.ParseCamelCase("helloWorld")
 		expected := []strings2.Word{
 			strings2.SingleCaseWord("hello"),
 			strings2.FirstUpperCaseWord("World"),
@@ -186,7 +186,7 @@ func ExampleParse_smartAcronyms() {
 }
 
 func ExampleParse_snakeCase() {
-	words := strings2.ParseSnakeCase("hello_world")
+	words, _ := strings2.ParseSnakeCase("hello_world")
 	fmt.Println(words)
 	// Output: [hello world]
 }

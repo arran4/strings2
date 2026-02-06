@@ -209,20 +209,28 @@ func ClassifyPart(part Part, config *ParserConfig) Word {
 
 // Level 1 / 2 Helpers
 
-func ParseSnakeCase(input string) []Word {
-	subs, _ := StringToSubParts(input)
-	parts := SubPartsToParts(subs, SnakeCasePartitioner)
-	return PartsToWords(parts, nil)
+func ParseSnakeCase(input string, opts ...any) ([]Word, error) {
+	// Snake case implies split by underscore.
+	// Users might want to override this or add other options.
+	// But essentially we want to enforce the SnakeCasePartitioner.
+
+	// We can reuse Parse logic but force the partitioner?
+
+	// Default options for SnakeCase
+	combinedOpts := []any{SnakeCasePartitioner}
+	combinedOpts = append(combinedOpts, opts...)
+
+	return Parse(input, combinedOpts...)
 }
 
-func ParseCamelCase(input string) []Word {
-	subs, _ := StringToSubParts(input)
-	parts := SubPartsToParts(subs, CamelCasePartitioner)
-	return PartsToWords(parts, nil)
+func ParseCamelCase(input string, opts ...any) ([]Word, error) {
+	combinedOpts := []any{CamelCasePartitioner}
+	combinedOpts = append(combinedOpts, opts...)
+	return Parse(input, combinedOpts...)
 }
 
-func ParseKebabCase(input string) []Word {
-	subs, _ := StringToSubParts(input)
-	parts := SubPartsToParts(subs, KebabCasePartitioner)
-	return PartsToWords(parts, nil)
+func ParseKebabCase(input string, opts ...any) ([]Word, error) {
+	combinedOpts := []any{KebabCasePartitioner}
+	combinedOpts = append(combinedOpts, opts...)
+	return Parse(input, combinedOpts...)
 }

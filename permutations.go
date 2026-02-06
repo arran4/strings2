@@ -3,31 +3,43 @@ package strings2
 // ToY (Auto-detect input format)
 
 // ToCamel converts an input string (auto-detected format) to camelCase.
-func ToCamel(input string, opts ...any) string {
+func ToCamel(input string, opts ...any) (string, error) {
 	parseOpts, fmtOpts := separateOptions(opts)
-	words, _ := Parse(input, parseOpts...)
-	return ToCamelCase(words, fmtOpts...)
+	words, err := Parse(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToCamelCase(words, fmtOpts...), nil
 }
 
 // ToSnake converts an input string (auto-detected format) to snake_case.
-func ToSnake(input string, opts ...any) string {
+func ToSnake(input string, opts ...any) (string, error) {
 	parseOpts, fmtOpts := separateOptions(opts)
-	words, _ := Parse(input, parseOpts...)
-	return ToSnakeCase(words, fmtOpts...)
+	words, err := Parse(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToSnakeCase(words, fmtOpts...), nil
 }
 
 // ToKebab converts an input string (auto-detected format) to kebab-case.
-func ToKebab(input string, opts ...any) string {
+func ToKebab(input string, opts ...any) (string, error) {
 	parseOpts, fmtOpts := separateOptions(opts)
-	words, _ := Parse(input, parseOpts...)
-	return ToKebabCase(words, fmtOpts...)
+	words, err := Parse(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToKebabCase(words, fmtOpts...), nil
 }
 
 // ToPascal converts an input string (auto-detected format) to PascalCase.
-func ToPascal(input string, opts ...any) string {
+func ToPascal(input string, opts ...any) (string, error) {
 	parseOpts, fmtOpts := separateOptions(opts)
-	words, _ := Parse(input, parseOpts...)
-	return ToPascalCase(words, fmtOpts...)
+	words, err := Parse(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToPascalCase(words, fmtOpts...), nil
 }
 
 // FromWordsToY
@@ -39,97 +51,121 @@ func FromWordsToPascal(words []Word, opts ...Option) string { return ToPascalCas
 
 // FromXToWords
 
-func FromCamelToWords(input string, opts ...any) []Word  { return ParseCamelCase(input) } // ParseCamelCase currently doesn't take opts, we might need to enhance it or use Parse with config
-func FromSnakeToWords(input string, opts ...any) []Word  { return ParseSnakeCase(input) }
-func FromKebabToWords(input string, opts ...any) []Word  { return ParseKebabCase(input) }
-func FromPascalToWords(input string, opts ...any) []Word { return ParseCamelCase(input) } // Pascal uses same transitions as Camel
+func FromCamelToWords(input string, opts ...any) ([]Word, error)  { return ParseCamelCase(input, opts...) }
+func FromSnakeToWords(input string, opts ...any) ([]Word, error)  { return ParseSnakeCase(input, opts...) }
+func FromKebabToWords(input string, opts ...any) ([]Word, error)  { return ParseKebabCase(input, opts...) }
+func FromPascalToWords(input string, opts ...any) ([]Word, error) { return ParseCamelCase(input, opts...) }
 
 // FromXToY
 
 // FromCamelTo...
 
-func FromCamelToSnake(input string, opts ...any) string  {
-	_, fmtOpts := separateOptions(opts)
-	// Currently ParseCamelCase is rigid. Ideally we use Parse with enforced Camel partitioner.
-	// But let's respect the existing API if possible or upgrade it.
-	// For now, let's use the explicit parsers but maybe we should upgrade them to take opts too?
-	// The user request said "all of the functions have ops...any".
-
-	// Better implementation using Parse with config for X
-	words := ParseCamelCase(input)
-	return ToSnakeCase(words, fmtOpts...)
+func FromCamelToSnake(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseCamelCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToSnakeCase(words, fmtOpts...), nil
 }
 
-func FromCamelToKebab(input string, opts ...any) string  {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseCamelCase(input)
-	return ToKebabCase(words, fmtOpts...)
+func FromCamelToKebab(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseCamelCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToKebabCase(words, fmtOpts...), nil
 }
 
-func FromCamelToPascal(input string, opts ...any) string {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseCamelCase(input)
-	return ToPascalCase(words, fmtOpts...)
+func FromCamelToPascal(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseCamelCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToPascalCase(words, fmtOpts...), nil
 }
 
 // FromSnakeTo...
 
-func FromSnakeToCamel(input string, opts ...any) string  {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseSnakeCase(input)
-	return ToCamelCase(words, fmtOpts...)
+func FromSnakeToCamel(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseSnakeCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToCamelCase(words, fmtOpts...), nil
 }
 
-func FromSnakeToKebab(input string, opts ...any) string  {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseSnakeCase(input)
-	return ToKebabCase(words, fmtOpts...)
+func FromSnakeToKebab(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseSnakeCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToKebabCase(words, fmtOpts...), nil
 }
 
-func FromSnakeToPascal(input string, opts ...any) string {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseSnakeCase(input)
-	return ToPascalCase(words, fmtOpts...)
+func FromSnakeToPascal(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseSnakeCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToPascalCase(words, fmtOpts...), nil
 }
 
 // FromKebabTo...
 
-func FromKebabToCamel(input string, opts ...any) string  {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseKebabCase(input)
-	return ToCamelCase(words, fmtOpts...)
+func FromKebabToCamel(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseKebabCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToCamelCase(words, fmtOpts...), nil
 }
 
-func FromKebabToSnake(input string, opts ...any) string  {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseKebabCase(input)
-	return ToSnakeCase(words, fmtOpts...)
+func FromKebabToSnake(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseKebabCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToSnakeCase(words, fmtOpts...), nil
 }
 
-func FromKebabToPascal(input string, opts ...any) string {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseKebabCase(input)
-	return ToPascalCase(words, fmtOpts...)
+func FromKebabToPascal(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseKebabCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToPascalCase(words, fmtOpts...), nil
 }
 
 // FromPascalTo...
 
-func FromPascalToCamel(input string, opts ...any) string {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseCamelCase(input)
-	return ToCamelCase(words, fmtOpts...)
+func FromPascalToCamel(input string, opts ...any) (string, error) {
+	return FromCamelToCamel(input, opts...)
 }
 
-func FromPascalToSnake(input string, opts ...any) string {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseCamelCase(input)
-	return ToSnakeCase(words, fmtOpts...)
+func FromPascalToSnake(input string, opts ...any) (string, error) {
+	return FromCamelToSnake(input, opts...)
 }
 
-func FromPascalToKebab(input string, opts ...any) string {
-	_, fmtOpts := separateOptions(opts)
-	words := ParseCamelCase(input)
-	return ToKebabCase(words, fmtOpts...)
+func FromPascalToKebab(input string, opts ...any) (string, error) {
+	return FromCamelToKebab(input, opts...)
+}
+
+func FromCamelToCamel(input string, opts ...any) (string, error) {
+	parseOpts, fmtOpts := separateOptions(opts)
+	words, err := ParseCamelCase(input, parseOpts...)
+	if err != nil {
+		return "", err
+	}
+	return ToCamelCase(words, fmtOpts...), nil
 }
 
 // Helper to split ...any into parse opts and format opts
@@ -149,4 +185,12 @@ func separateOptions(opts []any) ([]any, []Option) {
 		}
 	}
 	return parseOpts, fmtOpts
+}
+
+// Must swallows error, panics if err != nil
+func Must(s string, err error) string {
+	if err != nil {
+		panic(err)
+	}
+	return s
 }
