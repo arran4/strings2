@@ -36,7 +36,7 @@ type SeparatorWord string
 
 // String implementations
 func (w SingleCaseWord) String() string     { return strings.ToLower(string(w)) }
-func (w FirstUpperCaseWord) String() string { return UpperCaseFirst(strings.ToLower(string(w))) }
+func (w FirstUpperCaseWord) String() string { return upperCaseFirstLower(string(w)) }
 func (w AcronymWord) String() string        { return string(w) }
 func (w UpperCaseWord) String() string      { return strings.ToUpper(string(w)) }
 func (w SeparatorWord) String() string      { return string(w) }
@@ -112,6 +112,42 @@ func MustLowerCaseFirst(s string) string {
 		panic(s)
 	}
 	return res
+}
+
+// upperCaseFirstLower capitalizes the first character and lowercases the rest.
+func upperCaseFirstLower(s string) string {
+	if s == "" {
+		return ""
+	}
+	r, size := utf8.DecodeRuneInString(s)
+	if r == utf8.RuneError {
+		return s
+	}
+
+	u := unicode.ToUpper(r)
+
+	// Check if changes are needed
+	needChange := (r != u)
+	if !needChange {
+		for _, rc := range s[size:] {
+			if unicode.ToLower(rc) != rc {
+				needChange = true
+				break
+			}
+		}
+	}
+
+	if !needChange {
+		return s
+	}
+
+	var b strings.Builder
+	b.Grow(len(s))
+	b.WriteRune(u)
+	for _, rc := range s[size:] {
+		b.WriteRune(unicode.ToLower(rc))
+	}
+	return b.String()
 }
 
 func (w ExactCaseWord) String() string { return string(w) }
@@ -227,7 +263,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			} else if cfg.allLower || cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = UpperCaseFirst(strings.ToLower(w))
+				w = upperCaseFirstLower(w)
 			} else {
 				w = strings.ToLower(w)
 			}
@@ -258,7 +294,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			} else if cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = UpperCaseFirst(strings.ToLower(w))
+				w = upperCaseFirstLower(w)
 			}
 		case UpperCaseWord:
 			w = word.String()
@@ -267,7 +303,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			} else if cfg.allLower || cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = UpperCaseFirst(strings.ToLower(w))
+				w = upperCaseFirstLower(w)
 			} else {
 				w = strings.ToLower(w)
 			}
