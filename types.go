@@ -36,7 +36,10 @@ type SeparatorWord string
 
 // String implementations
 func (w SingleCaseWord) String() string     { return strings.ToLower(string(w)) }
-func (w FirstUpperCaseWord) String() string { return upperCaseFirstLower(string(w)) }
+func (w FirstUpperCaseWord) String() string {
+	res, _ := upperCaseFirstLower(string(w), false)
+	return res
+}
 func (w AcronymWord) String() string        { return string(w) }
 func (w UpperCaseWord) String() string      { return strings.ToUpper(string(w)) }
 func (w SeparatorWord) String() string      { return string(w) }
@@ -119,11 +122,14 @@ func MustLowerCaseFirst(s string) string {
 }
 
 // upperCaseFirstLower capitalizes the first character and lowercases the rest.
-func upperCaseFirstLower(s string) string {
+func upperCaseFirstLower(s string, strict bool) (string, error) {
 	if s == "" {
-		return ""
+		return "", nil
 	}
 	r, size := utf8.DecodeRuneInString(s)
+	if strict && r == utf8.RuneError {
+		return "", fmt.Errorf("%w: invalid rune", ErrRune)
+	}
 	u := unicode.ToUpper(r)
 
 	// Check if changes are needed.
@@ -133,6 +139,9 @@ func upperCaseFirstLower(s string) string {
 	needChange := (r != u) || (r == utf8.RuneError && size == 1)
 	if !needChange {
 		for _, rc := range s[size:] {
+			if strict && rc == utf8.RuneError {
+				return "", fmt.Errorf("%w: invalid rune", ErrRune)
+			}
 			if unicode.ToLower(rc) != rc {
 				needChange = true
 				break
@@ -141,16 +150,19 @@ func upperCaseFirstLower(s string) string {
 	}
 
 	if !needChange {
-		return s
+		return s, nil
 	}
 
 	var b strings.Builder
 	b.Grow(len(s))
 	b.WriteRune(u)
 	for _, rc := range s[size:] {
+		if strict && rc == utf8.RuneError {
+			return "", fmt.Errorf("%w: invalid rune", ErrRune)
+		}
 		b.WriteRune(unicode.ToLower(rc))
 	}
-	return b.String()
+	return b.String(), nil
 }
 
 func (w ExactCaseWord) String() string { return string(w) }
@@ -187,6 +199,7 @@ type caseConfig struct {
 	mixCaseSupport bool
 	firstUpper     bool
 	firstLower     bool
+	strict         bool
 }
 
 // OptionDelimiter sets the delimiter between words.
@@ -217,6 +230,11 @@ func OptionMixCaseSupport() Option {
 // OptionUpperIndicator sets a specific indicator for upper case (often used for double delimiters).
 func OptionUpperIndicator(d string) Option {
 	return func(cfg *caseConfig) { cfg.upperIndicator = d }
+}
+
+// OptionStrict sets strict mode, which returns an error if invalid UTF-8 sequences are encountered.
+func OptionStrict() Option {
+	return func(cfg *caseConfig) { cfg.strict = true }
 }
 
 // ToFormattedCase generates formatted case strings with the given options
@@ -266,7 +284,11 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			} else if cfg.allLower || cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = upperCaseFirstLower(w)
+				var err error
+				w, err = upperCaseFirstLower(w, cfg.strict)
+				if err != nil {
+					return "", err
+				}
 			} else {
 				w = strings.ToLower(w)
 			}
@@ -281,7 +303,11 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				w = strings.ToLower(w)
 			}
 		case FirstUpperCaseWord:
-			w = word.String()
+			var err error
+			w, err = upperCaseFirstLower(string(word), cfg.strict)
+			if err != nil {
+				return "", err
+			}
 			if cfg.mixCaseSupport {
 				w = splitMixCase(w, cfg.delimiter)
 			}
@@ -297,7 +323,11 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			} else if cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = upperCaseFirstLower(w)
+				var err error
+				w, err = upperCaseFirstLower(w, cfg.strict)
+				if err != nil {
+					return "", err
+				}
 			}
 		case UpperCaseWord:
 			w = word.String()
@@ -306,7 +336,11 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			} else if cfg.allLower || cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = upperCaseFirstLower(w)
+				var err error
+				w, err = upperCaseFirstLower(w, cfg.strict)
+				if err != nil {
+					return "", err
+				}
 			} else {
 				w = strings.ToLower(w)
 			}
