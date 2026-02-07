@@ -53,7 +53,11 @@ func performCaseFirst(s string, fn func(rune) rune) (string, rune, bool) {
 	if r == u {
 		return s, 0, true
 	}
-	return string(u) + s[size:], 0, true
+	var b strings.Builder
+	b.Grow(len(s) + utf8.UTFMax)
+	b.WriteRune(u)
+	b.WriteString(s[size:])
+	return b.String(), 0, true
 }
 
 // UpperCaseFirst uppercases the first character of the string.
