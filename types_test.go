@@ -454,3 +454,78 @@ func TestToFormattedCase_MultibyteFirstLower(t *testing.T) {
 		t.Errorf("ToFormattedCase with OptionFirstLower for %q = %q, want %q", "Äpfel", got, want)
 	}
 }
+
+func TestOptionUTF8Modes(t *testing.T) {
+	tests := []struct {
+		name      string
+		words     []Word
+		options   []Option
+		expectErr bool
+		expected  string
+	}{
+		{
+			name: "Strict Mode Error",
+			words: []Word{
+				FirstUpperCaseWord("\xfftest"),
+			},
+			options:   []Option{OptionStrict()},
+			expectErr: true,
+		},
+		{
+			name: "Loose Mode Preserves Invalid",
+			words: []Word{
+				FirstUpperCaseWord("\xfftest"),
+			},
+			options:   []Option{OptionLoose()},
+			expectErr: false,
+			expected:  "\xfftest",
+		},
+		{
+			name: "Default Mode Replaces Invalid",
+			words: []Word{
+				FirstUpperCaseWord("\xfftest"),
+			},
+			options:   []Option{}, // Default is UTF8Replace
+			expectErr: false,
+			expected:  "\uFFFDtest",
+		},
+		{
+			name: "SingleCaseWord CMAllTitle Strict",
+			words: []Word{
+				SingleCaseWord("\xfftest"),
+			},
+			options:   []Option{OptionCaseMode(CMAllTitle), OptionStrict()},
+			expectErr: true,
+		},
+		{
+			name: "SingleCaseWord CMAllTitle Loose",
+			words: []Word{
+				SingleCaseWord("\xfftest"),
+			},
+			options:   []Option{OptionCaseMode(CMAllTitle), OptionLoose()},
+			expectErr: false,
+			expected:  "\xfftest",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := WordsToFormattedCase(tt.words, convertOptions(tt.options)...)
+			if tt.expectErr {
+				if err == nil {
+					t.Error("expected error, got nil")
+				}
+				if !errors.Is(err, ErrRune) {
+					t.Errorf("expected ErrRune, got %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				if got != tt.expected {
+					t.Errorf("got %q (bytes: %x), want %q (bytes: %x)", got, []byte(got), tt.expected, []byte(tt.expected))
+				}
+			}
+		})
+	}
+}

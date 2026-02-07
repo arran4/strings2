@@ -36,7 +36,10 @@ type SeparatorWord string
 
 // String implementations
 func (w SingleCaseWord) String() string     { return strings.ToLower(string(w)) }
-func (w FirstUpperCaseWord) String() string { return upperCaseFirstLower(string(w)) }
+func (w FirstUpperCaseWord) String() string {
+	res, _ := upperCaseFirstLower(string(w), UTF8Replace)
+	return res
+}
 func (w AcronymWord) String() string        { return string(w) }
 func (w UpperCaseWord) String() string      { return strings.ToUpper(string(w)) }
 func (w SeparatorWord) String() string      { return string(w) }
@@ -119,25 +122,31 @@ func MustLowerCaseFirst(s string) string {
 }
 
 // upperCaseFirstLower capitalizes the first character and lowercases the rest.
-func upperCaseFirstLower(s string) string {
+func upperCaseFirstLower(s string, mode UTF8Mode) (string, error) {
 	if s == "" {
-		return ""
+		return "", nil
 	}
 	r, size := utf8.DecodeRuneInString(s)
 	if r == utf8.RuneError && size == 1 {
-		// Invalid UTF-8 start byte.
-		// We want to replace it with RuneError (like strings.ToLower/ToUpper do).
-		// So we force needChange.
-	} else if r == utf8.RuneError {
-		// Valid RuneError (U+FFFD)
+		if mode == UTF8Strict {
+			return "", fmt.Errorf("%w: invalid rune", ErrRune)
+		}
 	}
 
 	u := unicode.ToUpper(r)
 
-	// Check if changes are needed
-	needChange := (r != u) || (r == utf8.RuneError && size == 1)
+	// Check if changes are needed.
+	// If r == utf8.RuneError && size == 1, it is an invalid UTF-8 start byte.
+	// We want to replace it with RuneError (like strings.ToLower/ToUpper do).
+	// So we force needChange.
+	needChange := (r != u) || (r == utf8.RuneError && size == 1 && mode == UTF8Replace)
 	if !needChange {
 		for _, rc := range s[size:] {
+			if rc == utf8.RuneError {
+				if mode == UTF8Strict {
+					return "", fmt.Errorf("%w: invalid rune", ErrRune)
+				}
+			}
 			if unicode.ToLower(rc) != rc {
 				needChange = true
 				break
@@ -146,16 +155,34 @@ func upperCaseFirstLower(s string) string {
 	}
 
 	if !needChange {
-		return s
+		return s, nil
 	}
 
 	var b strings.Builder
 	b.Grow(len(s))
-	b.WriteRune(u)
-	for _, rc := range s[size:] {
+	if r == utf8.RuneError && size == 1 && mode == UTF8Ignore {
+		b.WriteByte(s[0])
+	} else {
+		b.WriteRune(u)
+	}
+
+	for i, rc := range s[size:] {
+		if rc == utf8.RuneError {
+			if mode == UTF8Strict {
+				return "", fmt.Errorf("%w: invalid rune", ErrRune)
+			}
+			if mode == UTF8Ignore {
+				// s[size:] is the substring starting after first rune.
+				// i is the index within that substring.
+				// We need to write the original byte.
+				// s[size+i] is the byte.
+				b.WriteByte(s[size+i])
+				continue
+			}
+		}
 		b.WriteRune(unicode.ToLower(rc))
 	}
-	return b.String()
+	return b.String(), nil
 }
 
 func (w ExactCaseWord) String() string { return string(w) }
@@ -181,6 +208,18 @@ const (
 	CMScreaming
 )
 
+// UTF8Mode defines how to handle invalid UTF-8 sequences.
+type UTF8Mode int
+
+const (
+	// UTF8Replace replaces invalid UTF-8 bytes with utf8.RuneError (U+FFFD).
+	UTF8Replace UTF8Mode = iota
+	// UTF8Strict returns an error on invalid UTF-8 sequences.
+	UTF8Strict
+	// UTF8Ignore ignores invalid UTF-8 sequences and preserves the original bytes (best effort).
+	UTF8Ignore
+)
+
 type caseConfig struct {
 	caseMode       CaseMode
 	delimiter      string
@@ -192,6 +231,7 @@ type caseConfig struct {
 	mixCaseSupport bool
 	firstUpper     bool
 	firstLower     bool
+	utf8Mode       UTF8Mode
 }
 
 // OptionDelimiter sets the delimiter between words.
@@ -222,6 +262,16 @@ func OptionMixCaseSupport() Option {
 // OptionUpperIndicator sets a specific indicator for upper case (often used for double delimiters).
 func OptionUpperIndicator(d string) Option {
 	return func(cfg *caseConfig) { cfg.upperIndicator = d }
+}
+
+// OptionStrict sets strict mode, which returns an error if invalid UTF-8 sequences are encountered.
+func OptionStrict() Option {
+	return func(cfg *caseConfig) { cfg.utf8Mode = UTF8Strict }
+}
+
+// OptionLoose sets loose mode, which preserves invalid UTF-8 bytes as-is instead of replacing them.
+func OptionLoose() Option {
+	return func(cfg *caseConfig) { cfg.utf8Mode = UTF8Ignore }
 }
 
 // ToFormattedCase generates formatted case strings with the given options
@@ -279,7 +329,11 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			} else if cfg.allLower || cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = upperCaseFirstLower(w)
+				var err error
+				w, err = upperCaseFirstLower(w, cfg.utf8Mode)
+				if err != nil {
+					return "", err
+				}
 			} else {
 				w = strings.ToLower(w)
 			}
@@ -294,7 +348,11 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				w = strings.ToLower(w)
 			}
 		case FirstUpperCaseWord:
-			w = word.String()
+			var err error
+			w, err = upperCaseFirstLower(string(word), cfg.utf8Mode)
+			if err != nil {
+				return "", err
+			}
 			if cfg.mixCaseSupport {
 				w = splitMixCase(w, cfg.delimiter)
 			}
@@ -310,7 +368,11 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			} else if cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = upperCaseFirstLower(w)
+				var err error
+				w, err = upperCaseFirstLower(w, cfg.utf8Mode)
+				if err != nil {
+					return "", err
+				}
 			}
 		case UpperCaseWord:
 			w = word.String()
@@ -319,7 +381,11 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			} else if cfg.allLower || cfg.whispering {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
-				w = upperCaseFirstLower(w)
+				var err error
+				w, err = upperCaseFirstLower(w, cfg.utf8Mode)
+				if err != nil {
+					return "", err
+				}
 			} else {
 				w = strings.ToLower(w)
 			}
@@ -389,8 +455,6 @@ func separateOptionsAny(opts []any) ([]any, []any) {
 		case ParserOption, Partitioner, PartitionerConfig:
 			parseOpts = append(parseOpts, v)
 		default:
-			// Assume unknown types might be relevant for formatter if it changes,
-			// or just ignore.
 		}
 	}
 	return parseOpts, fmtOpts
