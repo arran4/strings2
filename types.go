@@ -120,14 +120,18 @@ func upperCaseFirstLower(s string) string {
 		return ""
 	}
 	r, size := utf8.DecodeRuneInString(s)
-	if r == utf8.RuneError {
-		return s
+	if r == utf8.RuneError && size == 1 {
+		// Invalid UTF-8 start byte.
+		// We want to replace it with RuneError (like strings.ToLower/ToUpper do).
+		// So we force needChange.
+	} else if r == utf8.RuneError {
+		// Valid RuneError (U+FFFD)
 	}
 
 	u := unicode.ToUpper(r)
 
 	// Check if changes are needed
-	needChange := (r != u)
+	needChange := (r != u) || (r == utf8.RuneError && size == 1)
 	if !needChange {
 		for _, rc := range s[size:] {
 			if unicode.ToLower(rc) != rc {
