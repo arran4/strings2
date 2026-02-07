@@ -86,10 +86,29 @@ func TestEdgeCases(t *testing.T) {
 		}
 
 		// Case B: Indicator != Delimiter
-		// With proposed fix, this should use the indicator as delimiter
+		// This should use the indicator as delimiter
 		res = ToFormattedCase(input, OptionDelimiter("-"), OptionUpperIndicator("="))
 		if res != "hello=world" {
 			t.Errorf("UpperIndicator Override: got %q, want %q", res, "hello=world")
+		}
+	})
+
+	// 5.1 UpperIndicator with MixCaseSupport (Consistency Check)
+	t.Run("UpperIndicator MixCase Consistency", func(t *testing.T) {
+		input := []Word{ExactCaseWord("helloWorld"), SingleCaseWord("foo")}
+
+		// Case A: Override behavior
+		// Expectation: hello=World=foo (UpperIndicator "=" overrides Delimiter "-")
+		res := ToFormattedCase(input, OptionDelimiter("-"), OptionUpperIndicator("="), OptionMixCaseSupport())
+		if res != "hello=World=foo" {
+			t.Errorf("UpperIndicator MixCase Override: got %q, want %q", res, "hello=World=foo")
+		}
+
+		// Case B: Double Delimiter behavior
+		// Expectation: hello--World--foo (UpperIndicator "-" matches Delimiter "-", so double delimiter)
+		res = ToFormattedCase(input, OptionDelimiter("-"), OptionUpperIndicator("-"), OptionMixCaseSupport())
+		if res != "hello--World--foo" {
+			t.Errorf("UpperIndicator MixCase Double: got %q, want %q", res, "hello--World--foo")
 		}
 	})
 
