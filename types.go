@@ -205,6 +205,14 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		}
 	}
 
+	if cfg.upperIndicator != "" {
+		if cfg.upperIndicator == cfg.delimiter {
+			cfg.delimiter = cfg.delimiter + cfg.delimiter
+		} else {
+			cfg.delimiter = cfg.upperIndicator
+		}
+	}
+
 	switch cfg.caseMode {
 	case CMScreaming:
 		cfg.screaming = true
@@ -280,15 +288,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		result = append(result, w)
 	}
 
-	delimiter := cfg.delimiter
-	if cfg.upperIndicator != "" {
-		if cfg.upperIndicator == cfg.delimiter {
-			delimiter = cfg.delimiter + cfg.delimiter
-		} else {
-			delimiter = cfg.upperIndicator
-		}
-	}
-	final := strings.Join(result, delimiter)
+	final := strings.Join(result, cfg.delimiter)
 
 	if cfg.firstUpper {
 		final = UpperCaseFirst(final)
