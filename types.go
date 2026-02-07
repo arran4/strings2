@@ -354,8 +354,13 @@ func separateOptionsAny(opts []any) ([]any, []any) {
 
 // Helper function to split words in mixed case
 func splitMixCase(input, delimiter string) string {
+	if delimiter == "" {
+		return input
+	}
 	var result strings.Builder
-	result.Grow(len(input))
+	// Pre-allocate to avoid resizing.
+	// We add a buffer for potential delimiters (assuming roughly 50% increase).
+	result.Grow(len(input) + len(input)/2)
 	for i, r := range input {
 		if i > 0 && unicode.IsUpper(r) {
 			result.WriteString(delimiter)
