@@ -124,17 +124,12 @@ func upperCaseFirstLower(s string) string {
 		return ""
 	}
 	r, size := utf8.DecodeRuneInString(s)
-	if r == utf8.RuneError && size == 1 {
-		// Invalid UTF-8 start byte.
-		// We want to replace it with RuneError (like strings.ToLower/ToUpper do).
-		// So we force needChange.
-	} else if r == utf8.RuneError {
-		// Valid RuneError (U+FFFD)
-	}
-
 	u := unicode.ToUpper(r)
 
-	// Check if changes are needed
+	// Check if changes are needed.
+	// If r == utf8.RuneError && size == 1, it is an invalid UTF-8 start byte.
+	// We want to replace it with RuneError (like strings.ToLower/ToUpper do).
+	// So we force needChange.
 	needChange := (r != u) || (r == utf8.RuneError && size == 1)
 	if !needChange {
 		for _, rc := range s[size:] {
@@ -389,8 +384,6 @@ func separateOptionsAny(opts []any) ([]any, []any) {
 		case ParserOption, Partitioner, PartitionerConfig:
 			parseOpts = append(parseOpts, v)
 		default:
-			// Assume unknown types might be relevant for formatter if it changes,
-			// or just ignore.
 		}
 	}
 	return parseOpts, fmtOpts
