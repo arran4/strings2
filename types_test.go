@@ -455,15 +455,16 @@ func TestToFormattedCase_MultibyteFirstLower(t *testing.T) {
 	}
 }
 
-func TestOptionStrict(t *testing.T) {
+func TestOptionUTF8Modes(t *testing.T) {
 	tests := []struct {
 		name      string
 		words     []Word
 		options   []Option
 		expectErr bool
+		expected  string
 	}{
 		{
-			name: "FirstUpperCaseWord Invalid UTF-8 Strict",
+			name: "Strict Mode Error",
 			words: []Word{
 				FirstUpperCaseWord("\xfftest"),
 			},
@@ -471,15 +472,25 @@ func TestOptionStrict(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name: "FirstUpperCaseWord Invalid UTF-8 Non-Strict",
+			name: "Loose Mode Preserves Invalid",
 			words: []Word{
 				FirstUpperCaseWord("\xfftest"),
 			},
-			options:   []Option{},
+			options:   []Option{OptionLoose()},
 			expectErr: false,
+			expected:  "\xfftest",
 		},
 		{
-			name: "SingleCaseWord CMAllTitle Invalid UTF-8 Strict",
+			name: "Default Mode Replaces Invalid",
+			words: []Word{
+				FirstUpperCaseWord("\xfftest"),
+			},
+			options:   []Option{}, // Default is UTF8Replace
+			expectErr: false,
+			expected:  "\uFFFDtest",
+		},
+		{
+			name: "SingleCaseWord CMAllTitle Strict",
 			words: []Word{
 				SingleCaseWord("\xfftest"),
 			},
@@ -487,18 +498,19 @@ func TestOptionStrict(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name: "SingleCaseWord CMAllTitle Invalid UTF-8 Non-Strict",
+			name: "SingleCaseWord CMAllTitle Loose",
 			words: []Word{
 				SingleCaseWord("\xfftest"),
 			},
-			options:   []Option{OptionCaseMode(CMAllTitle)},
+			options:   []Option{OptionCaseMode(CMAllTitle), OptionLoose()},
 			expectErr: false,
+			expected:  "\xfftest",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := WordsToFormattedCase(tt.words, convertOptions(tt.options)...)
+			got, err := WordsToFormattedCase(tt.words, convertOptions(tt.options)...)
 			if tt.expectErr {
 				if err == nil {
 					t.Error("expected error, got nil")
@@ -509,6 +521,9 @@ func TestOptionStrict(t *testing.T) {
 			} else {
 				if err != nil {
 					t.Errorf("unexpected error: %v", err)
+				}
+				if got != tt.expected {
+					t.Errorf("got %q (bytes: %x), want %q (bytes: %x)", got, []byte(got), tt.expected, []byte(tt.expected))
 				}
 			}
 		})

@@ -37,7 +37,7 @@ type SeparatorWord string
 // String implementations
 func (w SingleCaseWord) String() string     { return strings.ToLower(string(w)) }
 func (w FirstUpperCaseWord) String() string {
-	res, _ := upperCaseFirstLower(string(w), false)
+	res, _ := upperCaseFirstLower(string(w), UTF8Replace)
 	return res
 }
 func (w AcronymWord) String() string        { return string(w) }
@@ -122,25 +122,30 @@ func MustLowerCaseFirst(s string) string {
 }
 
 // upperCaseFirstLower capitalizes the first character and lowercases the rest.
-func upperCaseFirstLower(s string, strict bool) (string, error) {
+func upperCaseFirstLower(s string, mode UTF8Mode) (string, error) {
 	if s == "" {
 		return "", nil
 	}
 	r, size := utf8.DecodeRuneInString(s)
-	if strict && r == utf8.RuneError {
-		return "", fmt.Errorf("%w: invalid rune", ErrRune)
+	if r == utf8.RuneError && size == 1 {
+		if mode == UTF8Strict {
+			return "", fmt.Errorf("%w: invalid rune", ErrRune)
+		}
 	}
+
 	u := unicode.ToUpper(r)
 
 	// Check if changes are needed.
 	// If r == utf8.RuneError && size == 1, it is an invalid UTF-8 start byte.
 	// We want to replace it with RuneError (like strings.ToLower/ToUpper do).
 	// So we force needChange.
-	needChange := (r != u) || (r == utf8.RuneError && size == 1)
+	needChange := (r != u) || (r == utf8.RuneError && size == 1 && mode == UTF8Replace)
 	if !needChange {
 		for _, rc := range s[size:] {
-			if strict && rc == utf8.RuneError {
-				return "", fmt.Errorf("%w: invalid rune", ErrRune)
+			if rc == utf8.RuneError {
+				if mode == UTF8Strict {
+					return "", fmt.Errorf("%w: invalid rune", ErrRune)
+				}
 			}
 			if unicode.ToLower(rc) != rc {
 				needChange = true
@@ -155,10 +160,25 @@ func upperCaseFirstLower(s string, strict bool) (string, error) {
 
 	var b strings.Builder
 	b.Grow(len(s))
-	b.WriteRune(u)
-	for _, rc := range s[size:] {
-		if strict && rc == utf8.RuneError {
-			return "", fmt.Errorf("%w: invalid rune", ErrRune)
+	if r == utf8.RuneError && size == 1 && mode == UTF8Ignore {
+		b.WriteByte(s[0])
+	} else {
+		b.WriteRune(u)
+	}
+
+	for i, rc := range s[size:] {
+		if rc == utf8.RuneError {
+			if mode == UTF8Strict {
+				return "", fmt.Errorf("%w: invalid rune", ErrRune)
+			}
+			if mode == UTF8Ignore {
+				// s[size:] is the substring starting after first rune.
+				// i is the index within that substring.
+				// We need to write the original byte.
+				// s[size+i] is the byte.
+				b.WriteByte(s[size+i])
+				continue
+			}
 		}
 		b.WriteRune(unicode.ToLower(rc))
 	}
@@ -188,6 +208,18 @@ const (
 	CMScreaming
 )
 
+// UTF8Mode defines how to handle invalid UTF-8 sequences.
+type UTF8Mode int
+
+const (
+	// UTF8Replace replaces invalid UTF-8 bytes with utf8.RuneError (U+FFFD).
+	UTF8Replace UTF8Mode = iota
+	// UTF8Strict returns an error on invalid UTF-8 sequences.
+	UTF8Strict
+	// UTF8Ignore ignores invalid UTF-8 sequences and preserves the original bytes (best effort).
+	UTF8Ignore
+)
+
 type caseConfig struct {
 	caseMode       CaseMode
 	delimiter      string
@@ -199,7 +231,7 @@ type caseConfig struct {
 	mixCaseSupport bool
 	firstUpper     bool
 	firstLower     bool
-	strict         bool
+	utf8Mode       UTF8Mode
 }
 
 // OptionDelimiter sets the delimiter between words.
@@ -234,7 +266,12 @@ func OptionUpperIndicator(d string) Option {
 
 // OptionStrict sets strict mode, which returns an error if invalid UTF-8 sequences are encountered.
 func OptionStrict() Option {
-	return func(cfg *caseConfig) { cfg.strict = true }
+	return func(cfg *caseConfig) { cfg.utf8Mode = UTF8Strict }
+}
+
+// OptionLoose sets loose mode, which preserves invalid UTF-8 bytes as-is instead of replacing them.
+func OptionLoose() Option {
+	return func(cfg *caseConfig) { cfg.utf8Mode = UTF8Ignore }
 }
 
 // ToFormattedCase generates formatted case strings with the given options
@@ -285,7 +322,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
 				var err error
-				w, err = upperCaseFirstLower(w, cfg.strict)
+				w, err = upperCaseFirstLower(w, cfg.utf8Mode)
 				if err != nil {
 					return "", err
 				}
@@ -304,7 +341,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			}
 		case FirstUpperCaseWord:
 			var err error
-			w, err = upperCaseFirstLower(string(word), cfg.strict)
+			w, err = upperCaseFirstLower(string(word), cfg.utf8Mode)
 			if err != nil {
 				return "", err
 			}
@@ -324,7 +361,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
 				var err error
-				w, err = upperCaseFirstLower(w, cfg.strict)
+				w, err = upperCaseFirstLower(w, cfg.utf8Mode)
 				if err != nil {
 					return "", err
 				}
@@ -337,7 +374,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				w = strings.ToLower(w)
 			} else if cfg.caseMode == CMAllTitle {
 				var err error
-				w, err = upperCaseFirstLower(w, cfg.strict)
+				w, err = upperCaseFirstLower(w, cfg.utf8Mode)
 				if err != nil {
 					return "", err
 				}
