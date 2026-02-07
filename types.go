@@ -216,70 +216,6 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		cfg.firstUpper = true
 	}
 
-	result := make([]string, 0, len(words))
-	for _, word := range words {
-		var w string
-		switch word := word.(type) {
-		case SingleCaseWord:
-			w = string(word)
-			if cfg.allUpper || cfg.screaming {
-				w = strings.ToUpper(w)
-			} else if cfg.allLower || cfg.whispering {
-				w = strings.ToLower(w)
-			} else if cfg.caseMode == CMAllTitle {
-				w = UpperCaseFirst(strings.ToLower(w))
-			} else {
-				w = strings.ToLower(w)
-			}
-		case ExactCaseWord:
-			w = word.String()
-			if cfg.mixCaseSupport {
-				w = splitMixCase(w, cfg.delimiter)
-			}
-			if cfg.allUpper || cfg.screaming {
-				w = strings.ToUpper(w)
-			} else if cfg.allLower || cfg.whispering {
-				w = strings.ToLower(w)
-			}
-		case FirstUpperCaseWord:
-			w = word.String()
-			if cfg.mixCaseSupport {
-				w = splitMixCase(w, cfg.delimiter)
-			}
-			if cfg.allUpper || cfg.screaming {
-				w = strings.ToUpper(w)
-			} else if cfg.allLower || cfg.whispering {
-				w = strings.ToLower(w)
-			}
-		case AcronymWord:
-			w = word.String()
-			if cfg.screaming {
-				w = strings.ToUpper(w)
-			} else if cfg.whispering {
-				w = strings.ToLower(w)
-			} else if cfg.caseMode == CMAllTitle {
-				w = UpperCaseFirst(strings.ToLower(w))
-			}
-		case UpperCaseWord:
-			w = word.String()
-			if cfg.allUpper || cfg.screaming {
-				w = strings.ToUpper(w)
-			} else if cfg.allLower || cfg.whispering {
-				w = strings.ToLower(w)
-			} else if cfg.caseMode == CMAllTitle {
-				w = UpperCaseFirst(strings.ToLower(w))
-			} else {
-				w = strings.ToLower(w)
-			}
-		case SeparatorWord:
-			w = word.String()
-		default:
-			w = word.String()
-		}
-
-		result = append(result, w)
-	}
-
 	delimiter := cfg.delimiter
 	if cfg.upperIndicator != "" {
 		if cfg.upperIndicator == cfg.delimiter {
@@ -288,7 +224,177 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			delimiter = cfg.upperIndicator
 		}
 	}
-	final := strings.Join(result, delimiter)
+
+	size := 0
+	for _, word := range words {
+		switch w := word.(type) {
+		case SingleCaseWord:
+			size += len(w)
+		case ExactCaseWord:
+			size += len(w)
+		case FirstUpperCaseWord:
+			size += len(w)
+		case AcronymWord:
+			size += len(w)
+		case UpperCaseWord:
+			size += len(w)
+		case SeparatorWord:
+			size += len(w)
+		default:
+			size += 5 // fallback
+		}
+	}
+	size += len(delimiter) * max(0, len(words)-1)
+
+	var b strings.Builder
+	b.Grow(size)
+
+	for i, word := range words {
+		if i > 0 {
+			b.WriteString(delimiter)
+		}
+
+		switch word := word.(type) {
+		case SingleCaseWord:
+			s := string(word)
+			if cfg.allUpper || cfg.screaming {
+				for _, r := range s {
+					b.WriteRune(unicode.ToUpper(r))
+				}
+			} else if cfg.allLower || cfg.whispering {
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
+			} else if cfg.caseMode == CMAllTitle {
+				first := true
+				for _, r := range s {
+					if first {
+						b.WriteRune(unicode.ToUpper(r))
+						first = false
+					} else {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				}
+			} else {
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
+			}
+		case ExactCaseWord:
+			s := string(word)
+			if cfg.mixCaseSupport {
+				for j, r := range s {
+					if j > 0 && unicode.IsUpper(r) {
+						if cfg.allUpper || cfg.screaming {
+							for _, dr := range cfg.delimiter {
+								b.WriteRune(unicode.ToUpper(dr))
+							}
+						} else if cfg.allLower || cfg.whispering {
+							for _, dr := range cfg.delimiter {
+								b.WriteRune(unicode.ToLower(dr))
+							}
+						} else {
+							b.WriteString(cfg.delimiter)
+						}
+					}
+					if cfg.allUpper || cfg.screaming {
+						b.WriteRune(unicode.ToUpper(r))
+					} else if cfg.allLower || cfg.whispering {
+						b.WriteRune(unicode.ToLower(r))
+					} else {
+						b.WriteRune(r)
+					}
+				}
+			} else {
+				if cfg.allUpper || cfg.screaming {
+					for _, r := range s {
+						b.WriteRune(unicode.ToUpper(r))
+					}
+				} else if cfg.allLower || cfg.whispering {
+					for _, r := range s {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				} else {
+					b.WriteString(s)
+				}
+			}
+		case FirstUpperCaseWord:
+			s := string(word)
+			if cfg.allUpper || cfg.screaming {
+				for _, r := range s {
+					b.WriteRune(unicode.ToUpper(r))
+				}
+			} else if cfg.allLower || cfg.whispering {
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
+			} else {
+				first := true
+				for _, r := range s {
+					if first {
+						b.WriteRune(unicode.ToUpper(r))
+						first = false
+					} else {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				}
+			}
+		case AcronymWord:
+			s := string(word)
+			if cfg.screaming {
+				for _, r := range s {
+					b.WriteRune(unicode.ToUpper(r))
+				}
+			} else if cfg.whispering {
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
+			} else if cfg.caseMode == CMAllTitle {
+				first := true
+				for _, r := range s {
+					if first {
+						b.WriteRune(unicode.ToUpper(r))
+						first = false
+					} else {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				}
+			} else {
+				b.WriteString(s)
+			}
+		case UpperCaseWord:
+			s := string(word)
+			if cfg.allUpper || cfg.screaming {
+				for _, r := range s {
+					b.WriteRune(unicode.ToUpper(r))
+				}
+			} else if cfg.allLower || cfg.whispering {
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
+			} else if cfg.caseMode == CMAllTitle {
+				first := true
+				for _, r := range s {
+					if first {
+						b.WriteRune(unicode.ToUpper(r))
+						first = false
+					} else {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				}
+			} else {
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
+			}
+		case SeparatorWord:
+			b.WriteString(string(word))
+		default:
+			b.WriteString(word.String())
+		}
+	}
+
+	final := b.String()
 
 	if cfg.firstUpper {
 		final = UpperCaseFirst(final)
