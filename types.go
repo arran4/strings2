@@ -458,18 +458,6 @@ func separateOptionsAny(opts []any) ([]any, []any) {
 	return parseOpts, fmtOpts
 }
 
-// Helper function to split words in mixed case
-func splitMixCase(input, delimiter string) string {
-	var result strings.Builder
-	result.Grow(len(input))
-	for i, r := range input {
-		if i > 0 && unicode.IsUpper(r) {
-			result.WriteString(delimiter)
-		}
-		result.WriteRune(r)
-	}
-	return result.String()
-}
 
 // ToKebabCase converts words into kebab-case format.
 func ToKebabCase(words []Word, opts ...Option) (string, error) {

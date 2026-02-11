@@ -5,7 +5,7 @@ import (
 )
 
 func TestEdgeCases(t *testing.T) {
-	// 1. Unicode in splitMixCase
+	// 1. Unicode in Mixed Case Splitting
 	// Even though ExactCaseWord is a single word in the IL, OptionMixCaseSupport
 	// instructs the formatter to split it based on casing.
 	// This test verifies that this splitting works for both ASCII and Unicode.
@@ -64,7 +64,7 @@ func TestEdgeCases(t *testing.T) {
 		}
 	})
 
-	// 4. Consecutive Uppercase in splitMixCase
+	// 4. Consecutive Uppercase in Mixed Case Splitting
 	t.Run("Consecutive Uppercase", func(t *testing.T) {
 		input := []Word{ExactCaseWord("JSONParser")}
 		res := ToFormattedCase(input, OptionMixCaseSupport(), OptionDelimiter("-"))
