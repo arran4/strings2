@@ -41,6 +41,14 @@ func (w AcronymWord) String() string        { return string(w) }
 func (w UpperCaseWord) String() string      { return strings.ToUpper(string(w)) }
 func (w SeparatorWord) String() string      { return string(w) }
 
+// Len implementations
+func (w SingleCaseWord) Len() int     { return len(w) }
+func (w FirstUpperCaseWord) Len() int { return len(w) }
+func (w ExactCaseWord) Len() int      { return len(w) }
+func (w AcronymWord) Len() int        { return len(w) }
+func (w UpperCaseWord) Len() int      { return len(w) }
+func (w SeparatorWord) Len() int      { return len(w) }
+
 func performCaseFirst(s string, fn func(rune) rune) (string, rune, bool) {
 	if s == "" {
 		return s, 0, true
@@ -227,20 +235,9 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 
 	size := 0
 	for _, word := range words {
-		switch w := word.(type) {
-		case SingleCaseWord:
-			size += len(w)
-		case ExactCaseWord:
-			size += len(w)
-		case FirstUpperCaseWord:
-			size += len(w)
-		case AcronymWord:
-			size += len(w)
-		case UpperCaseWord:
-			size += len(w)
-		case SeparatorWord:
-			size += len(w)
-		default:
+		if l, ok := word.(interface{ Len() int }); ok {
+			size += l.Len()
+		} else {
 			size += 5 // fallback
 		}
 	}
