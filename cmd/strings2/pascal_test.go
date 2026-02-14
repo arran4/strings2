@@ -22,7 +22,6 @@ func TestPascal_Execute(t *testing.T) {
 	}
 
 	args := []string{}
-	args = append(args, "test")
 
 	err := cmd.Execute(args)
 	if err != nil {

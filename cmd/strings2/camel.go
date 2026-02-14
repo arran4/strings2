@@ -17,6 +17,8 @@ type Camel struct {
 	*RootCmd
 	Flags         *flag.FlagSet
 	input         string
+	output        string
+	args          []string
 	SubCommands   map[string]Cmd
 	CommandAction func(c *Camel) error
 }
@@ -55,8 +57,38 @@ func (c *Camel) Execute(args []string) error {
 		}
 		if strings.HasPrefix(arg, "-") && arg != "-" {
 			name := arg
+			value := ""
+			hasValue := false
+			if strings.Contains(arg, "=") {
+				parts := strings.SplitN(arg, "=", 2)
+				name = parts[0]
+				value = parts[1]
+				hasValue = true
+			}
 			trimmedName := strings.TrimLeft(name, "-")
 			switch trimmedName {
+
+			case "input", "i":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.input = value
+
+			case "output", "o":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.output = value
 			case "help", "h":
 				c.Usage()
 				return nil
@@ -67,16 +99,14 @@ func (c *Camel) Execute(args []string) error {
 			remainingArgs = append(remainingArgs, arg)
 		}
 	}
-	if len(remainingArgs) < 1 {
-		return fmt.Errorf("expected at least 1 positional arguments, got %d", len(remainingArgs))
-	}
-	// Handle positional argument input
+	// Handle vararg args
 	{
-		argIndex := 0
-		if argIndex >= 0 && argIndex < len(remainingArgs) {
-			argVal := remainingArgs[argIndex]
-			c.input = argVal
+		varArgStart := 0
+		if varArgStart > len(remainingArgs) {
+			varArgStart = len(remainingArgs)
 		}
+		varArgs := remainingArgs[varArgStart:]
+		c.args = varArgs
 	}
 
 	if c.CommandAction != nil {
@@ -97,11 +127,17 @@ func (c *RootCmd) NewCamel() *Camel {
 		Flags:       set,
 		SubCommands: make(map[string]Cmd),
 	}
+
+	set.StringVar(&v.input, "input", "", "Input file or - for stdin")
+	set.StringVar(&v.input, "i", "", "Input file or - for stdin")
+
+	set.StringVar(&v.output, "output", "", "Output file or - for stdout")
+	set.StringVar(&v.output, "o", "", "Output file or - for stdout")
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Camel) error {
 
-		cli.Camel(c.input)
+		cli.Camel(c.input, c.output, c.args...)
 		return nil
 	}
 
