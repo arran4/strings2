@@ -61,7 +61,7 @@ func process(input string, output string, args []string, fn func(string, ...any)
 //
 //	input: -i --input (default: "") Input file or - for stdin
 //	output: -o --output (default: "") Output file or - for stdout
-//	args: ... Positional arguments
+//	args: ... String to convert if file/stdin not provided
 func Camel(input string, output string, args ...string) {
 	process(input, output, args, strings2.ToCamel)
 }
@@ -72,7 +72,7 @@ func Camel(input string, output string, args ...string) {
 //
 //	input: -i --input (default: "") Input file or - for stdin
 //	output: -o --output (default: "") Output file or - for stdout
-//	args: ... Positional arguments
+//	args: ... String to convert if file/stdin not provided
 func Snake(input string, output string, args ...string) {
 	process(input, output, args, strings2.ToSnake)
 }
@@ -83,7 +83,7 @@ func Snake(input string, output string, args ...string) {
 //
 //	input: -i --input (default: "") Input file or - for stdin
 //	output: -o --output (default: "") Output file or - for stdout
-//	args: ... Positional arguments
+//	args: ... String to convert if file/stdin not provided
 func Kebab(input string, output string, args ...string) {
 	process(input, output, args, strings2.ToKebab)
 }
@@ -94,7 +94,7 @@ func Kebab(input string, output string, args ...string) {
 //
 //	input: -i --input (default: "") Input file or - for stdin
 //	output: -o --output (default: "") Output file or - for stdout
-//	args: ... Positional arguments
+//	args: ... String to convert if file/stdin not provided
 func Pascal(input string, output string, args ...string) {
 	process(input, output, args, strings2.ToPascal)
 }

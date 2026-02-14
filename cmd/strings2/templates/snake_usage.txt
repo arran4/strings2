@@ -9,4 +9,4 @@ Flags:
     --output, -o string   Output file or - for stdout
 
 Positional Arguments:
-    args       Positional arguments
+    args       String to convert if file/stdin not provided
