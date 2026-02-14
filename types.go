@@ -35,14 +35,14 @@ type UpperCaseWord string
 type SeparatorWord string
 
 // String implementations
-func (w SingleCaseWord) String() string     { return strings.ToLower(string(w)) }
+func (w SingleCaseWord) String() string { return strings.ToLower(string(w)) }
 func (w FirstUpperCaseWord) String() string {
 	res, _ := upperCaseFirstLower(string(w), UTF8Replace)
 	return res
 }
-func (w AcronymWord) String() string        { return string(w) }
-func (w UpperCaseWord) String() string      { return strings.ToUpper(string(w)) }
-func (w SeparatorWord) String() string      { return string(w) }
+func (w AcronymWord) String() string   { return string(w) }
+func (w UpperCaseWord) String() string { return strings.ToUpper(string(w)) }
+func (w SeparatorWord) String() string { return string(w) }
 
 func performCaseFirst(s string, fn func(rune) rune) (string, rune, bool) {
 	if s == "" {
