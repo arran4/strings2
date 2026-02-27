@@ -478,20 +478,24 @@ func splitMixCase(input, delimiter string) string {
 
 // ToKebabCase converts words into kebab-case format.
 func ToKebabCase(words []Word, opts ...Option) (string, error) {
-	return WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter("-"))...)
+	defaults := []any{OptionDelimiter("-")}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 
 // ToSnakeCase converts words into snake_case format.
 func ToSnakeCase(words []Word, opts ...Option) (string, error) {
-	return WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter("_"))...)
+	defaults := []any{OptionDelimiter("_")}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 
 // ToPascalCase converts words into PascalCase format.
 func ToPascalCase(words []Word, opts ...Option) (string, error) {
-	return WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))...)
+	defaults := []any{OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 
 // ToCamelCase converts words into camelCase format.
 func ToCamelCase(words []Word, opts ...Option) (string, error) {
-	return WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))...)
+	defaults := []any{OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }

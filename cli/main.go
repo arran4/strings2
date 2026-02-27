@@ -9,7 +9,7 @@ import (
 	"github.com/arran4/strings2"
 )
 
-func process(input string, output string, args []string, fn func(string, ...any) (string, error)) {
+func process(input string, output string, args []string, opts []any, fn func(string, ...any) (string, error)) {
 	var in io.Reader
 	if input == "-" {
 		in = os.Stdin
@@ -33,7 +33,7 @@ func process(input string, output string, args []string, fn func(string, ...any)
 		os.Exit(1)
 	}
 
-	res, err := fn(string(b))
+	res, err := fn(string(b), opts...)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error processing: %v\n", err)
 		os.Exit(1)
@@ -55,15 +55,57 @@ func process(input string, output string, args []string, fn func(string, ...any)
 	fmt.Fprintln(out, res)
 }
 
+func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool) []any {
+	var opts []any
+	if delimiter != "" {
+		opts = append(opts, strings2.OptionDelimiter(delimiter))
+	}
+	if screaming {
+		opts = append(opts, strings2.OptionCaseMode(strings2.CMScreaming))
+	}
+	if whispering {
+		opts = append(opts, strings2.OptionCaseMode(strings2.CMWhispering))
+	}
+	if firstUpper {
+		opts = append(opts, strings2.OptionFirstUpper())
+	}
+	if firstLower {
+		opts = append(opts, strings2.OptionFirstLower())
+	}
+	if mixCaseSupport {
+		opts = append(opts, strings2.OptionMixCaseSupport())
+	}
+	if noSmartAcronyms {
+		opts = append(opts, strings2.WithSmartAcronyms(false))
+	}
+	if numberSplitting {
+		opts = append(opts, strings2.WithNumberSplitting(true))
+	}
+	if strict {
+		opts = append(opts, strings2.OptionStrict())
+	}
+	return opts
+}
+
 // Camel is a subcommand `strings2 camel`
 //
 // Flags:
 //
 //	input: -i --input (default: "") Input file or - for stdin
 //	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: "") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Camel(input string, output string, args ...string) {
-	process(input, output, args, strings2.ToCamel)
+func Camel(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+	process(input, output, args, opts, strings2.ToCamel)
 }
 
 // Snake is a subcommand `strings2 snake`
@@ -72,9 +114,19 @@ func Camel(input string, output string, args ...string) {
 //
 //	input: -i --input (default: "") Input file or - for stdin
 //	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: "") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Snake(input string, output string, args ...string) {
-	process(input, output, args, strings2.ToSnake)
+func Snake(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+	process(input, output, args, opts, strings2.ToSnake)
 }
 
 // Kebab is a subcommand `strings2 kebab`
@@ -83,9 +135,19 @@ func Snake(input string, output string, args ...string) {
 //
 //	input: -i --input (default: "") Input file or - for stdin
 //	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: "") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Kebab(input string, output string, args ...string) {
-	process(input, output, args, strings2.ToKebab)
+func Kebab(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+	process(input, output, args, opts, strings2.ToKebab)
 }
 
 // Pascal is a subcommand `strings2 pascal`
@@ -94,7 +156,17 @@ func Kebab(input string, output string, args ...string) {
 //
 //	input: -i --input (default: "") Input file or - for stdin
 //	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: "") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Pascal(input string, output string, args ...string) {
-	process(input, output, args, strings2.ToPascal)
+func Pascal(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+	process(input, output, args, opts, strings2.ToPascal)
 }
