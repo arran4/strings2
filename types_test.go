@@ -538,7 +538,7 @@ func TestUpperCaseWord_Verbatim_Bug(t *testing.T) {
 	input := "HELLO"
 
 	// Case 1: Default (SmartAcronyms=true)
-	words1, _ := Parse(input)       // [AcronymWord("HELLO")]
+	words1, _ := Parse(input)      // [AcronymWord("HELLO")]
 	res1, _ := ToSnakeCase(words1) // ToSnakeCase defaults to Verbatim (but with delimiter "_")
 	// AcronymWord preserves case by default.
 	if res1 != "HELLO" {
