@@ -496,6 +496,7 @@ func TestOptionUTF8Modes(t *testing.T) {
 			},
 			options:   []Option{OptionCaseMode(CMAllTitle), OptionStrict()},
 			expectErr: true,
+			expected:  "",
 		},
 		{
 			name: "SingleCaseWord CMAllTitle Loose",
@@ -527,5 +528,30 @@ func TestOptionUTF8Modes(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestUpperCaseWord_Verbatim_Bug(t *testing.T) {
+	// "HELLO" is parsed as AcronymWord by default (SmartAcronyms=true).
+	// But if SmartAcronyms=false, it becomes UpperCaseWord.
+
+	input := "HELLO"
+
+	// Case 1: Default (SmartAcronyms=true)
+	words1, _ := Parse(input)       // [AcronymWord("HELLO")]
+	res1, _ := ToSnakeCase(words1) // ToSnakeCase defaults to Verbatim (but with delimiter "_")
+	// AcronymWord preserves case by default.
+	if res1 != "HELLO" {
+		t.Errorf("Default behavior changed? Got %q, want %q", res1, "HELLO")
+	}
+
+	// Case 2: SmartAcronyms=false
+	words2, _ := Parse(input, WithSmartAcronyms(false)) // [UpperCaseWord("HELLO")]
+	// Expectation: Verbatim mode should preserve case -> "HELLO"
+	res2, _ := ToSnakeCase(words2)
+
+	expected := "HELLO"
+	if res2 != expected {
+		t.Errorf("UpperCaseWord (SmartAcronyms=false) did not preserve case. Got %q, want %q", res2, expected)
 	}
 }

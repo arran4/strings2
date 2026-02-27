@@ -386,8 +386,6 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				if err != nil {
 					return "", err
 				}
-			} else {
-				w = strings.ToLower(w)
 			}
 		case SeparatorWord:
 			w = word.String()
