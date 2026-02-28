@@ -9,7 +9,7 @@ import (
 	"github.com/arran4/strings2"
 )
 
-func process(input string, output string, args []string, fn func(string, ...any) (string, error), opts ...any) {
+func process(input string, output string, args []string, opts []any, fn func(string, ...any) (string, error)) {
 	var in io.Reader
 	if input == "-" {
 		in = os.Stdin
@@ -105,7 +105,7 @@ func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper boo
 //	args: ... String to convert if file/stdin not provided
 func Camel(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
 	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
-	process(input, output, args, strings2.ToCamel, opts...)
+	process(input, output, args, opts, strings2.ToCamel)
 }
 
 // Snake is a subcommand `strings2 snake`
@@ -126,7 +126,7 @@ func Camel(input string, output string, delimiter string, screaming bool, whispe
 //	args: ... String to convert if file/stdin not provided
 func Snake(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
 	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
-	process(input, output, args, strings2.ToSnake, opts...)
+	process(input, output, args, opts, strings2.ToSnake)
 }
 
 // Kebab is a subcommand `strings2 kebab`
@@ -147,7 +147,7 @@ func Snake(input string, output string, delimiter string, screaming bool, whispe
 //	args: ... String to convert if file/stdin not provided
 func Kebab(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
 	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
-	process(input, output, args, strings2.ToKebab, opts...)
+	process(input, output, args, opts, strings2.ToKebab)
 }
 
 // Pascal is a subcommand `strings2 pascal`
@@ -168,5 +168,5 @@ func Kebab(input string, output string, delimiter string, screaming bool, whispe
 //	args: ... String to convert if file/stdin not provided
 func Pascal(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
 	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
-	process(input, output, args, strings2.ToPascal, opts...)
+	process(input, output, args, opts, strings2.ToPascal)
 }

@@ -1,0 +1,18 @@
+--- README.md
++++ README.md
+@@ -48,6 +48,15 @@
+ fmt.Println(strings2.ToSnakeCase(words, strings2.OptionCaseMode(strings2.CMScreaming)))
+ ```
+
++### CLI Mode
++
++The library also provides a command-line interface that exposes all these options, ensuring that the CLI mode has as much flexibility as the code (without being obligated to use smart defaults).
++
++```bash
++# Screaming snake case
++strings2 snake --screaming "hello world"
++```
++
+ Options are composable so multiple behaviours can be applied at once. See the documentation in `types.go` for details on further options.
+
+ ## License
