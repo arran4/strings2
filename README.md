@@ -92,6 +92,10 @@ strings2 snake --screaming "hello world"
 
 Options are composable so multiple behaviours can be applied at once. See the documentation in `types.go` for details on further options.
 
+## TODO
+
+- Support slices for flags when the gosubc version supports it.
+
 ## License
 
 This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE) file for details.
