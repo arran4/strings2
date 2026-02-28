@@ -111,6 +111,9 @@ Available flags across commands:
 - `--mix-case-support`, `-m`: Enable splitting of mixed case words
 - `--no-smart-acronyms`: Disable acronym preservation
 - `--number-splitting`: Enable letter-digit boundary splitting
+
+# Screaming snake case
+strings2 snake --screaming "hello world"
 ```
 
 Options are composable so multiple behaviours can be applied at once. See the documentation in `types.go` for details on further options.
