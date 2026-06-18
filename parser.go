@@ -18,8 +18,8 @@ func Parse(input string, opts ...any) ([]Word, error) {
 	subs, stats := StringToSubParts(input)
 
 	p := &ParserConfig{
-		SmartAcronyms:   true,
-		NumberSplitting: false,
+		SmartAcronyms: true,
+		NumberMode:    NumberModeNone,
 	}
 
 	for _, opt := range opts {
@@ -55,9 +55,24 @@ type ParserConfig struct {
 	// should be treated as AcronymWord instead of UpperCaseWord.
 	// Defaults to true.
 	SmartAcronyms bool
-	// NumberSplitting controls whether to split on letter-digit boundaries.
-	NumberSplitting bool
+	// NumberMode controls how numbers are handled during word splitting.
+	NumberMode NumberMode
 }
+
+// NumberMode defines the strategy for handling numbers during parsing.
+type NumberMode int
+
+const (
+	// NumberModeNone does not perform any special number splitting.
+	NumberModeNone NumberMode = iota
+	// NumberModeSplitAlways splits on any transition between a letter and a digit.
+	NumberModeSplitAlways
+	// NumberModeMergeWithWord treats digits as compatible with both preceding and succeeding lowercase letters,
+	// preventing splits like 123test -> 123-test.
+	NumberModeMergeWithWord
+	// NumberModeTreatAsLowercase treats digits exactly as if they were lowercase letters for boundary detection.
+	NumberModeTreatAsLowercase
+)
 
 // ParserOption configures the parser.
 type ParserOption interface {
@@ -91,9 +106,21 @@ func WithSmartAcronyms(enabled bool) ParserOption {
 }
 
 // WithNumberSplitting enables or disables splitting on letter-digit boundaries.
+// It is equivalent to WithNumberMode(NumberModeSplitAlways) when true, and WithNumberMode(NumberModeNone) when false.
 func WithNumberSplitting(enabled bool) ParserOption {
 	return funcParserOption(func(p *ParserConfig) {
-		p.NumberSplitting = enabled
+		if enabled {
+			p.NumberMode = NumberModeSplitAlways
+		} else {
+			p.NumberMode = NumberModeNone
+		}
+	})
+}
+
+// WithNumberMode sets the specific number splitting mode.
+func WithNumberMode(mode NumberMode) ParserOption {
+	return funcParserOption(func(p *ParserConfig) {
+		p.NumberMode = mode
 	})
 }
 
@@ -123,15 +150,15 @@ func DetectPartitioner(stats Stats, config ...*ParserConfig) Partitioner {
 		}
 	}
 
-	splitNumber := false
+	numberMode := NumberModeNone
 	if len(config) > 0 && config[0] != nil {
-		splitNumber = config[0].NumberSplitting
+		numberMode = config[0].NumberMode
 	}
 
 	return NewPartitioner(PartitionerConfig{
-		Delimiters:  delimiters,
-		SplitCamel:  true,
-		SplitNumber: splitNumber,
+		Delimiters: delimiters,
+		SplitCamel: true,
+		NumberMode: numberMode,
 	})
 }
 

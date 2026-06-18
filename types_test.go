@@ -454,3 +454,104 @@ func TestToFormattedCase_MultibyteFirstLower(t *testing.T) {
 		t.Errorf("ToFormattedCase with OptionFirstLower for %q = %q, want %q", "Äpfel", got, want)
 	}
 }
+
+func TestOptionUTF8Modes(t *testing.T) {
+	tests := []struct {
+		name      string
+		words     []Word
+		options   []Option
+		expectErr bool
+		expected  string
+	}{
+		{
+			name: "Strict Mode Error",
+			words: []Word{
+				FirstUpperCaseWord("\xfftest"),
+			},
+			options:   []Option{OptionStrict()},
+			expectErr: true,
+		},
+		{
+			name: "Loose Mode Preserves Invalid",
+			words: []Word{
+				FirstUpperCaseWord("\xfftest"),
+			},
+			options:   []Option{OptionLoose()},
+			expectErr: false,
+			expected:  "\xfftest",
+		},
+		{
+			name: "Default Mode Replaces Invalid",
+			words: []Word{
+				FirstUpperCaseWord("\xfftest"),
+			},
+			options:   []Option{}, // Default is UTF8Replace
+			expectErr: false,
+			expected:  "\uFFFDtest",
+		},
+		{
+			name: "SingleCaseWord CMAllTitle Strict",
+			words: []Word{
+				SingleCaseWord("\xfftest"),
+			},
+			options:   []Option{OptionCaseMode(CMAllTitle), OptionStrict()},
+			expectErr: true,
+			expected:  "",
+		},
+		{
+			name: "SingleCaseWord CMAllTitle Loose",
+			words: []Word{
+				SingleCaseWord("\xfftest"),
+			},
+			options:   []Option{OptionCaseMode(CMAllTitle), OptionLoose()},
+			expectErr: false,
+			expected:  "\xfftest",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := WordsToFormattedCase(tt.words, convertOptions(tt.options)...)
+			if tt.expectErr {
+				if err == nil {
+					t.Error("expected error, got nil")
+				}
+				if !errors.Is(err, ErrRune) {
+					t.Errorf("expected ErrRune, got %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				if got != tt.expected {
+					t.Errorf("got %q (bytes: %x), want %q (bytes: %x)", got, []byte(got), tt.expected, []byte(tt.expected))
+				}
+			}
+		})
+	}
+}
+
+func TestUpperCaseWord_Verbatim_Bug(t *testing.T) {
+	// "HELLO" is parsed as AcronymWord by default (SmartAcronyms=true).
+	// But if SmartAcronyms=false, it becomes UpperCaseWord.
+
+	input := "HELLO"
+
+	// Case 1: Default (SmartAcronyms=true)
+	words1, _ := Parse(input)      // [AcronymWord("HELLO")]
+	res1, _ := ToSnakeCase(words1) // ToSnakeCase defaults to Verbatim (but with delimiter "_")
+	// AcronymWord preserves case by default.
+	if res1 != "HELLO" {
+		t.Errorf("Default behavior changed? Got %q, want %q", res1, "HELLO")
+	}
+
+	// Case 2: SmartAcronyms=false
+	words2, _ := Parse(input, WithSmartAcronyms(false)) // [UpperCaseWord("HELLO")]
+	// Expectation: Verbatim mode should preserve case -> "HELLO"
+	res2, _ := ToSnakeCase(words2)
+
+	expected := "HELLO"
+	if res2 != expected {
+		t.Errorf("UpperCaseWord (SmartAcronyms=false) did not preserve case. Got %q, want %q", res2, expected)
+	}
+}
