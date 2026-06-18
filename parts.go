@@ -68,7 +68,7 @@ func CamelCasePartitioner(subs []SubPart) []Part {
 type PartitionerConfig struct {
 	Delimiters  map[rune]bool
 	SplitCamel  bool
-	SplitNumber bool
+	NumberMode  NumberMode
 	PreserveSep bool // If true, delimiters are returned as SeparatorPart instead of discarded
 }
 
@@ -93,27 +93,48 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 
 			// Transition check
 			isSplit := false
-			if (cfg.SplitCamel || cfg.SplitNumber) && i > 0 && len(current) > 0 {
+			if (cfg.SplitCamel || cfg.NumberMode != NumberModeNone) && i > 0 && len(current) > 0 {
 				prev := subs[i-1]
 				// Note: if prev was delimiter, current is empty or started anew.
 				// We rely on current being non-empty to check transitions within a word chunk.
 
 				if cfg.SplitCamel {
+					isPrevLower := prev.IsLower()
+					isPrevUpper := prev.IsUpper()
+					isCurrUpper := s.IsUpper()
+
+					if cfg.NumberMode == NumberModeTreatAsLowercase {
+						if prev.IsDigit() {
+							isPrevLower = true
+						}
+					}
+
 					// lower -> Upper
-					if prev.IsLower() && s.IsUpper() {
+					if isPrevLower && isCurrUpper {
 						isSplit = true
 					}
 
 					// Upper -> Upper -> lower (PDFLoader split at L)
 					if i+1 < len(subs) {
 						next := subs[i+1]
-						if prev.IsUpper() && s.IsUpper() && next.IsLower() {
+						isNextLower := next.IsLower()
+						if cfg.NumberMode == NumberModeTreatAsLowercase && next.IsDigit() {
+							isNextLower = true
+						}
+						if isPrevUpper && isCurrUpper && isNextLower {
+							isSplit = true
+						}
+					}
+
+					// MergeRecursive specific rule: digit -> Upper triggers a split, similar to lower -> Upper
+					if cfg.NumberMode == NumberModeMergeWithWord {
+						if prev.IsDigit() && isCurrUpper {
 							isSplit = true
 						}
 					}
 				}
 
-				if cfg.SplitNumber {
+				if cfg.NumberMode == NumberModeSplitAlways {
 					// Letter -> Digit -> Split.
 					// Digit -> Letter -> Split.
 					if prev.IsLetter() && s.IsDigit() {

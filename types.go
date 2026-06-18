@@ -413,8 +413,8 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 func PartsToFormattedCase(parts []Part, opts ...any) (string, error) {
 	// Extract ParserConfig from opts to use for classification
 	p := &ParserConfig{
-		SmartAcronyms:   true,
-		NumberSplitting: false,
+		SmartAcronyms: true,
+		NumberMode:    NumberModeNone,
 	}
 	for _, opt := range opts {
 		if o, ok := opt.(ParserOption); ok {
