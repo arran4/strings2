@@ -67,9 +67,9 @@ const (
 	NumberModeNone NumberMode = iota
 	// NumberModeSplitAlways splits on any transition between a letter and a digit.
 	NumberModeSplitAlways
-	// NumberModeMergeRecursive treats digits as compatible with both preceding and succeeding lowercase letters,
+	// NumberModeMergeMaintainMomentum treats digits as compatible with both preceding and succeeding lowercase letters,
 	// preventing splits like 123test -> 123-test.
-	NumberModeMergeRecursive
+	NumberModeMergeMaintainMomentum
 	// NumberModeTreatAsLowercase treats digits exactly as if they were lowercase letters for boundary detection.
 	NumberModeTreatAsLowercase
 )

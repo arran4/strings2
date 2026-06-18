@@ -127,7 +127,7 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 					}
 
 					// MergeRecursive specific rule: digit -> Upper triggers a split, similar to lower -> Upper
-					if cfg.NumberMode == NumberModeMergeRecursive {
+					if cfg.NumberMode == NumberModeMergeMaintainMomentum {
 						if prev.IsDigit() && isCurrUpper {
 							isSplit = true
 						}
