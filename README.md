@@ -1,6 +1,9 @@
 # strings2
 
-[![CI Status](https://github.com/arran4/strings2/actions/workflows/ci.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/ci.yml)
+[![Test Status](https://github.com/arran4/strings2/actions/workflows/test.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/test.yml)
+[![Vet Status](https://github.com/arran4/strings2/actions/workflows/vet.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/vet.yml)
+[![Lint Status](https://github.com/arran4/strings2/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/golangci-lint.yml)
+[![Fmt Status](https://github.com/arran4/strings2/actions/workflows/fmt.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/fmt.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/arran4/strings2.svg)](https://pkg.go.dev/github.com/arran4/strings2)
 
 strings2 provides utilities for converting slices of words into various casing conventions. It is intended to supplement Go's standard library `strings` package with helpers for creating formats such as `camelCase`, `PascalCase`, `snake_case` and `kebab-case`.
@@ -78,43 +81,7 @@ fmt.Println(strings2.ToKebabCase(words, strings2.OptionDelimiter("|")))
 fmt.Println(strings2.ToSnakeCase(words, strings2.OptionCaseMode(strings2.CMScreaming)))
 ```
 
-### CLI Mode
-
-The library also provides a command-line interface that exposes all these options, ensuring that the CLI mode has as much flexibility as the code (without being obligated to use smart defaults).
-
-```bash
-strings2 camel "hello world"
-# Result: helloWorld
-
-strings2 snake --screaming "hello world"
-# Result: HELLO_WORLD
-
-strings2 kebab --first-upper "hello world"
-# Result: Hello-world
-```
-
-You can pipe input into the CLI as well:
-```bash
-echo "hello world" | strings2 pascal
-# Result: HelloWorld
-```
-
-Available flags across commands:
-- `--delimiter`, `-d` (string): Override the delimiter
-- `--screaming`, `-S`: Enforce uppercase formatting
-- `--whispering`, `-w`: Enforce lowercase formatting
-- `--first-upper`, `-U`: Capitalize the first letter
-- `--first-lower`, `-l`: Lowercase the first letter
-- `--mix-case-support`, `-m`: Enable splitting of mixed case words
-- `--no-smart-acronyms`: Disable acronym preservation
-- `--number-splitting`: Enable letter-digit boundary splitting
-```
-
 Options are composable so multiple behaviours can be applied at once. See the documentation in `types.go` for details on further options.
-
-## TODO
-
-- Support slices for flags when the gosubc version supports it.
 
 ## License
 

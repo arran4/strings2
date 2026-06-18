@@ -166,18 +166,3 @@ func BenchmarkToFormattedCase_Default(b *testing.B) {
 		_ = ToFormattedCase(words)
 	}
 }
-
-func BenchmarkSplitMixCase(b *testing.B) {
-	words := []Word{
-		ExactCaseWord("thisIsAMixedCaseString"),
-		ExactCaseWord("AnotherMixedCaseStringWithMoreParts"),
-		ExactCaseWord("ShortOne"),
-		ExactCaseWord("SuperLongMixedCaseStringWithManyManyCapitalLettersToTriggerReallocationIfBufferIsTooSmall"),
-	}
-
-	b.ResetTimer()
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		_, _ = WordsToFormattedCase(words, OptionMixCaseSupport(), OptionDelimiter("-"))
-	}
-}

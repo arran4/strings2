@@ -5,52 +5,44 @@ package strings2
 // ToCamel converts an input string (auto-detected format) to camelCase.
 func ToCamel(input string, opts ...any) (string, error) {
 	// Camel: Delimiter "", FirstLower, AllTitle
-	defaults := []any{OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle)}
-	return ToFormattedString(input, append(defaults, opts...)...)
+	return ToFormattedString(input, append(opts, OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))...)
 }
 
 // ToSnake converts an input string (auto-detected format) to snake_case.
 func ToSnake(input string, opts ...any) (string, error) {
 	// Snake: Delimiter "_"
-	defaults := []any{OptionDelimiter("_")}
-	return ToFormattedString(input, append(defaults, opts...)...)
+	return ToFormattedString(input, append(opts, OptionDelimiter("_"))...)
 }
 
 // ToKebab converts an input string (auto-detected format) to kebab-case.
 func ToKebab(input string, opts ...any) (string, error) {
 	// Kebab: Delimiter "-"
-	defaults := []any{OptionDelimiter("-")}
-	return ToFormattedString(input, append(defaults, opts...)...)
+	return ToFormattedString(input, append(opts, OptionDelimiter("-"))...)
 }
 
 // ToPascal converts an input string (auto-detected format) to PascalCase.
 func ToPascal(input string, opts ...any) (string, error) {
 	// Pascal: Delimiter "", FirstUpper, AllTitle
-	defaults := []any{OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle)}
-	return ToFormattedString(input, append(defaults, opts...)...)
+	return ToFormattedString(input, append(opts, OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))...)
 }
 
 // FromWordsToY
 
 // FromWordsToCamel converts words to camelCase.
 func FromWordsToCamel(words []Word, opts ...Option) (string, error) {
-	defaults := []any{OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle)}
-	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+	return WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle))...)
 }
 
 func FromWordsToSnake(words []Word, opts ...Option) (string, error) {
-	defaults := []any{OptionDelimiter("_")}
-	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+	return WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter("_"))...)
 }
 
 func FromWordsToKebab(words []Word, opts ...Option) (string, error) {
-	defaults := []any{OptionDelimiter("-")}
-	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+	return WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter("-"))...)
 }
 
 func FromWordsToPascal(words []Word, opts ...Option) (string, error) {
-	defaults := []any{OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle)}
-	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+	return WordsToFormattedCase(words, append(convertOptions(opts), OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle))...)
 }
 
 // FromXToWords
