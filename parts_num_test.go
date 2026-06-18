@@ -22,10 +22,10 @@ func TestNumberMode(t *testing.T) {
 		{"SplitAlways_UPPER123", "UPPER123", NumberModeSplitAlways, []string{"UPPER", "123"}},
 		{"SplitAlways_123test", "123test", NumberModeSplitAlways, []string{"123", "test"}},
 
-		// MergeMaintainMomentum
-		{"MergeMaintainMomentum_User123ID", "User123ID", NumberModeMergeMaintainMomentum, []string{"User123", "ID"}},
-		{"MergeMaintainMomentum_UPPER123", "UPPER123", NumberModeMergeMaintainMomentum, []string{"UPPER123"}},
-		{"MergeMaintainMomentum_123test", "123test", NumberModeMergeMaintainMomentum, []string{"123test"}},
+		// MergeWithWord
+		{"MergeWithWord_User123ID", "User123ID", NumberModeMergeWithWord, []string{"User123", "ID"}},
+		{"MergeWithWord_UPPER123", "UPPER123", NumberModeMergeWithWord, []string{"UPPER123"}},
+		{"MergeWithWord_123test", "123test", NumberModeMergeWithWord, []string{"123test"}},
 
 		// TreatAsLowercase
 		{"TreatAsLowercase_User123ID", "User123ID", NumberModeTreatAsLowercase, []string{"User123", "ID"}},
