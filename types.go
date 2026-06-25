@@ -187,6 +187,26 @@ func upperCaseFirstLower(s string, mode UTF8Mode) (string, error) {
 
 func (w ExactCaseWord) String() string { return string(w) }
 
+// WordLength returns the string length of the given Word type without allocating.
+func WordLength(word Word) (int, error) {
+	switch w := word.(type) {
+	case SingleCaseWord:
+		return len(w), nil
+	case FirstUpperCaseWord:
+		return len(w), nil
+	case ExactCaseWord:
+		return len(w), nil
+	case AcronymWord:
+		return len(w), nil
+	case UpperCaseWord:
+		return len(w), nil
+	case SeparatorWord:
+		return len(w), nil
+	default:
+		return 0, fmt.Errorf("unknown word type: %T", word)
+	}
+}
+
 // Options
 type Option func(*caseConfig)
 
@@ -318,8 +338,28 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		cfg.firstUpper = true
 	}
 
-	result := make([]string, 0, len(words))
+	size := 0
 	for _, word := range words {
+		l, err := WordLength(word)
+		if err != nil {
+			return "", err
+		}
+		// heuristic: add 5 to allow for transformations like splitMixCase
+		size += l + 5
+	}
+	delimiterLen := len(cfg.delimiter)
+	if len(words) > 1 {
+		size += delimiterLen * (len(words) - 1)
+	}
+
+	var b strings.Builder
+	b.Grow(size)
+
+	for i, word := range words {
+		if i > 0 {
+			b.WriteString(cfg.delimiter)
+		}
+
 		var w string
 		switch word := word.(type) {
 		case SingleCaseWord:
@@ -393,10 +433,10 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			w = word.String()
 		}
 
-		result = append(result, w)
+		b.WriteString(w)
 	}
 
-	final := strings.Join(result, cfg.delimiter)
+	final := b.String()
 
 	if cfg.firstUpper {
 		final = UpperCaseFirst(final)
