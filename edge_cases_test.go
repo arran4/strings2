@@ -130,3 +130,30 @@ func TestEdgeCases(t *testing.T) {
 		}
 	})
 }
+
+func TestLenOptimization(t *testing.T) {
+	// 7. Verify all word types calculate Len() correctly directly
+	t.Run("Len() Interface correctness", func(t *testing.T) {
+		tests := []struct {
+			word Word
+			expected int
+		}{
+			{SingleCaseWord("hello"), 5},
+			{FirstUpperCaseWord("world"), 5},
+			{ExactCaseWord("HelloWorld"), 10},
+			{AcronymWord("API"), 3},
+			{UpperCaseWord("json"), 4},
+			{SeparatorWord("-"), 1},
+		}
+
+		for _, tt := range tests {
+			if l, ok := tt.word.(interface{ Len() int }); ok {
+				if l.Len() != tt.expected {
+					t.Errorf("Word %T Len() = %d, want %d", tt.word, l.Len(), tt.expected)
+				}
+			} else {
+				t.Errorf("Word %T does not implement Len()", tt.word)
+			}
+		}
+	})
+}
