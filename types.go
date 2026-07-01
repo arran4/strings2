@@ -393,19 +393,15 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		case ExactCaseWord:
 			s := string(word)
 			if cfg.mixCaseSupport {
+				casedDelimiter := cfg.delimiter
+				if cfg.allUpper || cfg.screaming {
+					casedDelimiter = strings.ToUpper(casedDelimiter)
+				} else if cfg.allLower || cfg.whispering {
+					casedDelimiter = strings.ToLower(casedDelimiter)
+				}
 				for j, r := range s {
 					if j > 0 && unicode.IsUpper(r) {
-						if cfg.allUpper || cfg.screaming {
-							for _, dr := range cfg.delimiter {
-								b.WriteRune(unicode.ToUpper(dr))
-							}
-						} else if cfg.allLower || cfg.whispering {
-							for _, dr := range cfg.delimiter {
-								b.WriteRune(unicode.ToLower(dr))
-							}
-						} else {
-							b.WriteString(cfg.delimiter)
-						}
+						b.WriteString(casedDelimiter)
 					}
 					if cfg.allUpper || cfg.screaming {
 						b.WriteRune(unicode.ToUpper(r))
@@ -435,19 +431,15 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				return "", err
 			}
 			if cfg.mixCaseSupport {
+				casedDelimiter := cfg.delimiter
+				if cfg.allUpper || cfg.screaming {
+					casedDelimiter = strings.ToUpper(casedDelimiter)
+				} else if cfg.allLower || cfg.whispering {
+					casedDelimiter = strings.ToLower(casedDelimiter)
+				}
 				for j, r := range s {
 					if j > 0 && unicode.IsUpper(r) {
-						if cfg.allUpper || cfg.screaming {
-							for _, dr := range cfg.delimiter {
-								b.WriteRune(unicode.ToUpper(dr))
-							}
-						} else if cfg.allLower || cfg.whispering {
-							for _, dr := range cfg.delimiter {
-								b.WriteRune(unicode.ToLower(dr))
-							}
-						} else {
-							b.WriteString(cfg.delimiter)
-						}
+						b.WriteString(casedDelimiter)
 					}
 					if cfg.allUpper || cfg.screaming {
 						b.WriteRune(unicode.ToUpper(r))
