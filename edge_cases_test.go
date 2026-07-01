@@ -5,7 +5,7 @@ import (
 )
 
 func TestEdgeCases(t *testing.T) {
-	// 1. Unicode in splitMixCase
+	// 1. Unicode in Mixed Case Splitting
 	// Even though ExactCaseWord is a single word in the IL, OptionMixCaseSupport
 	// instructs the formatter to split it based on casing.
 	// This test verifies that this splitting works for both ASCII and Unicode.
@@ -64,7 +64,7 @@ func TestEdgeCases(t *testing.T) {
 		}
 	})
 
-	// 4. Consecutive Uppercase in splitMixCase
+	// 4. Consecutive Uppercase in Mixed Case Splitting
 	t.Run("Consecutive Uppercase", func(t *testing.T) {
 		input := []Word{ExactCaseWord("JSONParser")}
 		res := ToFormattedCase(input, OptionMixCaseSupport(), OptionDelimiter("-"))
@@ -127,6 +127,33 @@ func TestEdgeCases(t *testing.T) {
 		res = ToFormattedCase([]Word{SingleCaseWord("")})
 		if res != "" {
 			t.Errorf("Empty word: got %q, want empty string", res)
+		}
+	})
+}
+
+func TestLenOptimization(t *testing.T) {
+	// 7. Verify all word types calculate Len() correctly directly
+	t.Run("Len() Interface correctness", func(t *testing.T) {
+		tests := []struct {
+			word Word
+			expected int
+		}{
+			{SingleCaseWord("hello"), 5},
+			{FirstUpperCaseWord("world"), 5},
+			{ExactCaseWord("HelloWorld"), 10},
+			{AcronymWord("API"), 3},
+			{UpperCaseWord("json"), 4},
+			{SeparatorWord("-"), 1},
+		}
+
+		for _, tt := range tests {
+			if l, ok := tt.word.(interface{ Len() int }); ok {
+				if l.Len() != tt.expected {
+					t.Errorf("Word %T Len() = %d, want %d", tt.word, l.Len(), tt.expected)
+				}
+			} else {
+				t.Errorf("Word %T does not implement Len()", tt.word)
+			}
 		}
 	})
 }

@@ -44,6 +44,15 @@ func (w AcronymWord) String() string   { return string(w) }
 func (w UpperCaseWord) String() string { return strings.ToUpper(string(w)) }
 func (w SeparatorWord) String() string { return string(w) }
 
+// Len implementations
+func (w SingleCaseWord) Len() int     { return len(w) }
+func (w FirstUpperCaseWord) Len() int { return len(w) }
+func (w ExactCaseWord) Len() int      { return len(w) }
+func (w AcronymWord) Len() int        { return len(w) }
+func (w UpperCaseWord) Len() int      { return len(w) }
+func (w SeparatorWord) Len() int      { return len(w) }
+
+
 func performCaseFirst(s string, fn func(rune) rune) (string, rune, bool) {
 	if s == "" {
 		return s, 0, true
@@ -340,16 +349,14 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 
 	size := 0
 	for _, word := range words {
-		l, err := WordLength(word)
-		if err != nil {
-			return "", err
+		if l, ok := word.(interface{ Len() int }); ok {
+			size += l.Len() + 5 // +5 heuristic for splitMixCase
+		} else {
+			size += 10 // fallback
 		}
-		// heuristic: add 5 to allow for transformations like splitMixCase
-		size += l + 5
 	}
-	delimiterLen := len(cfg.delimiter)
 	if len(words) > 1 {
-		size += delimiterLen * (len(words) - 1)
+		size += len(cfg.delimiter) * (len(words) - 1)
 	}
 
 	var b strings.Builder
@@ -360,80 +367,146 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			b.WriteString(cfg.delimiter)
 		}
 
-		var w string
 		switch word := word.(type) {
 		case SingleCaseWord:
-			w = string(word)
+			s := string(word)
 			if cfg.allUpper || cfg.screaming {
-				w = strings.ToUpper(w)
+				for _, r := range s {
+					b.WriteRune(unicode.ToUpper(r))
+				}
 			} else if cfg.allLower || cfg.whispering {
-				w = strings.ToLower(w)
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
 			} else if cfg.caseMode == CMAllTitle {
 				var err error
-				w, err = upperCaseFirstLower(w, cfg.utf8Mode)
+				w, err := upperCaseFirstLower(s, cfg.utf8Mode)
 				if err != nil {
 					return "", err
 				}
+				b.WriteString(w)
 			} else {
-				w = strings.ToLower(w)
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
 			}
 		case ExactCaseWord:
-			w = word.String()
+			s := string(word)
 			if cfg.mixCaseSupport {
-				w = splitMixCase(w, cfg.delimiter)
-			}
-			if cfg.allUpper || cfg.screaming {
-				w = strings.ToUpper(w)
-			} else if cfg.allLower || cfg.whispering {
-				w = strings.ToLower(w)
+				casedDelimiter := cfg.delimiter
+				if cfg.allUpper || cfg.screaming {
+					casedDelimiter = strings.ToUpper(casedDelimiter)
+				} else if cfg.allLower || cfg.whispering {
+					casedDelimiter = strings.ToLower(casedDelimiter)
+				}
+				for j, r := range s {
+					if j > 0 && unicode.IsUpper(r) {
+						b.WriteString(casedDelimiter)
+					}
+					if cfg.allUpper || cfg.screaming {
+						b.WriteRune(unicode.ToUpper(r))
+					} else if cfg.allLower || cfg.whispering {
+						b.WriteRune(unicode.ToLower(r))
+					} else {
+						b.WriteRune(r)
+					}
+				}
+			} else {
+				if cfg.allUpper || cfg.screaming {
+					for _, r := range s {
+						b.WriteRune(unicode.ToUpper(r))
+					}
+				} else if cfg.allLower || cfg.whispering {
+					for _, r := range s {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				} else {
+					b.WriteString(s)
+				}
 			}
 		case FirstUpperCaseWord:
 			var err error
-			w, err = upperCaseFirstLower(string(word), cfg.utf8Mode)
+			s, err := upperCaseFirstLower(string(word), cfg.utf8Mode)
 			if err != nil {
 				return "", err
 			}
 			if cfg.mixCaseSupport {
-				w = splitMixCase(w, cfg.delimiter)
-			}
-			if cfg.allUpper || cfg.screaming {
-				w = strings.ToUpper(w)
-			} else if cfg.allLower || cfg.whispering {
-				w = strings.ToLower(w)
+				casedDelimiter := cfg.delimiter
+				if cfg.allUpper || cfg.screaming {
+					casedDelimiter = strings.ToUpper(casedDelimiter)
+				} else if cfg.allLower || cfg.whispering {
+					casedDelimiter = strings.ToLower(casedDelimiter)
+				}
+				for j, r := range s {
+					if j > 0 && unicode.IsUpper(r) {
+						b.WriteString(casedDelimiter)
+					}
+					if cfg.allUpper || cfg.screaming {
+						b.WriteRune(unicode.ToUpper(r))
+					} else if cfg.allLower || cfg.whispering {
+						b.WriteRune(unicode.ToLower(r))
+					} else {
+						b.WriteRune(r)
+					}
+				}
+			} else {
+				if cfg.allUpper || cfg.screaming {
+					for _, r := range s {
+						b.WriteRune(unicode.ToUpper(r))
+					}
+				} else if cfg.allLower || cfg.whispering {
+					for _, r := range s {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				} else {
+					b.WriteString(s)
+				}
 			}
 		case AcronymWord:
-			w = word.String()
+			s := string(word)
 			if cfg.screaming {
-				w = strings.ToUpper(w)
+				for _, r := range s {
+					b.WriteRune(unicode.ToUpper(r))
+				}
 			} else if cfg.whispering {
-				w = strings.ToLower(w)
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
 			} else if cfg.caseMode == CMAllTitle {
 				var err error
-				w, err = upperCaseFirstLower(w, cfg.utf8Mode)
+				w, err := upperCaseFirstLower(s, cfg.utf8Mode)
 				if err != nil {
 					return "", err
 				}
+				b.WriteString(w)
+			} else {
+				b.WriteString(s)
 			}
 		case UpperCaseWord:
-			w = word.String()
+			s := string(word)
 			if cfg.allUpper || cfg.screaming {
-				w = strings.ToUpper(w)
+				for _, r := range s {
+					b.WriteRune(unicode.ToUpper(r))
+				}
 			} else if cfg.allLower || cfg.whispering {
-				w = strings.ToLower(w)
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
 			} else if cfg.caseMode == CMAllTitle {
 				var err error
-				w, err = upperCaseFirstLower(w, cfg.utf8Mode)
+				w, err := upperCaseFirstLower(s, cfg.utf8Mode)
 				if err != nil {
 					return "", err
 				}
+				b.WriteString(w)
+			} else {
+				b.WriteString(s)
 			}
 		case SeparatorWord:
-			w = word.String()
+			b.WriteString(string(word))
 		default:
-			w = word.String()
+			b.WriteString(word.String())
 		}
-
-		b.WriteString(w)
 	}
 
 	final := b.String()
@@ -498,23 +571,6 @@ func separateOptionsAny(opts []any) ([]any, []any) {
 	return parseOpts, fmtOpts
 }
 
-// Helper function to split words in mixed case
-func splitMixCase(input, delimiter string) string {
-	if delimiter == "" {
-		return input
-	}
-	var result strings.Builder
-	// Pre-allocate to avoid resizing.
-	// We add a buffer for potential delimiters (assuming roughly 50% increase).
-	result.Grow(len(input) + len(input)/2)
-	for i, r := range input {
-		if i > 0 && unicode.IsUpper(r) {
-			result.WriteString(delimiter)
-		}
-		result.WriteRune(r)
-	}
-	return result.String()
-}
 
 // ToKebabCase converts words into kebab-case format.
 func ToKebabCase(words []Word, opts ...Option) (string, error) {
