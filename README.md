@@ -59,19 +59,21 @@ The `Map` function provides a functional way to process, filter, or transform th
 Mapping can apply arbitrary functions of the type `func([]Word) []Word` to a sequence of words.
 
 ```go
+import "github.com/arran4/strings2/mappers"
+
 words, _ := strings2.Parse("National Aeronautics and Space Administration")
 
 // Convert words to an acronym
-acronymWords := strings2.Map(words, strings2.MapAcronym)
-// Result: [AcronymWord("NAASA")]
+acronymWords := strings2.Map(words, mappers.Acronym)
+// Result: [AcronymWord("NAS")]
 
 // Filter elements
-noDigits := strings2.Map(words, strings2.MapFilter(func(w strings2.Word) bool {
+noDigits := strings2.Map(words, mappers.Filter(func(w strings2.Word) bool {
     return !strings.ContainsAny(w.String(), "0123456789")
 }))
 
 // Reversing words
-reversed := strings2.Map(words, strings2.MapReverse)
+reversed := strings2.Map(words, mappers.Reverse)
 ```
 
 Multiple mapping functions can be passed simultaneously and will be applied sequentially.
