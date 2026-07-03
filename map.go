@@ -10,7 +10,9 @@ import (
 // It allows modification of the contents such as reversing, filtering, or custom transformations.
 func Map(words []Word, mappers ...func([]Word) []Word) []Word {
 	for _, m := range mappers {
-		words = m(words)
+		if m != nil {
+			words = m(words)
+		}
 	}
 	return words
 }
@@ -26,10 +28,13 @@ func MapReverse(words []Word) []Word {
 
 // MapFilter returns a mapping function that keeps only the words for which the keep function returns true.
 func MapFilter(keep func(Word) bool) func([]Word) []Word {
+	if keep == nil {
+		return func(words []Word) []Word { return words }
+	}
 	return func(words []Word) []Word {
 		var filtered []Word
 		for _, w := range words {
-			if keep(w) {
+			if w != nil && keep(w) {
 				filtered = append(filtered, w)
 			}
 		}
@@ -42,6 +47,9 @@ func MapFilter(keep func(Word) bool) func([]Word) []Word {
 func MapAcronym(words []Word) []Word {
 	var b strings.Builder
 	for _, w := range words {
+		if w == nil {
+			continue
+		}
 		// Ignore separators
 		if _, ok := w.(SeparatorWord); ok {
 			continue

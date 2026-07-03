@@ -53,6 +53,29 @@ strings2.ToKebabCase(words)  // "hello-world"
 strings2.ToSnakeCase(words)  // "hello_world"
 ```
 
+### Mapping and Transformation
+
+The `Map` function provides a functional way to process, filter, or transform the sliced `Word`s before formatting.
+Mapping can apply arbitrary functions of the type `func([]Word) []Word` to a sequence of words.
+
+```go
+words, _ := strings2.Parse("National Aeronautics and Space Administration")
+
+// Convert words to an acronym
+acronymWords := strings2.Map(words, strings2.MapAcronym)
+// Result: [AcronymWord("NAASA")]
+
+// Filter elements
+noDigits := strings2.Map(words, strings2.MapFilter(func(w strings2.Word) bool {
+    return !strings.ContainsAny(w.String(), "0123456789")
+}))
+
+// Reversing words
+reversed := strings2.Map(words, strings2.MapReverse)
+```
+
+Multiple mapping functions can be passed simultaneously and will be applied sequentially.
+
 ### Customising Formatting
 
 Behaviour can be tuned with options passed to each function. Some commonly used options include:
