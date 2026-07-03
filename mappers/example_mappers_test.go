@@ -37,9 +37,9 @@ func ExampleFilter() {
 }
 
 func ExampleAcronym() {
-	// Convert to acronym via options
-	result, _ := strings2.ToPascal("National Aeronautics and Space Administration", strings2.OptionMap(mappers.Acronym))
+	// Convert to acronym via options using Verbatim to preserve acronym casing
+	result, _ := strings2.ToFormattedString("National Aeronautics and Space Administration", strings2.OptionMap(mappers.Acronym), strings2.OptionCaseMode(strings2.CMVerbatim))
 	fmt.Println(result)
 
-	// Output: NAS
+	// Output: NAASA
 }
