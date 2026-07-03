@@ -328,10 +328,6 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		switch o := opt.(type) {
 		case Option:
 			o(cfg)
-		case WordMapper:
-			if o != nil {
-				words = o(words)
-			}
 		}
 	}
 
@@ -573,9 +569,9 @@ func separateOptionsAny(opts []any) ([]any, []any) {
 
 	for _, o := range opts {
 		switch v := o.(type) {
-		case Option, WordMapper:
+		case Option:
 			fmtOpts = append(fmtOpts, v)
-		case ParserOption, Partitioner, PartitionerConfig:
+		case ParserOption, Partitioner, PartitionerConfig, SubPartMapper, PartMapper, WordMapper:
 			parseOpts = append(parseOpts, v)
 		default:
 		}

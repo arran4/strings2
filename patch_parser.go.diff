@@ -1,0 +1,53 @@
+--- parser.go
++++ parser.go
+@@ -17,7 +17,21 @@
+ // - PartitionerConfig
+ // - ParserSmartAcronyms bool
+ func Parse(input string, opts ...any) ([]Word, error) {
++	var subPartMappers []SubPartMapper
++	var partMappers []PartMapper
++	var wordMappers []WordMapper
++
++	for _, opt := range opts {
++		switch o := opt.(type) {
++		case SubPartMapper:
++			subPartMappers = append(subPartMappers, o)
++		case PartMapper:
++			partMappers = append(partMappers, o)
++		case WordMapper:
++			wordMappers = append(wordMappers, o)
++		}
++	}
++
+	// Level 5: Scan
+	subs, stats := StringToSubParts(input)
+
++	for _, m := range subPartMappers {
++		if m != nil {
++			subs = m(subs)
++		}
++	}
++
+	p := &ParserConfig{
+		SmartAcronyms: true,
+		NumberMode:    NumberModeNone,
+@@ -43,8 +57,20 @@
+	parts := SubPartsToParts(subs, partitioner)
+
++	for _, m := range partMappers {
++		if m != nil {
++			parts = m(parts)
++		}
++	}
++
+	// Level 3: Words
+	words := PartsToWords(parts, p)
+
++	for _, m := range wordMappers {
++		if m != nil {
++			words = m(words)
++		}
++	}
++
+	return words, nil
+ }

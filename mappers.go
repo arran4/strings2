@@ -20,3 +20,9 @@ func Map(words []Word, mappers ...WordMapper) []Word {
 	}
 	return words
 }
+
+// PartMapper applies a mapping function to a slice of Parts.
+type PartMapper func([]Part) []Part
+
+// SubPartMapper applies a mapping function to a slice of SubParts.
+type SubPartMapper func([]SubPart) []SubPart

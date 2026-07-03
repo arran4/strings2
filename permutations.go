@@ -194,6 +194,8 @@ func extractOptions(opts []any) []Option {
 	return out
 }
 
+// WordMappers shouldn't need extraction as they are processed in FromXToY natively if they are passed as part of the parse chain, or in WordsToFormattedCase if passed.
+
 // Helper to separate options - mostly used internally if needed, but here we delegate.
 // Keeping Must as well.
 

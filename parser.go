@@ -22,6 +22,10 @@ func Parse(input string, opts ...any) ([]Word, error) {
 		NumberMode:    NumberModeNone,
 	}
 
+	var subPartMappers []SubPartMapper
+	var partMappers []PartMapper
+	var wordMappers []WordMapper
+
 	for _, opt := range opts {
 		switch o := opt.(type) {
 		case Partitioner:
@@ -30,6 +34,18 @@ func Parse(input string, opts ...any) ([]Word, error) {
 			p.Partitioner = NewPartitioner(o)
 		case ParserOption:
 			o.Apply(p)
+		case SubPartMapper:
+			subPartMappers = append(subPartMappers, o)
+		case PartMapper:
+			partMappers = append(partMappers, o)
+		case WordMapper:
+			wordMappers = append(wordMappers, o)
+		}
+	}
+
+	for _, m := range subPartMappers {
+		if m != nil {
+			subs = m(subs)
 		}
 	}
 
@@ -42,8 +58,20 @@ func Parse(input string, opts ...any) ([]Word, error) {
 
 	parts := SubPartsToParts(subs, partitioner)
 
+	for _, m := range partMappers {
+		if m != nil {
+			parts = m(parts)
+		}
+	}
+
 	// Level 3: Words
 	words := PartsToWords(parts, p)
+
+	for _, m := range wordMappers {
+		if m != nil {
+			words = m(words)
+		}
+	}
 
 	return words, nil
 }
