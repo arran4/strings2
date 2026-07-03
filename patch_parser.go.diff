@@ -1,0 +1,29 @@
+--- parser.go
++++ parser.go
+@@ -44,7 +44,7 @@
+	}
+
+	if len(subPartMappers) > 0 {
+-		subs = applySubPartMappers(subs, subPartMappers...)
++		subs = ApplySubPartMappers(subs, subPartMappers...)
+	}
+
+	// Level 4: Partition
+@@ -57,7 +57,7 @@
+	parts := SubPartsToParts(subs, partitioner)
+
+	if len(partMappers) > 0 {
+-		parts = applyPartMappers(parts, partMappers...)
++		parts = ApplyPartMappers(parts, partMappers...)
+	}
+
+	// Level 3: Words
+@@ -65,7 +65,7 @@
+	words := PartsToWords(parts, p)
+
+	if len(wordMappers) > 0 {
+-		words = applyWordMappers(words, wordMappers...)
++		words = ApplyWordMappers(words, wordMappers...)
+	}
+
+	return words, nil

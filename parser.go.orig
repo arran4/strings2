@@ -44,7 +44,7 @@ func Parse(input string, opts ...any) ([]Word, error) {
 	}
 
 	if len(subPartMappers) > 0 {
-		subs = ApplySubPartMappers(subs, subPartMappers...)
+		subs = applySubPartMappers(subs, subPartMappers...)
 	}
 
 	// Level 4: Partition
@@ -57,14 +57,14 @@ func Parse(input string, opts ...any) ([]Word, error) {
 	parts := SubPartsToParts(subs, partitioner)
 
 	if len(partMappers) > 0 {
-		parts = ApplyPartMappers(parts, partMappers...)
+		parts = applyPartMappers(parts, partMappers...)
 	}
 
 	// Level 3: Words
 	words := PartsToWords(parts, p)
 
 	if len(wordMappers) > 0 {
-		words = ApplyWordMappers(words, wordMappers...)
+		words = applyWordMappers(words, wordMappers...)
 	}
 
 	return words, nil

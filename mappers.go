@@ -4,7 +4,6 @@ package strings2
 type WordMapper func([]Word) []Word
 
 // ApplyWordMappers applies a series of WordMapper functions to a slice of Words.
-// It allows modification of the contents such as reversing, filtering, or custom transformations.
 func ApplyWordMappers(words []Word, mappers ...WordMapper) []Word {
 	for _, m := range mappers {
 		if m != nil {

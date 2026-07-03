@@ -335,7 +335,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 	}
 
 	if len(wordMappers) > 0 {
-		words = ApplyWordMappers(words, wordMappers...)
+		words = applyWordMappers(words, wordMappers...)
 	}
 
 	if cfg.upperIndicator != "" {
