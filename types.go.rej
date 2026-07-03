@@ -1,0 +1,10 @@
+--- types.go	2023-10-24 10:00:00.000000000 +0000
++++ types.go	2023-10-24 10:00:00.000000000 +0000
+@@ -261,6 +261,7 @@
+	firstUpper     bool
+	firstLower     bool
+	utf8Mode       UTF8Mode
++	mappers        []WordMapper
+ }
+
+ // OptionDelimiter sets the delimiter between words.
