@@ -261,7 +261,6 @@ type caseConfig struct {
 	firstUpper     bool
 	firstLower     bool
 	utf8Mode       UTF8Mode
-	mappers        []WordMapper
 
 }
 
