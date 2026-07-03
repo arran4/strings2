@@ -261,6 +261,7 @@ type caseConfig struct {
 	firstUpper     bool
 	firstLower     bool
 	utf8Mode       UTF8Mode
+	mappers        []Mapper
 }
 
 // OptionDelimiter sets the delimiter between words.
@@ -345,6 +346,10 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		cfg.firstLower = true
 	case CMFirstTitle:
 		cfg.firstUpper = true
+	}
+
+	if len(cfg.mappers) > 0 {
+		words = Map(words, cfg.mappers...)
 	}
 
 	size := 0
