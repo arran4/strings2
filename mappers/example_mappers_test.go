@@ -11,7 +11,8 @@ import (
 func ExampleReverse() {
 	// Reversing using the mapper directly on words
 	words, _ := strings2.Parse("hello world from strings2")
-	reversed := strings2.ApplyWordMappers(words, mappers.Reverse)
+	// Since ApplyWordMappers is internal, directly call the mapper if applying manually
+	reversed := mappers.Reverse(words)
 	result, _ := strings2.WordsToFormattedCase(reversed, strings2.OptionDelimiter(" "), strings2.OptionCaseMode(strings2.CMVerbatim))
 	fmt.Println(result)
 
