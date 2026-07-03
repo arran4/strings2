@@ -55,28 +55,33 @@ strings2.ToSnakeCase(words)  // "hello_world"
 
 ### Mapping and Transformation
 
-The `Map` function provides a functional way to process, filter, or transform the sliced `Word`s before formatting.
-Mapping can apply arbitrary functions of the type `func([]Word) []Word` to a sequence of words.
+You can provide `WordMapper` (`func([]Word) []Word`), `PartMapper`, or `SubPartMapper` natively into formatting functions or `Parse`/`StringToWords` as variadic options to filter, transform, or reorder elements during parsing and generation.
 
 ```go
 import "github.com/arran4/strings2/mappers"
 
-words, _ := strings2.Parse("National Aeronautics and Space Administration")
+// Convert strings natively with inline options
+acronym, _ := strings2.ToFormattedString(
+    "National Aeronautics and Space Administration",
+    strings2.WordMapper(mappers.Acronym),
+    strings2.OptionCaseMode(strings2.CMVerbatim),
+    strings2.OptionDelimiter(""),
+)
+// Result: "NAASA"
 
-// Convert words to an acronym
-acronymWords := strings2.Map(words, mappers.Acronym)
-// Result: [AcronymWord("NAS")]
+// Reversing words natively
+reversed, _ := strings2.ToCamel("hello world from strings2", strings2.WordMapper(mappers.Reverse))
+// Result: "strings2FromWorldHello"
 
-// Filter elements
-noDigits := strings2.Map(words, mappers.Filter(func(w strings2.Word) bool {
+// Filter out numbers natively
+filterNumbers := mappers.Filter(func(w strings2.Word) bool {
     return !strings.ContainsAny(w.String(), "0123456789")
-}))
-
-// Reversing words
-reversed := strings2.Map(words, mappers.Reverse)
+})
+noDigits, _ := strings2.ToSnake("hello 123 world", strings2.WordMapper(filterNumbers))
+// Result: "hello_world"
 ```
 
-Multiple mapping functions can be passed simultaneously and will be applied sequentially.
+Multiple mapping functions can be passed simultaneously and will be applied sequentially in their respective lifecycle phase (SubPart, Part, then Word).
 
 ### Customising Formatting
 
