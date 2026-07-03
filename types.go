@@ -350,10 +350,6 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		cfg.firstUpper = true
 	}
 
-	if len(cfg.mappers) > 0 {
-		words = Map(words, cfg.mappers...)
-	}
-
 
 	size := 0
 	for _, word := range words {
