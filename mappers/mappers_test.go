@@ -60,3 +60,9 @@ func TestMapAcronym(t *testing.T) {
 		t.Errorf("Expected nil, got %#v", emptyResult)
 	}
 }
+
+// Compile-time check to ensure our mappers conform to the interface
+var _ strings2.WordMapper = mappers.Reverse
+var _ strings2.WordMapper = mappers.Acronym
+// Filter returns a WordMapper
+var _ strings2.WordMapper = mappers.Filter(func(w strings2.Word) bool { return true })

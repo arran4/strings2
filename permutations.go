@@ -68,12 +68,6 @@ func FromPascalToWords(input string, opts ...any) ([]Word, error) {
 	return ParseCamelCase(input, opts...)
 }
 
-// StringToWords converts an input string into a slice of Words using the default parser.
-// It is an alias for Parse, provided for semantic parity with FromWordsToY functions.
-func StringToWords(input string, opts ...any) ([]Word, error) {
-	return Parse(input, opts...)
-}
-
 // FromXToY
 
 // FromCamelTo...

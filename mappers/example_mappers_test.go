@@ -9,21 +9,11 @@ import (
 )
 
 func ExampleReverse() {
-	// Reversing using the mapper directly on words
-	words, _ := strings2.Parse("hello world from strings2")
-	// Since ApplyWordMappers is internal, directly call the mapper if applying manually
-	reversed := mappers.Reverse(words)
-	result, _ := strings2.WordsToFormattedCase(reversed, strings2.OptionDelimiter(" "), strings2.OptionCaseMode(strings2.CMVerbatim))
+	// Reversing words via standard formatting parsing arguments
+	result, _ := strings2.ToCamel("hello world from strings2", strings2.WordMapper(mappers.Reverse))
 	fmt.Println(result)
 
-	// Alternatively, pass it as an option to standard formatting natively:
-	// NOTE: mappers apply *after* parsing, so `ToCamel` converts input to words,
-	//       then applies `Reverse`, then applies Camel formatting (first lower, then title).
-	result2, _ := strings2.ToCamel("hello world from strings2", strings2.WordMapper(mappers.Reverse))
-	fmt.Println(result2)
-
 	// Output:
-	// strings2 from world hello
 	// strings2FromWorldHello
 }
 
