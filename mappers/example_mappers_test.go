@@ -8,18 +8,18 @@ import (
 	"github.com/arran4/strings2/mappers"
 )
 
-func ExampleReverse() {
+func ExampleReverseWords() {
 	// Reversing words via standard formatting parsing arguments
-	result, _ := strings2.ToCamel("hello world from strings2", strings2.WordMapper(mappers.Reverse))
+	result, _ := strings2.ToCamel("hello world from strings2", strings2.WordMapper(mappers.ReverseWords))
 	fmt.Println(result)
 
 	// Output:
 	// strings2FromWorldHello
 }
 
-func ExampleFilter() {
+func ExampleFilterWords() {
 	// Filtering out words containing digits natively via options
-	filterNumbers := mappers.Filter(func(w strings2.Word) bool {
+	filterNumbers := mappers.FilterWords(func(w strings2.Word) bool {
 		return !strings.ContainsAny(w.String(), "0123456789")
 	})
 
@@ -29,10 +29,18 @@ func ExampleFilter() {
 	// Output: hello_world
 }
 
-func ExampleAcronym() {
-	// Convert to acronym via options natively using Verbatim to preserve acronym casing
-	result, _ := strings2.ToFormattedString("National Aeronautics and Space Administration", strings2.WordMapper(mappers.Acronym), strings2.OptionCaseMode(strings2.CMVerbatim), strings2.OptionDelimiter(""))
+func ExampleAcronymify() {
+	// Convert to acronym via options natively by mapping parts
+	result, _ := strings2.ToFormattedString("National Aeronautics and Space Administration", strings2.PartMapper(mappers.Acronymify), strings2.OptionCaseMode(strings2.CMVerbatim), strings2.OptionDelimiter(""))
 	fmt.Println(result)
 
 	// Output: NAASA
+}
+
+func ExampleFromCamelToSnake_mapping() {
+	// Reversing words via FromXToY formatter variants
+	result, _ := strings2.FromCamelToSnake("helloWorldFromStrings2", strings2.WordMapper(mappers.ReverseWords))
+	fmt.Println(result)
+
+	// Output: Strings2_From_World_hello
 }
