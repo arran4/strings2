@@ -3,7 +3,6 @@ package mappers
 import (
 	"strings"
 	"unicode"
-	"unicode/utf8"
 
 	"github.com/arran4/strings2"
 )
@@ -43,10 +42,11 @@ func Acronymify(parts []strings2.Part) []strings2.Part {
 		if _, ok := p.(*strings2.SeparatorPart); ok {
 			continue
 		}
-		s := p.String()
-		if len(s) > 0 {
-			r, _ := utf8.DecodeRuneInString(s)
-			b.WriteRune(unicode.ToUpper(r))
+		for _, sp := range p.SubParts() {
+			if sp.IsLetter() {
+				b.WriteRune(unicode.ToUpper(sp.Rune()))
+				break
+			}
 		}
 	}
 	if b.Len() > 0 {
