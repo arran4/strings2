@@ -8,3 +8,4 @@ type PartMapper func([]Part) []Part
 
 // SubPartMapper applies a mapping function to a slice of SubParts.
 type SubPartMapper func([]SubPart) []SubPart
+// trigger commit
