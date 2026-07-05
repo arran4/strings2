@@ -53,6 +53,36 @@ strings2.ToKebabCase(words)  // "hello-world"
 strings2.ToSnakeCase(words)  // "hello_world"
 ```
 
+### Mapping and Transformation
+
+You can provide `WordMapper` (`func([]Word) []Word`), `PartMapper`, or `SubPartMapper` natively into formatting functions or `Parse`/`StringToWords` as variadic options to filter, transform, or reorder elements during parsing and generation.
+
+```go
+import "github.com/arran4/strings2/mappers"
+
+// Convert strings natively with inline options
+acronym, _ := strings2.ToFormattedString(
+    "National Aeronautics and Space Administration",
+    strings2.WordMapper(mappers.Acronym),
+    strings2.OptionCaseMode(strings2.CMVerbatim),
+    strings2.OptionDelimiter(""),
+)
+// Result: "NAASA"
+
+// Reversing words natively
+reversed, _ := strings2.ToCamel("hello world from strings2", strings2.WordMapper(mappers.Reverse))
+// Result: "strings2FromWorldHello"
+
+// Filter out numbers natively
+filterNumbers := mappers.Filter(func(w strings2.Word) bool {
+    return !strings.ContainsAny(w.String(), "0123456789")
+})
+noDigits, _ := strings2.ToSnake("hello 123 world", strings2.WordMapper(filterNumbers))
+// Result: "hello_world"
+```
+
+Multiple mapping functions can be passed simultaneously and will be applied sequentially in their respective lifecycle phase (SubPart, Part, then Word).
+
 ### Customising Formatting
 
 Behaviour can be tuned with options passed to each function. Some commonly used options include:

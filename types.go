@@ -261,6 +261,7 @@ type caseConfig struct {
 	firstUpper     bool
 	firstLower     bool
 	utf8Mode       UTF8Mode
+
 }
 
 // OptionDelimiter sets the delimiter between words.
@@ -322,9 +323,20 @@ func convertOptions(opts []Option) []any {
 func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 	cfg := &caseConfig{delimiter: "-"}
 
+	var wordMappers []WordMapper
+
 	for _, opt := range opts {
-		if o, ok := opt.(Option); ok {
+		switch o := opt.(type) {
+		case Option:
 			o(cfg)
+		case WordMapper:
+			wordMappers = append(wordMappers, o)
+		}
+	}
+
+	for _, m := range wordMappers {
+		if m != nil {
+			words = m(words)
 		}
 	}
 
@@ -346,6 +358,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 	case CMFirstTitle:
 		cfg.firstUpper = true
 	}
+
 
 	size := 0
 	for _, word := range words {
@@ -563,7 +576,7 @@ func separateOptionsAny(opts []any) ([]any, []any) {
 		switch v := o.(type) {
 		case Option:
 			fmtOpts = append(fmtOpts, v)
-		case ParserOption, Partitioner, PartitionerConfig:
+		case ParserOption, Partitioner, PartitionerConfig, SubPartMapper, PartMapper, WordMapper:
 			parseOpts = append(parseOpts, v)
 		default:
 		}
