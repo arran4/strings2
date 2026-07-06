@@ -65,9 +65,16 @@ func CamelCasePartitioner(subs []SubPart) []Part {
 	})(subs)
 }
 
+
+// DelimiterDetector detects if a delimiter starts at the given index in subs.
+// It returns the length of the delimiter in subparts (runes), or 0 if no delimiter is found.
+type DelimiterDetector func(subs []SubPart, index int) (length int)
+
 type PartitionerConfig struct {
-	Delimiters  map[rune]bool
-	SplitCamel  bool
+	Delimiters        map[rune]bool
+	DelimiterDetector DelimiterDetector
+	SplitCamel        bool
+
 	NumberMode  NumberMode
 	PreserveSep bool // If true, delimiters are returned as SeparatorPart instead of discarded
 }
@@ -78,23 +85,40 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 		var parts []Part
 		var current []SubPart
 
-		for i, s := range subs {
-			// Check if current rune is a delimiter
-			if cfg.Delimiters != nil && cfg.Delimiters[s.Rune()] {
+		for i := 0; i < len(subs); {
+			s := subs[i]
+
+			delimLen := 0
+			if cfg.DelimiterDetector != nil {
+				delimLen = cfg.DelimiterDetector(subs, i)
+				if delimLen < 0 {
+					delimLen = 0
+				}
+				if delimLen > len(subs)-i {
+					delimLen = len(subs) - i
+				}
+			}
+			if delimLen == 0 && cfg.Delimiters != nil && cfg.Delimiters[s.Rune()] {
+				delimLen = 1
+			}
+
+			// Check if current rune(s) is a delimiter
+			if delimLen > 0 {
 				if len(current) > 0 {
 					parts = append(parts, &WordPart{BasePart{Subs: current}})
 					current = nil
 				}
 				if cfg.PreserveSep {
-					parts = append(parts, &SeparatorPart{BasePart{Subs: []SubPart{s}}})
+					parts = append(parts, &SeparatorPart{BasePart{Subs: subs[i : i+delimLen]}})
 				}
+				i += delimLen
 				continue
 			}
 
 			// Transition check
 			isSplit := false
-			if (cfg.SplitCamel || cfg.NumberMode != NumberModeNone) && i > 0 && len(current) > 0 {
-				prev := subs[i-1]
+			if (cfg.SplitCamel || cfg.NumberMode != NumberModeNone) && len(current) > 0 {
+				prev := current[len(current)-1]
 				// Note: if prev was delimiter, current is empty or started anew.
 				// We rely on current being non-empty to check transitions within a word chunk.
 
@@ -153,6 +177,7 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 				}
 			}
 			current = append(current, s)
+			i++
 		}
 		if len(current) > 0 {
 			parts = append(parts, &WordPart{BasePart{Subs: current}})
