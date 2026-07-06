@@ -528,12 +528,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		final = UpperCaseFirst(final)
 	}
 	if cfg.firstLower {
-		skipFirstLower := false
-		if len(words) > 0 {
-			if w, ok := words[0].(ExactCaseWord); ok && string(w) == "" {
-				skipFirstLower = true
-			}
-		}
+		skipFirstLower := len(words) > 0 && words[0].String() == ""
 		if !skipFirstLower {
 			final = LowerCaseFirst(final)
 		}
