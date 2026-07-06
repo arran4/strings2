@@ -91,6 +91,12 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 			delimLen := 0
 			if cfg.DelimiterDetector != nil {
 				delimLen = cfg.DelimiterDetector(subs, i)
+				if delimLen < 0 {
+					delimLen = 0
+				}
+				if delimLen > len(subs)-i {
+					delimLen = len(subs) - i
+				}
 			}
 			if delimLen == 0 && cfg.Delimiters != nil && cfg.Delimiters[s.Rune()] {
 				delimLen = 1
