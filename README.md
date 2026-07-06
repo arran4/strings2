@@ -42,6 +42,17 @@ words = strings2.ParseSnakeCase("hello_world")
 
 // Configure parser
 words, err = strings2.Parse("N.E.W. World", strings2.ParserSmartAcronyms(true))
+
+// Custom multi-byte delimiters using DelimiterDetector
+partitioner := strings2.NewPartitioner(strings2.PartitionerConfig{
+	DelimiterDetector: func(subs []strings2.SubPart, index int) int {
+		if index+1 < len(subs) && subs[index].Rune() == ':' && subs[index+1].Rune() == ':' {
+			return 2 // matched "::"
+		}
+		return 0
+	},
+})
+words, err = strings2.Parse("foo::bar", partitioner)
 ```
 
 ### Case Conversion Functions
