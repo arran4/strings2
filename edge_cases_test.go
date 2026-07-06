@@ -157,3 +157,50 @@ func TestLenOptimization(t *testing.T) {
 		}
 	})
 }
+
+func TestIancolemanMismatches(t *testing.T) {
+	// 1. camelCase mismatch: `strcase` outputs `HelloWorld` for leading underscores
+	out, err := ToCamel("_hello_world", ParserEmitEmpty(true))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "HelloWorld" {
+		t.Errorf("Expected HelloWorld, got %q", out)
+	}
+
+	// 2. snake_case mismatch: retain capitalization
+	out, err = ToSnake("helloWorld", OptionCaseMode(CMWhispering))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "hello_world" {
+		t.Errorf("Expected hello_world, got %q", out)
+	}
+
+	// double caps handling
+	out, err = ToSnake("HTTPResponse", OptionCaseMode(CMWhispering))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "http_response" {
+		t.Errorf("Expected http_response, got %q", out)
+	}
+
+	// 3. kebab-case mismatch
+	out, err = ToKebab("helloWorld", OptionCaseMode(CMWhispering))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "hello-world" {
+		t.Errorf("Expected hello-world, got %q", out)
+	}
+
+	// 4. delimited mismatch
+	out, err = ToFormattedString("helloWorld", OptionDelimiter("_"), OptionCaseMode(CMWhispering))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "hello_world" {
+		t.Errorf("Expected hello_world, got %q", out)
+	}
+}

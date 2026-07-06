@@ -77,6 +77,7 @@ type PartitionerConfig struct {
 
 	NumberMode  NumberMode
 	PreserveSep bool // If true, delimiters are returned as SeparatorPart instead of discarded
+	EmitEmpty   bool // If true, emits empty WordParts for leading, consecutive, or trailing delimiters
 }
 
 // NewPartitioner creates a partitioner with specific configuration.
@@ -107,6 +108,8 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 				if len(current) > 0 {
 					parts = append(parts, &WordPart{BasePart{Subs: current}})
 					current = nil
+				} else if cfg.EmitEmpty {
+					parts = append(parts, &WordPart{BasePart{Subs: nil}})
 				}
 				if cfg.PreserveSep {
 					parts = append(parts, &SeparatorPart{BasePart{Subs: subs[i : i+delimLen]}})
@@ -181,6 +184,21 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 		}
 		if len(current) > 0 {
 			parts = append(parts, &WordPart{BasePart{Subs: current}})
+		} else if cfg.EmitEmpty && len(subs) > 0 {
+			// If we ended with a delimiter, current is empty.
+			// Emit an empty part for the trailing delimiter if EmitEmpty is true.
+			// We only do this if the last character was a delimiter.
+			lastDelimLen := 0
+			if cfg.DelimiterDetector != nil {
+			    // Since current is empty, the last processed thing was a delimiter.
+			    lastDelimLen = 1
+			}
+			if lastDelimLen == 0 && cfg.Delimiters != nil && cfg.Delimiters[subs[len(subs)-1].Rune()] {
+				lastDelimLen = 1
+			}
+			if lastDelimLen > 0 {
+				parts = append(parts, &WordPart{BasePart{Subs: nil}})
+			}
 		}
 		return parts
 	}
