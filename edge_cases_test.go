@@ -158,117 +158,117 @@ func TestLenOptimization(t *testing.T) {
 	})
 }
 
-func TestIancolemanMismatches(t *testing.T) {
+func TestIancolemanMismatchesAndPermutations(t *testing.T) {
+	type Permutation struct {
+		name     string
+		opts     []any
+		expected string
+	}
+
 	tests := []struct {
-		name             string
-		input            string
-		opts             []any
-		fn               func(string, ...any) (string, error)
-		expected         string
-		currentlyGetting string
+		name  string
+		input string
+		fn    func(string, ...any) (string, error)
+		perms []Permutation
 	}{
 		{
-			name:             "camelCase mismatch with leading underscores",
-			input:            "_hello_world",
-			opts:             []any{ParserEmitEmpty(true)},
-			fn:               ToCamel,
-			expected:         "HelloWorld",
-			currentlyGetting: "helloWorld",
+			name:  "camelCase with leading underscore",
+			input: "_hello_world",
+			fn:    ToCamel,
+			perms: []Permutation{
+				{"default behavior (currently getting)", nil, "helloWorld"},
+				{"strcase parity", []any{ParserEmitEmpty(true)}, "HelloWorld"},
+				{"explicit emit empty false", []any{ParserEmitEmpty(false)}, "helloWorld"},
+			},
 		},
 		{
-			name:             "camelCase mismatch with multiple leading underscores",
-			input:            "__hello_world",
-			opts:             []any{ParserEmitEmpty(true)},
-			fn:               ToCamel,
-			expected:         "HelloWorld",
-			currentlyGetting: "helloWorld",
+			name:  "camelCase with multiple leading underscores",
+			input: "__hello_world",
+			fn:    ToCamel,
+			perms: []Permutation{
+				{"default behavior", nil, "helloWorld"},
+				{"strcase parity", []any{ParserEmitEmpty(true)}, "HelloWorld"},
+			},
 		},
 		{
-			name:             "camelCase mismatch with trailing underscores",
-			input:            "hello_world__",
-			opts:             []any{ParserEmitEmpty(true)},
-			fn:               ToCamel,
-			expected:         "helloWorld",
-			currentlyGetting: "helloWorld",
+			name:  "camelCase with trailing underscores",
+			input: "hello_world__",
+			fn:    ToCamel,
+			perms: []Permutation{
+				{"default behavior", nil, "helloWorld"},
+				{"strcase parity", []any{ParserEmitEmpty(true)}, "helloWorld"},
+			},
 		},
 		{
-			name:             "snake_case mismatch retaining capitalization",
-			input:            "helloWorld",
-			opts:             []any{OptionCaseMode(CMWhispering)},
-			fn:               ToSnake,
-			expected:         "hello_world",
-			currentlyGetting: "hello_World",
+			name:  "snake_case capitalization retention",
+			input: "helloWorld",
+			fn:    ToSnake,
+			perms: []Permutation{
+				{"default behavior (CMVerbatim)", nil, "hello_World"},
+				{"strcase parity (CMWhispering)", []any{OptionCaseMode(CMWhispering)}, "hello_world"},
+				{"screaming case", []any{OptionCaseMode(CMScreaming)}, "HELLO_WORLD"},
+			},
 		},
 		{
-			name:             "snake_case mismatch with multiple leading underscores",
-			input:            "__hello_world",
-			opts:             []any{OptionCaseMode(CMWhispering), ParserEmitEmpty(true)},
-			fn:               ToSnake,
-			expected:         "__hello_world",
-			currentlyGetting: "hello_world",
+			name:  "snake_case with multiple leading underscores",
+			input: "__hello_world",
+			fn:    ToSnake,
+			perms: []Permutation{
+				{"default behavior", nil, "hello_world"},
+				{"strcase parity", []any{OptionCaseMode(CMWhispering), ParserEmitEmpty(true)}, "__hello_world"},
+			},
 		},
 		{
-			name:             "snake_case mismatch with trailing underscores",
-			input:            "hello_world__",
-			opts:             []any{OptionCaseMode(CMWhispering), ParserEmitEmpty(true)},
-			fn:               ToSnake,
-			expected:         "hello_world__",
-			currentlyGetting: "hello_world",
+			name:  "snake_case with trailing underscores",
+			input: "hello_world__",
+			fn:    ToSnake,
+			perms: []Permutation{
+				{"default behavior", nil, "hello_world"},
+				{"strcase parity", []any{OptionCaseMode(CMWhispering), ParserEmitEmpty(true)}, "hello_world__"},
+			},
 		},
 		{
-			name:             "double caps handling in snake_case",
-			input:            "HTTPResponse",
-			opts:             []any{OptionCaseMode(CMWhispering)},
-			fn:               ToSnake,
-			expected:         "http_response",
-			currentlyGetting: "HTTP_Response",
+			name:  "double caps handling in snake_case",
+			input: "HTTPResponse",
+			fn:    ToSnake,
+			perms: []Permutation{
+				{"default behavior", nil, "HTTP_Response"},
+				{"strcase parity", []any{OptionCaseMode(CMWhispering)}, "http_response"},
+				{"disable smart acronyms", []any{ParserSmartAcronyms(false)}, "HTTP_Response"},
+			},
 		},
 		{
-			name:             "kebab-case mismatch",
-			input:            "helloWorld",
-			opts:             []any{OptionCaseMode(CMWhispering)},
-			fn:               ToKebab,
-			expected:         "hello-world",
-			currentlyGetting: "hello-World",
+			name:  "kebab-case capitalization retention",
+			input: "helloWorld",
+			fn:    ToKebab,
+			perms: []Permutation{
+				{"default behavior", nil, "hello-World"},
+				{"strcase parity", []any{OptionCaseMode(CMWhispering)}, "hello-world"},
+			},
 		},
 		{
-			name:             "delimited mismatch",
-			input:            "helloWorld",
-			opts:             []any{OptionDelimiter("_"), OptionCaseMode(CMWhispering)},
-			fn:               ToFormattedString,
-			expected:         "hello_world",
-			currentlyGetting: "hello_World", // Format defaults to Delimiter override, retains case
+			name:  "delimited capitalization retention",
+			input: "helloWorld",
+			fn:    ToFormattedString, // Requires at least a delimiter option
+			perms: []Permutation{
+				{"default behavior with delimiter", []any{OptionDelimiter("_")}, "hello_World"},
+				{"strcase parity", []any{OptionDelimiter("_"), OptionCaseMode(CMWhispering)}, "hello_world"},
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 1. Verify default strings2 behavior matches currentlyGetting
-			defaultOut, err := tt.fn(tt.input) // For delimited mismatch, we need the delimiter option at minimum
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-
-			// If it requires a delimiter to even run the function, provide it
-			if tt.name == "delimited mismatch" {
-				defaultOut, err = tt.fn(tt.input, OptionDelimiter("_"))
-				if err != nil {
-					t.Fatalf("unexpected error: %v", err)
-				}
-			}
-
-			if defaultOut != tt.currentlyGetting {
-				t.Errorf("Default behavior changed! Expected default %q, got %q", tt.currentlyGetting, defaultOut)
-			}
-
-			// 2. Verify that using the newly provided options fixes it to match expected iancoleman output
-			fixedOut, err := tt.fn(tt.input, tt.opts...)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-
-			if fixedOut != tt.expected {
-				t.Errorf("Fixed behavior failed! Expected %q, got %q", tt.expected, fixedOut)
+			for _, p := range tt.perms {
+				t.Run(p.name, func(t *testing.T) {
+					out, err := tt.fn(tt.input, p.opts...)
+					if err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+					if out != p.expected {
+						t.Errorf("Expected %q, got %q", p.expected, out)
+					}
+				})
 			}
 		})
 	}
