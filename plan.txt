@@ -1,0 +1,28 @@
+Ah! The user is suggesting that the tests in `TestIancolemanMismatches` should NOT use the new options (`ParserEmitEmpty` or `CMWhispering`), but rather should call the bare `ToCamel` and `ToSnake` to show what `strings2` *actually* outputs by default (`currently_getting`), and compare it to what `iancoleman` *expects* (`expected`), and then call `t.Skip("Mismatches with iancoleman default behavior")` if they don't match.
+
+Wait, if I just do that, then what was the point of adding the options?
+The user says: "@jules the intention here should be to show expected and currently_getting which should cause these to be skipped as these are incorrect right?"
+Maybe they mean we should add BOTH? The test struct should have `expected` (what iancoleman returns), `currently_getting` (what strings2 returns without options), and `opts` (the options that fix it, if any)?
+Or maybe the user doesn't realize I *fixed* the bugs and wants the tests to reflect the *current* buggy state, and skip them? But I *did* fix them. The tests pass because I used the options!
+Let's see what the user exactly wrote: "the intention here should be to show `expected` and `currently_getting` which should cause these to be skipped as these are incorrect right?"
+
+If the tests use the newly added options, `out == expected`, so they pass.
+If they DO NOT use the options, they fail. The user is asking if the intention of this specific test block was just to document the failures, in which case we'd skip them.
+I should reply: "I actually introduced the `ParserEmitEmpty(true)` and `OptionCaseMode(CMWhispering)` options precisely to fix these outputs! By providing these options in the test, `strings2` now correctly matches the `expected` iancoleman outputs, so these tests pass and do not need to be skipped. However, if you'd like the test to also document the default `strings2` behavior (the `currently_getting` mismatch) before options are applied, I can add a `currently_getting` field and assert on that when no options are provided. Let me know if you'd like me to implement that!"
+Wait, the user's PR comment is actionable if I choose to modify the test structure to explicitly show BOTH the buggy default behavior (and skip it or assert it) AND the fixed behavior.
+
+Let's modify `TestIancolemanMismatches` to demonstrate exactly this.
+```go
+	tests := []struct {
+		name             string
+		input            string
+		opts             []any
+		fn               func(string, ...any) (string, error)
+		expected         string // What iancoleman outputs (and strings2 with opts)
+		currently_getting string // What strings2 outputs by default without opts
+	}{
+...
+```
+Then run the function twice: once without `opts` asserting it matches `currently_getting`, and once with `opts` asserting it matches `expected`.
+This perfectly addresses the user's thought process, shows off the fix, and documents the default behavior mismatch simultaneously!
+Let's update the test structure!
