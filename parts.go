@@ -42,16 +42,19 @@ func SubPartsToParts(subs []SubPart, partitioner Partitioner) []Part {
 // Common Partitioners
 
 // SnakeCasePartitioner splits on underscore '_'.
+// Deprecated: Does not support dynamic configuration via options (e.g. EmitEmpty). Let Parse() automatically derive partitioners, or explicitly use NewPartitioner with PartitionerConfig instead.
 func SnakeCasePartitioner(subs []SubPart) []Part {
 	return SplitByDelimiter(subs, '_')
 }
 
 // KebabCasePartitioner splits on hyphen '-'.
+// Deprecated: Does not support dynamic configuration via options (e.g. EmitEmpty). Let Parse() automatically derive partitioners, or explicitly use NewPartitioner with PartitionerConfig instead.
 func KebabCasePartitioner(subs []SubPart) []Part {
 	return SplitByDelimiter(subs, '-')
 }
 
 // SplitByDelimiter is a helper to split SubParts by a specific rune delimiter.
+// Deprecated: Does not support dynamic configuration via options (e.g. EmitEmpty). Use NewPartitioner with PartitionerConfig instead.
 func SplitByDelimiter(subs []SubPart, delim rune) []Part {
 	return NewPartitioner(PartitionerConfig{
 		Delimiters: map[rune]bool{delim: true},
@@ -59,6 +62,7 @@ func SplitByDelimiter(subs []SubPart, delim rune) []Part {
 }
 
 // CamelCasePartitioner splits on case transitions.
+// Deprecated: Does not support dynamic configuration via options (e.g. EmitEmpty). Let Parse() automatically derive partitioners, or explicitly use NewPartitioner with PartitionerConfig instead.
 func CamelCasePartitioner(subs []SubPart) []Part {
 	return NewPartitioner(PartitionerConfig{
 		SplitCamel: true,
