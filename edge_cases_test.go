@@ -177,7 +177,7 @@ func TestIancolemanMismatchesAndPermutations(t *testing.T) {
 			fn:    ToCamel,
 			perms: []Permutation{
 				{"default behavior (currently getting)", nil, "helloWorld"},
-				{"strcase parity", []any{ParserEmitEmpty(true)}, "HelloWorld"},
+				{"strcase parity", []any{ParserEmitEmpty(true), OptionFirstLowerSkipEmpty()}, "HelloWorld"},
 				{"explicit emit empty false", []any{ParserEmitEmpty(false)}, "helloWorld"},
 			},
 		},
@@ -187,7 +187,7 @@ func TestIancolemanMismatchesAndPermutations(t *testing.T) {
 			fn:    ToCamel,
 			perms: []Permutation{
 				{"default behavior", nil, "helloWorld"},
-				{"strcase parity", []any{ParserEmitEmpty(true)}, "HelloWorld"},
+				{"strcase parity", []any{ParserEmitEmpty(true), OptionFirstLowerSkipEmpty()}, "HelloWorld"},
 			},
 		},
 		{
@@ -196,7 +196,7 @@ func TestIancolemanMismatchesAndPermutations(t *testing.T) {
 			fn:    ToCamel,
 			perms: []Permutation{
 				{"default behavior", nil, "helloWorld"},
-				{"strcase parity", []any{ParserEmitEmpty(true)}, "helloWorld"},
+				{"strcase parity", []any{ParserEmitEmpty(true), OptionFirstLowerSkipEmpty()}, "helloWorld"},
 			},
 		},
 		{

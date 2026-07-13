@@ -249,6 +249,18 @@ const (
 	UTF8Ignore
 )
 
+// FirstLowerBehavior determines how the first character of the formatted string should be lowercased.
+type FirstLowerBehavior int
+
+const (
+	// FirstLowerNone does not force the first character to be lowercased.
+	FirstLowerNone FirstLowerBehavior = iota
+	// FirstLowerAlways forces the first character to be lowercased unconditionally.
+	FirstLowerAlways
+	// FirstLowerSkipEmpty forces the first character to be lowercased, UNLESS the first parsed word is empty.
+	FirstLowerSkipEmpty
+)
+
 type caseConfig struct {
 	caseMode       CaseMode
 	delimiter      string
@@ -259,7 +271,7 @@ type caseConfig struct {
 	whispering     bool
 	mixCaseSupport bool
 	firstUpper     bool
-	firstLower     bool
+	firstLower     FirstLowerBehavior
 	utf8Mode       UTF8Mode
 
 }
@@ -281,7 +293,12 @@ func OptionFirstUpper() Option {
 
 // OptionFirstLower ensures the very first character of the result is lowercase.
 func OptionFirstLower() Option {
-	return func(cfg *caseConfig) { cfg.firstLower = true }
+	return func(cfg *caseConfig) { cfg.firstLower = FirstLowerAlways }
+}
+
+// OptionFirstLowerSkipEmpty behaves like OptionFirstLower, but skips lowercasing if the first parsed word is empty.
+func OptionFirstLowerSkipEmpty() Option {
+	return func(cfg *caseConfig) { cfg.firstLower = FirstLowerSkipEmpty }
 }
 
 // OptionMixCaseSupport enables splitting of mixed case words (e.g. CamelCase) into separate words based on uppercase letters.
@@ -354,7 +371,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 	case CMWhispering:
 		cfg.whispering = true
 	case CMFirstLower:
-		cfg.firstLower = true
+		cfg.firstLower = FirstLowerAlways
 	case CMFirstTitle:
 		cfg.firstUpper = true
 	}
@@ -527,8 +544,8 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 	if cfg.firstUpper {
 		final = UpperCaseFirst(final)
 	}
-	if cfg.firstLower {
-		skipFirstLower := len(words) > 0 && words[0].String() == ""
+	if cfg.firstLower != FirstLowerNone {
+		skipFirstLower := cfg.firstLower == FirstLowerSkipEmpty && len(words) > 0 && words[0].String() == ""
 		if !skipFirstLower {
 			final = LowerCaseFirst(final)
 		}
