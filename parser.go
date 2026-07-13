@@ -85,6 +85,8 @@ type ParserConfig struct {
 	SmartAcronyms bool
 	// NumberMode controls how numbers are handled during word splitting.
 	NumberMode NumberMode
+	// EmitEmpty controls whether empty parts are emitted for delimiters
+	EmitEmpty bool
 }
 
 // NumberMode defines the strategy for handling numbers during parsing.
@@ -117,6 +119,13 @@ type ParserSmartAcronyms bool
 
 func (b ParserSmartAcronyms) Apply(p *ParserConfig) {
 	p.SmartAcronyms = bool(b)
+}
+
+// ParserEmitEmpty is a typed option for EmitEmpty configuration.
+type ParserEmitEmpty bool
+
+func (b ParserEmitEmpty) Apply(p *ParserConfig) {
+	p.EmitEmpty = bool(b)
 }
 
 // WithPartitioner sets a specific partitioner strategy.
@@ -179,14 +188,17 @@ func DetectPartitioner(stats Stats, config ...*ParserConfig) Partitioner {
 	}
 
 	numberMode := NumberModeNone
+	emitEmpty := false
 	if len(config) > 0 && config[0] != nil {
 		numberMode = config[0].NumberMode
+		emitEmpty = config[0].EmitEmpty
 	}
 
 	return NewPartitioner(PartitionerConfig{
 		Delimiters: delimiters,
 		SplitCamel: true,
 		NumberMode: numberMode,
+		EmitEmpty:  emitEmpty,
 	})
 }
 
@@ -266,26 +278,22 @@ func ClassifyPart(part Part, config *ParserConfig) Word {
 
 func ParseSnakeCase(input string, opts ...any) ([]Word, error) {
 	// Snake case implies split by underscore.
-	// Users might want to override this or add other options.
-	// But essentially we want to enforce the SnakeCasePartitioner.
-
-	// We can reuse Parse logic but force the partitioner?
-
-	// Default options for SnakeCase
-	combinedOpts := []any{SnakeCasePartitioner}
+	combinedOpts := make([]any, 0, len(opts)+1)
 	combinedOpts = append(combinedOpts, opts...)
-
+	combinedOpts = append(combinedOpts, WithSnakeCasePartitioner())
 	return Parse(input, combinedOpts...)
 }
 
 func ParseCamelCase(input string, opts ...any) ([]Word, error) {
-	combinedOpts := []any{CamelCasePartitioner}
+	combinedOpts := make([]any, 0, len(opts)+1)
 	combinedOpts = append(combinedOpts, opts...)
+	combinedOpts = append(combinedOpts, WithCamelCasePartitioner())
 	return Parse(input, combinedOpts...)
 }
 
 func ParseKebabCase(input string, opts ...any) ([]Word, error) {
-	combinedOpts := []any{KebabCasePartitioner}
+	combinedOpts := make([]any, 0, len(opts)+1)
 	combinedOpts = append(combinedOpts, opts...)
+	combinedOpts = append(combinedOpts, WithKebabCasePartitioner())
 	return Parse(input, combinedOpts...)
 }

@@ -142,7 +142,7 @@ func getParseOptions(provider string) []any {
 func getFormatOptions(provider, format string) []Option {
 	var opts []Option
 	// Defaults for some providers imply strict casing (whispering)
-	isSnake := format == "Snake" || format == "Kebab" // Kebab usually follows snake rules for casing
+	isSnake := format == "Snake" || format == "Kebab" || format == "Delimited" // Kebab and Delimited usually follow snake rules for casing
 	if isSnake {
 		if provider == "iancoleman" || provider == "ettle" || provider == "golang-cz" || provider == "tomedharris" || provider == "janos" {
 			opts = append(opts, OptionCaseMode(CMWhispering))

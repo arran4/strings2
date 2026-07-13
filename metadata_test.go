@@ -56,7 +56,17 @@ func TestOptionMetadata(t *testing.T) {
 				OptionFirstLower(),
 			},
 			expected: caseConfig{
-				firstLower: true,
+				firstLower: FirstLowerAlways,
+				delimiter:  "-",
+			},
+		},
+		{
+			name: "First Lower Skip Empty",
+			options: []Option{
+				OptionFirstLowerSkipEmpty(),
+			},
+			expected: caseConfig{
+				firstLower: FirstLowerSkipEmpty,
 				delimiter:  "-",
 			},
 		},

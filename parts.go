@@ -41,17 +41,37 @@ func SubPartsToParts(subs []SubPart, partitioner Partitioner) []Part {
 
 // Common Partitioners
 
+func overridePartitionerConfig(pcfg *PartitionerConfig, opts ...any) {
+	for _, opt := range opts {
+		switch o := opt.(type) {
+		case NumberMode:
+			pcfg.NumberMode = o
+		case ParserEmitEmpty:
+			pcfg.EmitEmpty = bool(o)
+		}
+	}
+}
+
 // SnakeCasePartitioner splits on underscore '_'.
+// Deprecated: Does not support dynamic configuration via options (e.g. EmitEmpty). Use WithSnakeCasePartitioner instead.
 func SnakeCasePartitioner(subs []SubPart) []Part {
-	return SplitByDelimiter(subs, '_')
+	return NewPartitioner(PartitionerConfig{
+		Delimiters: map[rune]bool{'_': true},
+		SplitCamel: true,
+	})(subs)
 }
 
 // KebabCasePartitioner splits on hyphen '-'.
+// Deprecated: Does not support dynamic configuration via options (e.g. EmitEmpty). Use WithKebabCasePartitioner instead.
 func KebabCasePartitioner(subs []SubPart) []Part {
-	return SplitByDelimiter(subs, '-')
+	return NewPartitioner(PartitionerConfig{
+		Delimiters: map[rune]bool{'-': true},
+		SplitCamel: true,
+	})(subs)
 }
 
 // SplitByDelimiter is a helper to split SubParts by a specific rune delimiter.
+// Deprecated: Does not support dynamic configuration via options (e.g. EmitEmpty). Use WithSplitByDelimiter instead.
 func SplitByDelimiter(subs []SubPart, delim rune) []Part {
 	return NewPartitioner(PartitionerConfig{
 		Delimiters: map[rune]bool{delim: true},
@@ -59,10 +79,78 @@ func SplitByDelimiter(subs []SubPart, delim rune) []Part {
 }
 
 // CamelCasePartitioner splits on case transitions.
+// Deprecated: Does not support dynamic configuration via options (e.g. EmitEmpty). Use WithCamelCasePartitioner instead.
 func CamelCasePartitioner(subs []SubPart) []Part {
 	return NewPartitioner(PartitionerConfig{
 		SplitCamel: true,
 	})(subs)
+}
+
+// WithSnakeCasePartitioner creates a ParserOption that splits on underscore '_'.
+func WithSnakeCasePartitioner(opts ...any) ParserOption {
+	return funcParserOption(func(cfg *ParserConfig) {
+		if cfg.Partitioner != nil {
+			return
+		}
+		pcfg := PartitionerConfig{
+			Delimiters: map[rune]bool{'_': true},
+			SplitCamel: true,
+			NumberMode: cfg.NumberMode,
+			EmitEmpty:  cfg.EmitEmpty,
+		}
+		overridePartitionerConfig(&pcfg, opts...)
+		cfg.Partitioner = NewPartitioner(pcfg)
+	})
+}
+
+// WithKebabCasePartitioner creates a ParserOption that splits on hyphen '-'.
+func WithKebabCasePartitioner(opts ...any) ParserOption {
+	return funcParserOption(func(cfg *ParserConfig) {
+		if cfg.Partitioner != nil {
+			return
+		}
+		pcfg := PartitionerConfig{
+			Delimiters: map[rune]bool{'-': true},
+			SplitCamel: true,
+			NumberMode: cfg.NumberMode,
+			EmitEmpty:  cfg.EmitEmpty,
+		}
+		overridePartitionerConfig(&pcfg, opts...)
+		cfg.Partitioner = NewPartitioner(pcfg)
+	})
+}
+
+// WithSplitByDelimiter creates a ParserOption that splits on a specific rune delimiter.
+func WithSplitByDelimiter(delim rune, opts ...any) ParserOption {
+	return funcParserOption(func(cfg *ParserConfig) {
+		if cfg.Partitioner != nil {
+			return
+		}
+		pcfg := PartitionerConfig{
+			Delimiters: map[rune]bool{delim: true},
+			SplitCamel: true,
+			NumberMode: cfg.NumberMode,
+			EmitEmpty:  cfg.EmitEmpty,
+		}
+		overridePartitionerConfig(&pcfg, opts...)
+		cfg.Partitioner = NewPartitioner(pcfg)
+	})
+}
+
+// WithCamelCasePartitioner creates a ParserOption that splits on case transitions.
+func WithCamelCasePartitioner(opts ...any) ParserOption {
+	return funcParserOption(func(cfg *ParserConfig) {
+		if cfg.Partitioner != nil {
+			return
+		}
+		pcfg := PartitionerConfig{
+			SplitCamel: true,
+			NumberMode: cfg.NumberMode,
+			EmitEmpty:  cfg.EmitEmpty,
+		}
+		overridePartitionerConfig(&pcfg, opts...)
+		cfg.Partitioner = NewPartitioner(pcfg)
+	})
 }
 
 
@@ -77,6 +165,7 @@ type PartitionerConfig struct {
 
 	NumberMode  NumberMode
 	PreserveSep bool // If true, delimiters are returned as SeparatorPart instead of discarded
+	EmitEmpty   bool // If true, emits empty WordParts for leading, consecutive, or trailing delimiters
 }
 
 // NewPartitioner creates a partitioner with specific configuration.
@@ -107,6 +196,8 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 				if len(current) > 0 {
 					parts = append(parts, &WordPart{BasePart{Subs: current}})
 					current = nil
+				} else if cfg.EmitEmpty {
+					parts = append(parts, &WordPart{BasePart{Subs: nil}})
 				}
 				if cfg.PreserveSep {
 					parts = append(parts, &SeparatorPart{BasePart{Subs: subs[i : i+delimLen]}})
@@ -181,6 +272,10 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 		}
 		if len(current) > 0 {
 			parts = append(parts, &WordPart{BasePart{Subs: current}})
+		} else if cfg.EmitEmpty && len(subs) > 0 {
+			// If we ended with a delimiter, current is empty.
+			// Emit an empty part for the trailing delimiter if EmitEmpty is true.
+			parts = append(parts, &WordPart{BasePart{Subs: nil}})
 		}
 		return parts
 	}

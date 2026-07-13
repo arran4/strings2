@@ -157,3 +157,119 @@ func TestLenOptimization(t *testing.T) {
 		}
 	})
 }
+
+func TestIancolemanMismatchesAndPermutations(t *testing.T) {
+	type Permutation struct {
+		name     string
+		opts     []any
+		expected string
+	}
+
+	tests := []struct {
+		name  string
+		input string
+		fn    func(string, ...any) (string, error)
+		perms []Permutation
+	}{
+		{
+			name:  "camelCase with leading underscore",
+			input: "_hello_world",
+			fn:    ToCamel,
+			perms: []Permutation{
+				{"default behavior (currently getting)", nil, "helloWorld"},
+				{"strcase parity", []any{ParserEmitEmpty(true), OptionFirstLowerSkipEmpty()}, "HelloWorld"},
+				{"explicit emit empty false", []any{ParserEmitEmpty(false)}, "helloWorld"},
+			},
+		},
+		{
+			name:  "camelCase with multiple leading underscores",
+			input: "__hello_world",
+			fn:    ToCamel,
+			perms: []Permutation{
+				{"default behavior", nil, "helloWorld"},
+				{"strcase parity", []any{ParserEmitEmpty(true), OptionFirstLowerSkipEmpty()}, "HelloWorld"},
+			},
+		},
+		{
+			name:  "camelCase with trailing underscores",
+			input: "hello_world__",
+			fn:    ToCamel,
+			perms: []Permutation{
+				{"default behavior", nil, "helloWorld"},
+				{"strcase parity", []any{ParserEmitEmpty(true), OptionFirstLowerSkipEmpty()}, "helloWorld"},
+			},
+		},
+		{
+			name:  "snake_case capitalization retention",
+			input: "helloWorld",
+			fn:    ToSnake,
+			perms: []Permutation{
+				{"default behavior (CMVerbatim)", nil, "hello_World"},
+				{"strcase parity (CMWhispering)", []any{OptionCaseMode(CMWhispering)}, "hello_world"},
+				{"screaming case", []any{OptionCaseMode(CMScreaming)}, "HELLO_WORLD"},
+			},
+		},
+		{
+			name:  "snake_case with multiple leading underscores",
+			input: "__hello_world",
+			fn:    ToSnake,
+			perms: []Permutation{
+				{"default behavior", nil, "hello_world"},
+				{"strcase parity", []any{OptionCaseMode(CMWhispering), ParserEmitEmpty(true)}, "__hello_world"},
+			},
+		},
+		{
+			name:  "snake_case with trailing underscores",
+			input: "hello_world__",
+			fn:    ToSnake,
+			perms: []Permutation{
+				{"default behavior", nil, "hello_world"},
+				{"strcase parity", []any{OptionCaseMode(CMWhispering), ParserEmitEmpty(true)}, "hello_world__"},
+			},
+		},
+		{
+			name:  "double caps handling in snake_case",
+			input: "HTTPResponse",
+			fn:    ToSnake,
+			perms: []Permutation{
+				{"default behavior", nil, "HTTP_Response"},
+				{"strcase parity", []any{OptionCaseMode(CMWhispering)}, "http_response"},
+				{"disable smart acronyms", []any{ParserSmartAcronyms(false)}, "HTTP_Response"},
+			},
+		},
+		{
+			name:  "kebab-case capitalization retention",
+			input: "helloWorld",
+			fn:    ToKebab,
+			perms: []Permutation{
+				{"default behavior", nil, "hello-World"},
+				{"strcase parity", []any{OptionCaseMode(CMWhispering)}, "hello-world"},
+			},
+		},
+		{
+			name:  "delimited capitalization retention",
+			input: "helloWorld",
+			fn:    ToFormattedString, // Requires at least a delimiter option
+			perms: []Permutation{
+				{"default behavior with delimiter", []any{OptionDelimiter("_")}, "hello_World"},
+				{"strcase parity", []any{OptionDelimiter("_"), OptionCaseMode(CMWhispering)}, "hello_world"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, p := range tt.perms {
+				t.Run(p.name, func(t *testing.T) {
+					out, err := tt.fn(tt.input, p.opts...)
+					if err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+					if out != p.expected {
+						t.Errorf("Expected %q, got %q", p.expected, out)
+					}
+				})
+			}
+		})
+	}
+}
