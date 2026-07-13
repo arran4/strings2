@@ -280,46 +280,20 @@ func ParseSnakeCase(input string, opts ...any) ([]Word, error) {
 	// Snake case implies split by underscore.
 	combinedOpts := make([]any, 0, len(opts)+1)
 	combinedOpts = append(combinedOpts, opts...)
-	combinedOpts = append(combinedOpts, funcParserOption(func(cfg *ParserConfig) {
-		if cfg.Partitioner == nil {
-			cfg.Partitioner = NewPartitioner(PartitionerConfig{
-				Delimiters: map[rune]bool{'_': true},
-				SplitCamel: true,
-				NumberMode: cfg.NumberMode,
-				EmitEmpty:  cfg.EmitEmpty,
-			})
-		}
-	}))
+	combinedOpts = append(combinedOpts, WithSnakeCasePartitioner())
 	return Parse(input, combinedOpts...)
 }
 
 func ParseCamelCase(input string, opts ...any) ([]Word, error) {
 	combinedOpts := make([]any, 0, len(opts)+1)
 	combinedOpts = append(combinedOpts, opts...)
-	combinedOpts = append(combinedOpts, funcParserOption(func(cfg *ParserConfig) {
-		if cfg.Partitioner == nil {
-			cfg.Partitioner = NewPartitioner(PartitionerConfig{
-				SplitCamel: true,
-				NumberMode: cfg.NumberMode,
-				EmitEmpty:  cfg.EmitEmpty,
-			})
-		}
-	}))
+	combinedOpts = append(combinedOpts, WithCamelCasePartitioner())
 	return Parse(input, combinedOpts...)
 }
 
 func ParseKebabCase(input string, opts ...any) ([]Word, error) {
 	combinedOpts := make([]any, 0, len(opts)+1)
 	combinedOpts = append(combinedOpts, opts...)
-	combinedOpts = append(combinedOpts, funcParserOption(func(cfg *ParserConfig) {
-		if cfg.Partitioner == nil {
-			cfg.Partitioner = NewPartitioner(PartitionerConfig{
-				Delimiters: map[rune]bool{'-': true},
-				SplitCamel: true,
-				NumberMode: cfg.NumberMode,
-				EmitEmpty:  cfg.EmitEmpty,
-			})
-		}
-	}))
+	combinedOpts = append(combinedOpts, WithKebabCasePartitioner())
 	return Parse(input, combinedOpts...)
 }
