@@ -32,16 +32,6 @@ func FilterWords(keep func(strings2.Word) bool) func([]strings2.Word) []strings2
 }
 
 // Acronymify creates an acronym by taking the first letter of each word and discarding the rest.
-//
-// Analysis of previous implementation complexity:
-// The original implementation as a PartMapper was overly complex because it forced manual
-// reconstruction of the internal parsing AST (SubParts and Parts). It extracted letters into a
-// strings.Builder and then manually re-lexed them into a new WordPart.
-// By implementing it as a SubPartMapper, it acts purely as an early-stage filter.
-// It filters the stream to keep only the capitalized first letter of each word boundary.
-// The downstream pipeline (Partitioner and Word Classifier) will then naturally group these
-// adjacent letters into a single UpperCaseWord or AcronymWord, completely eliminating the need
-// for manual AST reconstruction.
 func Acronymify(subs []strings2.SubPart) []strings2.SubPart {
 	var result []strings2.SubPart
 	inWord := false
