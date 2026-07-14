@@ -1,7 +1,6 @@
 package mappers
 
 import (
-	"strings"
 	"unicode"
 
 	"github.com/arran4/strings2"
@@ -32,32 +31,46 @@ func FilterWords(keep func(strings2.Word) bool) func([]strings2.Word) []strings2
 	}
 }
 
-// Acronymify creates an acronym by taking the first letter of each part, converting it to an UpperCaseWord
-func Acronymify(parts []strings2.Part) []strings2.Part {
-	var b strings.Builder
-	for _, p := range parts {
-		if p == nil {
-			continue
-		}
-		if _, ok := p.(*strings2.SeparatorPart); ok {
-			continue
-		}
-		for _, sp := range p.SubParts() {
-			if sp.IsLetter() {
-				b.WriteRune(unicode.ToUpper(sp.Rune()))
-				break
+// Acronymify creates an acronym by taking the first letter of each word and discarding the rest.
+//
+// Analysis of previous implementation complexity:
+// The original implementation as a PartMapper was overly complex because it forced manual
+// reconstruction of the internal parsing AST (SubParts and Parts). It extracted letters into a
+// strings.Builder and then manually re-lexed them into a new WordPart.
+// By implementing it as a SubPartMapper, it acts purely as an early-stage filter.
+// It filters the stream to keep only the capitalized first letter of each word boundary.
+// The downstream pipeline (Partitioner and Word Classifier) will then naturally group these
+// adjacent letters into a single UpperCaseWord or AcronymWord, completely eliminating the need
+// for manual AST reconstruction.
+func Acronymify(subs []strings2.SubPart) []strings2.SubPart {
+	var result []strings2.SubPart
+	inWord := false
+	for i, sp := range subs {
+		if sp.IsLetter() {
+			isNewWord := !inWord
+			if inWord && i > 0 {
+				prev := subs[i-1]
+				// Camel case boundary: lower to Upper
+				if prev.IsLower() && sp.IsUpper() {
+					isNewWord = true
+				}
+				// Camel case boundary: Upper to Upper to lower (e.g., PDFLoader -> P, L)
+				if prev.IsUpper() && sp.IsUpper() && i+1 < len(subs) && subs[i+1].IsLower() {
+					isNewWord = true
+				}
 			}
+			if isNewWord {
+				// Convert the first letter to uppercase
+				result = append(result, strings2.LetterSubPart{
+					BaseSubPart: strings2.BaseSubPart{Val: unicode.ToUpper(sp.Rune())},
+				})
+				inWord = true
+			}
+		} else {
+			inWord = false
 		}
 	}
-	if b.Len() > 0 {
-		// Construct SubParts manually since BasePart operates on SubParts
-		var subs []strings2.SubPart
-		for _, r := range b.String() {
-			subs = append(subs, strings2.LetterSubPart{BaseSubPart: strings2.BaseSubPart{Val: r}})
-		}
-		return []strings2.Part{&strings2.WordPart{BasePart: strings2.BasePart{Subs: subs}}}
-	}
-	return nil
+	return result
 }
 
 // ReverseParts is a mapping function that reverses the order of the parts.

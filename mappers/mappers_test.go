@@ -57,29 +57,36 @@ func stringToPart(s string, isSeparator bool) strings2.Part {
 }
 
 func TestMapAcronymify(t *testing.T) {
-	parts := []strings2.Part{
-		stringToPart("national", false),
-		stringToPart(" ", true),
-		stringToPart("aeronautics", false),
-		stringToPart(" ", true),
-		stringToPart("space", false),
-		nil,
+	subs, _ := strings2.StringToSubParts("national aeronautics space")
+	result := mappers.Acronymify(subs)
+
+	if len(result) != 3 {
+		t.Fatalf("Expected 3 subparts, got %d", len(result))
+	}
+	if result[0].Rune() != 'N' || result[1].Rune() != 'A' || result[2].Rune() != 'S' {
+		t.Errorf("Expected NAS, got %c%c%c", result[0].Rune(), result[1].Rune(), result[2].Rune())
 	}
 
-	result := mappers.Acronymify(parts)
-	if len(result) != 1 || result[0].String() != "NAS" {
-		t.Errorf("Expected NAS, got %#v", result)
+	emptySubs, _ := strings2.StringToSubParts(" ")
+	emptyResult := mappers.Acronymify(emptySubs)
+	if len(emptyResult) != 0 {
+		t.Errorf("Expected empty result, got %#v", emptyResult)
 	}
 
-	emptyResult := mappers.Acronymify([]strings2.Part{stringToPart(" ", true)})
-	if emptyResult != nil {
-		t.Errorf("Expected nil, got %#v", emptyResult)
+	// Camel case test
+	camelSubs, _ := strings2.StringToSubParts("nationalAeronauticsSpace")
+	camelResult := mappers.Acronymify(camelSubs)
+	if len(camelResult) != 3 {
+		t.Fatalf("Expected 3 subparts, got %d", len(camelResult))
+	}
+	if camelResult[0].Rune() != 'N' || camelResult[1].Rune() != 'A' || camelResult[2].Rune() != 'S' {
+		t.Errorf("Expected NAS, got %c%c%c", camelResult[0].Rune(), camelResult[1].Rune(), camelResult[2].Rune())
 	}
 }
 
 // Compile-time check to ensure our mappers conform to the interface
 var _ strings2.WordMapper = mappers.ReverseWords
-var _ strings2.PartMapper = mappers.Acronymify
+var _ strings2.SubPartMapper = mappers.Acronymify
 var _ strings2.PartMapper = mappers.ReverseParts
 // Filter returns a WordMapper
 var _ strings2.WordMapper = mappers.FilterWords(func(w strings2.Word) bool { return true })
