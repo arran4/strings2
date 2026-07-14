@@ -288,12 +288,12 @@ func OptionCaseMode(caseMode CaseMode) Option {
 
 // OptionWhispering ensures all characters are lowercase.
 func OptionWhispering() Option {
-	return func(cfg *caseConfig) { cfg.whispering = true }
+	return func(cfg *caseConfig) { cfg.caseMode = CMWhispering }
 }
 
 // OptionScreaming ensures all characters are uppercase.
 func OptionScreaming() Option {
-	return func(cfg *caseConfig) { cfg.screaming = true }
+	return func(cfg *caseConfig) { cfg.caseMode = CMScreaming }
 }
 
 // OptionFirstUpper ensures the very first character of the result is uppercase.

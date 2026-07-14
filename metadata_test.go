@@ -36,7 +36,7 @@ func TestOptionMetadata(t *testing.T) {
 				OptionScreaming(),
 			},
 			expected: caseConfig{
-				screaming: true,
+				caseMode:  CMScreaming,
 				delimiter: "-",
 			},
 		},
@@ -99,7 +99,7 @@ func TestOptionMetadata(t *testing.T) {
 			},
 			expected: caseConfig{
 				delimiter:  ".",
-				whispering: true,
+				caseMode:   CMWhispering,
 				firstUpper: true,
 			},
 		},
