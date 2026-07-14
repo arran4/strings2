@@ -108,7 +108,7 @@ func TestToKebabCase(t *testing.T) {
 				SingleCaseWord("hello"),
 				SingleCaseWord("world"),
 			},
-			options:  []Option{OptionCaseMode(CMScreaming)},
+			options:  []Option{OptionScreaming()},
 			expected: "HELLO-WORLD",
 		},
 		{
@@ -153,7 +153,7 @@ func TestToSnakeCase(t *testing.T) {
 				SingleCaseWord("hello"),
 				SingleCaseWord("world"),
 			},
-			options:  []Option{OptionCaseMode(CMScreaming)},
+			options:  []Option{OptionScreaming()},
 			expected: "HELLO_WORLD",
 		},
 		{

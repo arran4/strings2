@@ -24,13 +24,13 @@ func TestOptimizationCorrectness(t *testing.T) {
 		{
 			name:     "MixedCase Screaming",
 			input:    []Word{SingleCaseWord("HeLLo"), SingleCaseWord("WoRLd")},
-			options:  []Option{OptionDelimiter("-"), OptionCaseMode(CMScreaming)},
+			options:  []Option{OptionDelimiter("-"), OptionScreaming()},
 			expected: "HELLO-WORLD",
 		},
 		{
 			name:     "MixedCase Whispering",
 			input:    []Word{SingleCaseWord("HeLLo"), SingleCaseWord("WoRLd")},
-			options:  []Option{OptionDelimiter("-"), OptionCaseMode(CMWhispering)},
+			options:  []Option{OptionDelimiter("-"), OptionWhispering()},
 			expected: "hello-world",
 		},
 		{

@@ -205,8 +205,8 @@ func TestIancolemanMismatchesAndPermutations(t *testing.T) {
 			fn:    ToSnake,
 			perms: []Permutation{
 				{"default behavior (CMVerbatim)", nil, "hello_World"},
-				{"strcase parity (CMWhispering)", []any{OptionCaseMode(CMWhispering)}, "hello_world"},
-				{"screaming case", []any{OptionCaseMode(CMScreaming)}, "HELLO_WORLD"},
+				{"strcase parity (CMWhispering)", []any{OptionWhispering()}, "hello_world"},
+				{"screaming case", []any{OptionScreaming()}, "HELLO_WORLD"},
 			},
 		},
 		{
@@ -215,7 +215,7 @@ func TestIancolemanMismatchesAndPermutations(t *testing.T) {
 			fn:    ToSnake,
 			perms: []Permutation{
 				{"default behavior", nil, "hello_world"},
-				{"strcase parity", []any{OptionCaseMode(CMWhispering), ParserEmitEmpty(true)}, "__hello_world"},
+				{"strcase parity", []any{OptionWhispering(), ParserEmitEmpty(true)}, "__hello_world"},
 			},
 		},
 		{
@@ -224,7 +224,7 @@ func TestIancolemanMismatchesAndPermutations(t *testing.T) {
 			fn:    ToSnake,
 			perms: []Permutation{
 				{"default behavior", nil, "hello_world"},
-				{"strcase parity", []any{OptionCaseMode(CMWhispering), ParserEmitEmpty(true)}, "hello_world__"},
+				{"strcase parity", []any{OptionWhispering(), ParserEmitEmpty(true)}, "hello_world__"},
 			},
 		},
 		{
@@ -233,7 +233,7 @@ func TestIancolemanMismatchesAndPermutations(t *testing.T) {
 			fn:    ToSnake,
 			perms: []Permutation{
 				{"default behavior", nil, "HTTP_Response"},
-				{"strcase parity", []any{OptionCaseMode(CMWhispering)}, "http_response"},
+				{"strcase parity", []any{OptionWhispering()}, "http_response"},
 				{"disable smart acronyms", []any{ParserSmartAcronyms(false)}, "HTTP_Response"},
 			},
 		},
@@ -243,7 +243,7 @@ func TestIancolemanMismatchesAndPermutations(t *testing.T) {
 			fn:    ToKebab,
 			perms: []Permutation{
 				{"default behavior", nil, "hello-World"},
-				{"strcase parity", []any{OptionCaseMode(CMWhispering)}, "hello-world"},
+				{"strcase parity", []any{OptionWhispering()}, "hello-world"},
 			},
 		},
 		{
@@ -252,7 +252,7 @@ func TestIancolemanMismatchesAndPermutations(t *testing.T) {
 			fn:    ToFormattedString, // Requires at least a delimiter option
 			perms: []Permutation{
 				{"default behavior with delimiter", []any{OptionDelimiter("_")}, "hello_World"},
-				{"strcase parity", []any{OptionDelimiter("_"), OptionCaseMode(CMWhispering)}, "hello_world"},
+				{"strcase parity", []any{OptionDelimiter("_"), OptionWhispering()}, "hello_world"},
 			},
 		},
 	}

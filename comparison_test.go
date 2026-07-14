@@ -145,7 +145,7 @@ func getFormatOptions(provider, format string) []Option {
 	isSnake := format == "Snake" || format == "Kebab" || format == "Delimited" // Kebab and Delimited usually follow snake rules for casing
 	if isSnake {
 		if provider == "iancoleman" || provider == "ettle" || provider == "golang-cz" || provider == "tomedharris" || provider == "janos" {
-			opts = append(opts, OptionCaseMode(CMWhispering))
+			opts = append(opts, OptionWhispering())
 		}
 	}
 	return opts
@@ -170,11 +170,11 @@ func TestComparisons(t *testing.T) {
 					got, err = ToSnakeCase(words, opts...)
 				}
 			case "ScreamingSnake":
-				got, err = ToSnakeCase(words, append(opts, OptionCaseMode(CMScreaming))...)
+				got, err = ToSnakeCase(words, append(opts, OptionScreaming())...)
 			case "Kebab":
 				got, err = ToKebabCase(words, opts...)
 			case "ScreamingKebab":
-				got, err = ToKebabCase(words, append(opts, OptionCaseMode(CMScreaming))...)
+				got, err = ToKebabCase(words, append(opts, OptionScreaming())...)
 			case "Camel":
 				got, err = ToCamelCase(words, opts...)
 			case "Pascal":
