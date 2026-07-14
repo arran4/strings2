@@ -40,7 +40,7 @@ func TestMapFilterWords(t *testing.T) {
 }
 
 func TestMapAcronymify(t *testing.T) {
-	subs, _ := strings2.StringToSubParts("national aeronautics space")
+	subs := Must(strings2.StringToSubParts("national aeronautics space"))
 	result := mappers.Acronymify(subs)
 
 	if len(result) != 3 {
@@ -50,14 +50,14 @@ func TestMapAcronymify(t *testing.T) {
 		t.Errorf("Expected NAS, got %c%c%c", result[0].Rune(), result[1].Rune(), result[2].Rune())
 	}
 
-	emptySubs, _ := strings2.StringToSubParts(" ")
+	emptySubs := Must(strings2.StringToSubParts(" "))
 	emptyResult := mappers.Acronymify(emptySubs)
 	if len(emptyResult) != 0 {
 		t.Errorf("Expected empty result, got %#v", emptyResult)
 	}
 
 	// Camel case test
-	camelSubs, _ := strings2.StringToSubParts("nationalAeronauticsSpace")
+	camelSubs := Must(strings2.StringToSubParts("nationalAeronauticsSpace"))
 	camelResult := mappers.Acronymify(camelSubs)
 	if len(camelResult) != 3 {
 		t.Fatalf("Expected 3 subparts, got %d", len(camelResult))
