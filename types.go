@@ -638,3 +638,9 @@ func ToCamelCase(words []Word, opts ...Option) (string, error) {
 	defaults := []any{OptionDelimiter(""), OptionFirstLower(), OptionCaseMode(CMAllTitle)}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
+
+// ToDarwinCase converts words into Darwin_Case format (Title_Case with underscore).
+func ToDarwinCase(words []Word, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMAllTitle)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
