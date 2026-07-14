@@ -30,6 +30,12 @@ func ToPascal(input string, opts ...any) (string, error) {
 	return ToFormattedString(input, append(defaults, opts...)...)
 }
 
+// ToDarwin converts an input string (auto-detected format) to Darwin_Case.
+func ToDarwin(input string, opts ...any) (string, error) {
+	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMAllTitle)}
+	return ToFormattedString(input, append(defaults, opts...)...)
+}
+
 // FromWordsToY
 
 // FromWordsToCamel converts words to camelCase.
@@ -53,6 +59,11 @@ func FromWordsToPascal(words []Word, opts ...Option) (string, error) {
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 
+func FromWordsToDarwin(words []Word, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMAllTitle)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
 // FromXToWords
 
 func FromCamelToWords(input string, opts ...any) ([]Word, error) {
@@ -66,6 +77,9 @@ func FromKebabToWords(input string, opts ...any) ([]Word, error) {
 }
 func FromPascalToWords(input string, opts ...any) ([]Word, error) {
 	return ParseCamelCase(input, opts...)
+}
+func FromDarwinToWords(input string, opts ...any) ([]Word, error) {
+	return ParseDarwinCase(input, opts...)
 }
 
 // FromXToY
@@ -96,6 +110,14 @@ func FromCamelToPascal(input string, opts ...any) (string, error) {
 	return FromWordsToPascal(words, extractOptions(opts)...)
 }
 
+func FromCamelToDarwin(input string, opts ...any) (string, error) {
+	words, err := FromCamelToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToDarwin(words, extractOptions(opts)...)
+}
+
 // FromSnakeTo...
 
 func FromSnakeToCamel(input string, opts ...any) (string, error) {
@@ -120,6 +142,14 @@ func FromSnakeToPascal(input string, opts ...any) (string, error) {
 		return "", err
 	}
 	return FromWordsToPascal(words, extractOptions(opts)...)
+}
+
+func FromSnakeToDarwin(input string, opts ...any) (string, error) {
+	words, err := FromSnakeToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToDarwin(words, extractOptions(opts)...)
 }
 
 // FromKebabTo...
@@ -148,6 +178,14 @@ func FromKebabToPascal(input string, opts ...any) (string, error) {
 	return FromWordsToPascal(words, extractOptions(opts)...)
 }
 
+func FromKebabToDarwin(input string, opts ...any) (string, error) {
+	words, err := FromKebabToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToDarwin(words, extractOptions(opts)...)
+}
+
 // FromPascalTo...
 
 func FromPascalToCamel(input string, opts ...any) (string, error) {
@@ -174,6 +212,14 @@ func FromPascalToKebab(input string, opts ...any) (string, error) {
 	return FromWordsToKebab(words, extractOptions(opts)...)
 }
 
+func FromPascalToDarwin(input string, opts ...any) (string, error) {
+	words, err := FromPascalToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToDarwin(words, extractOptions(opts)...)
+}
+
 // FromCamelToCamel and friends? The user requested permutations.
 func FromCamelToCamel(input string, opts ...any) (string, error) {
 	words, err := FromCamelToWords(input, opts...)
@@ -181,6 +227,40 @@ func FromCamelToCamel(input string, opts ...any) (string, error) {
 		return "", err
 	}
 	return FromWordsToCamel(words, extractOptions(opts)...)
+}
+
+// FromDarwinTo...
+
+func FromDarwinToCamel(input string, opts ...any) (string, error) {
+	words, err := FromDarwinToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToCamel(words, extractOptions(opts)...)
+}
+
+func FromDarwinToSnake(input string, opts ...any) (string, error) {
+	words, err := FromDarwinToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToSnake(words, extractOptions(opts)...)
+}
+
+func FromDarwinToKebab(input string, opts ...any) (string, error) {
+	words, err := FromDarwinToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToKebab(words, extractOptions(opts)...)
+}
+
+func FromDarwinToPascal(input string, opts ...any) (string, error) {
+	words, err := FromDarwinToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToPascal(words, extractOptions(opts)...)
 }
 
 // extractOptions helpers to get just []Option for formatters

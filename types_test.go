@@ -177,6 +177,34 @@ func TestToSnakeCase(t *testing.T) {
 	}
 }
 
+func TestToDarwinCase(t *testing.T) {
+	words := []Word{
+		SingleCaseWord("hello"),
+		FirstUpperCaseWord("World"),
+		SingleCaseWord("test"),
+	}
+
+	result, err := ToDarwinCase(words)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	expected := "Hello_World_Test"
+	if result != expected {
+		t.Errorf("Expected %s, got %s", expected, result)
+	}
+
+	// Test with override
+	result, err = ToDarwinCase(words, OptionDelimiter("-"))
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	// Custom options take precedence
+	expected = "Hello-World-Test"
+	if result != expected {
+		t.Errorf("Expected %s, got %s", expected, result)
+	}
+}
+
 func TestToFormattedCase_CaseModes(t *testing.T) {
 	words := []Word{
 		SingleCaseWord("hello"),

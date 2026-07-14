@@ -72,6 +72,7 @@ func (c *RootCmd) UsageRecursive() {
 	c.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "  Commands:")
 	fmt.Fprintf(os.Stderr, "    %s\n", "camel")
+	fmt.Fprintf(os.Stderr, "    %s\n", "darwin")
 	fmt.Fprintf(os.Stderr, "    %s\n", "kebab")
 	fmt.Fprintf(os.Stderr, "    %s\n", "pascal")
 	fmt.Fprintf(os.Stderr, "    %s\n", "snake")
@@ -88,6 +89,7 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 	c.FlagSet.Usage = c.Usage
 
 	c.Commands["camel"] = c.NewCamel()
+	c.Commands["darwin"] = c.NewDarwin()
 	c.Commands["kebab"] = c.NewKebab()
 	c.Commands["pascal"] = c.NewPascal()
 	c.Commands["snake"] = c.NewSnake()

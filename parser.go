@@ -297,3 +297,10 @@ func ParseKebabCase(input string, opts ...any) ([]Word, error) {
 	combinedOpts = append(combinedOpts, WithKebabCasePartitioner())
 	return Parse(input, combinedOpts...)
 }
+
+func ParseDarwinCase(input string, opts ...any) ([]Word, error) {
+	combinedOpts := make([]any, 0, len(opts)+1)
+	combinedOpts = append(combinedOpts, opts...)
+	combinedOpts = append(combinedOpts, WithSnakeCasePartitioner())
+	return Parse(input, combinedOpts...)
+}
