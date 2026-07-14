@@ -39,23 +39,6 @@ func TestMapFilterWords(t *testing.T) {
 	}
 }
 
-// stringToPart is a test helper since Part building is internal/verbose
-func stringToPart(s string, isSeparator bool) strings2.Part {
-	var subs []strings2.SubPart
-	for _, r := range s {
-		b := strings2.BaseSubPart{Val: r}
-		if isSeparator {
-			subs = append(subs, strings2.SpaceSubPart{BaseSubPart: b})
-		} else {
-			subs = append(subs, strings2.LetterSubPart{BaseSubPart: b})
-		}
-	}
-	if isSeparator {
-		return &strings2.SeparatorPart{BasePart: strings2.BasePart{Subs: subs}}
-	}
-	return &strings2.WordPart{BasePart: strings2.BasePart{Subs: subs}}
-}
-
 func TestMapAcronymify(t *testing.T) {
 	subs, _ := strings2.StringToSubParts("national aeronautics space")
 	result := mappers.Acronymify(subs)
