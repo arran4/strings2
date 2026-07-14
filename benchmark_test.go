@@ -69,7 +69,7 @@ func BenchmarkToKebabCase(b *testing.B) {
 
 func BenchmarkToKebabCase_WithOptions(b *testing.B) {
 	b.ReportAllocs()
-	opts := []Option{OptionCaseMode(CMScreaming), OptionUpperIndicator("--")}
+	opts := []Option{OptionScreaming(), OptionUpperIndicator("--")}
 	for i := 0; i < b.N; i++ {
 		_, _ = ToKebabCase(benchWords, opts...)
 	}
@@ -78,7 +78,7 @@ func BenchmarkToKebabCase_WithOptions(b *testing.B) {
 func BenchmarkToKebabCase_WithManyOptions(b *testing.B) {
 	b.ReportAllocs()
 	opts := []Option{
-		OptionCaseMode(CMScreaming),
+		OptionScreaming(),
 		OptionUpperIndicator("--"),
 		OptionFirstUpper(),
 		OptionFirstLower(),
@@ -97,7 +97,7 @@ func BenchmarkToFormattedCase_Screaming(b *testing.B) {
 		SingleCaseWord("a"),
 		SingleCaseWord("test"),
 	}
-	opts := []Option{OptionCaseMode(CMScreaming)}
+	opts := []Option{OptionScreaming()}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -114,7 +114,7 @@ func BenchmarkToFormattedCase_Screaming_Mixed(b *testing.B) {
 		SingleCaseWord("A"),
 		SingleCaseWord("TeSt"),
 	}
-	opts := []Option{OptionCaseMode(CMScreaming)}
+	opts := []Option{OptionScreaming()}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -131,7 +131,7 @@ func BenchmarkToFormattedCase_Whispering(b *testing.B) {
 		SingleCaseWord("A"),
 		SingleCaseWord("TEST"),
 	}
-	opts := []Option{OptionCaseMode(CMWhispering)}
+	opts := []Option{OptionWhispering()}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

@@ -286,6 +286,16 @@ func OptionCaseMode(caseMode CaseMode) Option {
 	return func(cfg *caseConfig) { cfg.caseMode = caseMode }
 }
 
+// OptionWhispering ensures all characters are lowercase.
+func OptionWhispering() Option {
+	return func(cfg *caseConfig) { cfg.caseMode = CMWhispering }
+}
+
+// OptionScreaming ensures all characters are uppercase.
+func OptionScreaming() Option {
+	return func(cfg *caseConfig) { cfg.caseMode = CMScreaming }
+}
+
 // OptionFirstUpper ensures the very first character of the result is uppercase.
 func OptionFirstUpper() Option {
 	return func(cfg *caseConfig) { cfg.firstUpper = true }

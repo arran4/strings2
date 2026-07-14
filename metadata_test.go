@@ -33,7 +33,7 @@ func TestOptionMetadata(t *testing.T) {
 		{
 			name: "Case Mode Screaming",
 			options: []Option{
-				OptionCaseMode(CMScreaming),
+				OptionScreaming(),
 			},
 			expected: caseConfig{
 				caseMode:  CMScreaming,
@@ -94,7 +94,7 @@ func TestOptionMetadata(t *testing.T) {
 			name: "Combination",
 			options: []Option{
 				OptionDelimiter("."),
-				OptionCaseMode(CMWhispering),
+				OptionWhispering(),
 				OptionFirstUpper(),
 			},
 			expected: caseConfig{
@@ -167,7 +167,7 @@ func TestCircularConsistency(t *testing.T) {
 			name:      "Screaming Snake",
 			input:     "HELLO_WORLD",
 			delimiter: "_",
-			options:   []Option{OptionDelimiter("_"), OptionCaseMode(CMScreaming)},
+			options:   []Option{OptionDelimiter("_"), OptionScreaming()},
 		},
 		{
 			name:      "Pascal Case (treated as exact words joined by empty)",
@@ -237,7 +237,7 @@ func TestInternalFlagsConsistency(t *testing.T) {
 	// Case 1: CMScreaming sets cfg.screaming = true.
 	// SingleCaseWord should be Uppercased.
 	t.Run("CMScreaming implies screaming", func(t *testing.T) {
-		res := ToFormattedCase([]Word{SingleCaseWord("hello")}, OptionCaseMode(CMScreaming))
+		res := ToFormattedCase([]Word{SingleCaseWord("hello")}, OptionScreaming())
 		if res != "HELLO" {
 			t.Errorf("CMScreaming did not result in screaming output: %q", res)
 		}
@@ -246,7 +246,7 @@ func TestInternalFlagsConsistency(t *testing.T) {
 	// Case 2: CMWhispering implies whispering.
 	// SingleCaseWord should be Lowercased (even if input is upper).
 	t.Run("CMWhispering implies whispering", func(t *testing.T) {
-		res := ToFormattedCase([]Word{SingleCaseWord("HELLO")}, OptionCaseMode(CMWhispering))
+		res := ToFormattedCase([]Word{SingleCaseWord("HELLO")}, OptionWhispering())
 		if res != "hello" {
 			t.Errorf("CMWhispering did not result in whispering output: %q", res)
 		}
