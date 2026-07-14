@@ -31,7 +31,17 @@ func ExampleFilterWords() {
 
 func ExampleAcronymify() {
 	// Convert to acronym via options natively by mapping parts
-	result, _ := strings2.ToFormattedString("National Aeronautics and Space Administration", strings2.PartMapper(mappers.Acronymify), strings2.OptionCaseMode(strings2.CMVerbatim), strings2.OptionDelimiter(""))
+	// This example shows how to convert a standard title-cased sentence into an acronym word by applying a SubPartMapper.
+	result, _ := strings2.ToFormattedString("National Aeronautics and Space Administration", strings2.SubPartMapper(mappers.Acronymify), strings2.OptionCaseMode(strings2.CMVerbatim), strings2.OptionDelimiter(""))
+	fmt.Println(result)
+
+	// Output: NAASA
+}
+
+func ExampleAcronymify_camelCase() {
+	// Acronymify operates natively on subparts and properly detects camelCase transitions
+	// This example shows that Acronymify can correctly identify implicit word boundaries within camelCase strings and extract the acronym without manual tokenization.
+	result, _ := strings2.ToFormattedString("nationalAeronauticsAndSpaceAdministration", strings2.SubPartMapper(mappers.Acronymify), strings2.OptionCaseMode(strings2.CMVerbatim), strings2.OptionDelimiter(""))
 	fmt.Println(result)
 
 	// Output: NAASA
