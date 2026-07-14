@@ -46,24 +46,32 @@ func Acronymify(subs []strings2.SubPart) []strings2.SubPart {
 	var result []strings2.SubPart
 	inWord := false
 	for i, sp := range subs {
+		if sp == nil {
+			inWord = false
+			continue
+		}
 		if sp.IsLetter() {
 			isNewWord := !inWord
 			if inWord && i > 0 {
 				prev := subs[i-1]
 				// Camel case boundary: lower to Upper
-				if prev.IsLower() && sp.IsUpper() {
+				if prev != nil && prev.IsLower() && sp.IsUpper() {
 					isNewWord = true
 				}
 				// Camel case boundary: Upper to Upper to lower (e.g., PDFLoader -> P, L)
-				if prev.IsUpper() && sp.IsUpper() && i+1 < len(subs) && subs[i+1].IsLower() {
+				if prev != nil && prev.IsUpper() && sp.IsUpper() && i+1 < len(subs) && subs[i+1] != nil && subs[i+1].IsLower() {
 					isNewWord = true
 				}
 			}
 			if isNewWord {
 				// Convert the first letter to uppercase
-				result = append(result, strings2.LetterSubPart{
-					BaseSubPart: strings2.BaseSubPart{Val: unicode.ToUpper(sp.Rune())},
-				})
+				if sp.IsUpper() {
+					result = append(result, sp)
+				} else {
+					result = append(result, strings2.LetterSubPart{
+						BaseSubPart: strings2.BaseSubPart{Val: unicode.ToUpper(sp.Rune())},
+					})
+				}
 				inWord = true
 			}
 		} else {
