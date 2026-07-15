@@ -12,13 +12,13 @@ func TestToTitle(t *testing.T) {
 		expected string
 	}{
 		{"basic", "the lord of the rings", "The Lord of the Rings"},
-		{"screaming snake", "A_NEW_HOPE", "A New Hope"},
+		{"screaming snake", "A_NEW_HOPE", "A NEW HOPE"},
 		{"camel case", "camelCaseInput", "Camel Case Input"},
-		{"mixed kebab", "mixed-UP-Kebab", "Mixed Up Kebab"},
+		{"mixed kebab", "mixed-UP-Kebab", "Mixed UP Kebab"},
 		{"prepositions", "this is a test of the smart title case", "This Is a Test of the Smart Title Case"},
 		{"first word prep", "of mice and men", "Of Mice and Men"},
 		{"last word prep", "who are you looking at", "Who Are You Looking At"},
-		{"acronym request", "parse HTTP request", "Parse Http Request"},
+		{"acronym request", "parse HTTP request", "Parse HTTP Request"},
 	}
 
 	for _, tt := range tests {

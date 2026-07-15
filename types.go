@@ -623,12 +623,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 						b.WriteRune(unicode.ToLower(r))
 					}
 				} else {
-					var err error
-					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
-					if err != nil {
-						return "", err
-					}
-					b.WriteString(w)
+					b.WriteString(s)
 				}
 			} else {
 				b.WriteString(s)
