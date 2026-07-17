@@ -22,9 +22,10 @@ func MapAcronyms(acronyms ...string) func([]strings2.Word) []strings2.Word {
 	}
 
 	return func(words []strings2.Word) []strings2.Word {
-		var result []strings2.Word
+		result := make([]strings2.Word, 0, len(words))
 		for _, w := range words {
 			if w == nil {
+				result = append(result, nil)
 				continue
 			}
 			s := w.String()

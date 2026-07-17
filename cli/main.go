@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"bufio"
 	"github.com/arran4/strings2"
 	"github.com/arran4/strings2/mappers"
 )
@@ -88,18 +89,24 @@ func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper boo
 	}
 	if len(acronymFromFile) > 0 {
 		for _, f := range acronymFromFile {
-			content, err := os.ReadFile(f)
+			file, err := os.Open(f)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error loading acronym file %s: %v\n", f, err)
 				os.Exit(1)
 			}
-			lines := strings.Split(string(content), "\n")
-			for _, l := range lines {
-				l = strings.TrimSpace(l)
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				l := strings.TrimSpace(scanner.Text())
 				if l != "" {
 					allAcronyms = append(allAcronyms, l)
 				}
 			}
+			if err := scanner.Err(); err != nil {
+				fmt.Fprintf(os.Stderr, "Error reading acronym file %s: %v\n", f, err)
+				file.Close()
+				os.Exit(1)
+			}
+			file.Close()
 		}
 	}
 	if len(allAcronyms) > 0 {

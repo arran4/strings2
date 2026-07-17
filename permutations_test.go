@@ -1,8 +1,8 @@
 package strings2_test
 
 import (
-	"github.com/arran4/strings2"
 	"testing"
+	"github.com/arran4/strings2"
 )
 
 func TestToTitle(t *testing.T) {

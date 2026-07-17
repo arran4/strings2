@@ -220,8 +220,8 @@ func TestParseDarwinCase(t *testing.T) {
 	// the FirstUpperCaseWord("Hello").String() evaluates to "Hello",
 	// but let's be flexible to match either "Hello" or "hello" depending on exact parser behavior.
 	if words[0].String() != "hello" && words[0].String() != "Hello" ||
-		words[1].String() != "world" && words[1].String() != "World" ||
-		words[2].String() != "test" && words[2].String() != "Test" {
+	   words[1].String() != "world" && words[1].String() != "World" ||
+	   words[2].String() != "test" && words[2].String() != "Test" {
 		t.Errorf("Unexpected parsed words: %v", words)
 	}
 }
@@ -237,6 +237,7 @@ func TestToDarwin(t *testing.T) {
 		t.Errorf("Expected %s, got %s", expected, result)
 	}
 }
+
 
 func TestToFormattedCase_CaseModes(t *testing.T) {
 	words := []Word{
