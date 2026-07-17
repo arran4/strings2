@@ -276,6 +276,7 @@ type caseConfig struct {
 	firstLower     FirstLowerBehavior
 	utf8Mode       UTF8Mode
 	smartTitleSkipWords map[string]bool
+	smartTitleThreshold func(int) float64
 }
 
 // OptionDelimiter sets the delimiter between words.
@@ -322,6 +323,15 @@ func OptionSmartTitleSkipWords(words ...string) Option {
 		for _, w := range words {
 			cfg.smartTitleSkipWords[strings.ToLower(w)] = true
 		}
+	}
+}
+
+// OptionSmartTitleThreshold sets a function that defines the ratio of acronyms to words threshold for fallback to title case.
+// For example, if the calculated ratio of acronyms is greater than the threshold returned by this function,
+// words will be treated as standard words (e.g. A_NEW_HOPE -> A New Hope) instead of preserving acronym caps.
+func OptionSmartTitleThreshold(f func(wordCount int) float64) Option {
+	return func(cfg *caseConfig) {
+		cfg.smartTitleThreshold = f
 	}
 }
 
@@ -418,6 +428,8 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 
 	// Pre-compute first and last non-separator indices for Smart Title mode
 	firstNonSep, lastNonSep := -1, -1
+	acronymCount := 0
+	wordCount := 0
 	if cfg.caseMode == CMSmartTitle {
 		for i, w := range words {
 			if _, ok := w.(SeparatorWord); !ok {
@@ -425,7 +437,20 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					firstNonSep = i
 				}
 				lastNonSep = i
+				wordCount++
+				if _, isAcronym := w.(AcronymWord); isAcronym {
+					acronymCount++
+				} else if _, isUpper := w.(UpperCaseWord); isUpper {
+					acronymCount++
+				}
 			}
+		}
+	}
+
+	treatAcronymsAsWords := false
+	if cfg.smartTitleThreshold != nil && wordCount > 0 {
+		if float64(acronymCount)/float64(wordCount) > cfg.smartTitleThreshold(wordCount) {
+			treatAcronymsAsWords = true
 		}
 	}
 
@@ -622,6 +647,13 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					for _, r := range s {
 						b.WriteRune(unicode.ToLower(r))
 					}
+				} else if treatAcronymsAsWords {
+					var err error
+					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+					if err != nil {
+						return "", err
+					}
+					b.WriteString(w)
 				} else {
 					b.WriteString(s)
 				}
