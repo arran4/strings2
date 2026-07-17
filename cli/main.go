@@ -191,3 +191,24 @@ func Darwin(input string, output string, delimiter string, screaming bool, whisp
 	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
 	process(input, output, args, strings2.ToDarwin, opts...)
 }
+
+// Title is a subcommand `strings2 title`
+//
+// Flags:
+//
+//	input: -i --input (default: "") Input file or - for stdin
+//	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: "") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
+//	args: ... String to convert if file/stdin not provided
+func Title(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+	process(input, output, args, strings2.ToTitle, opts...)
+}

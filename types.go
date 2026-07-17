@@ -235,6 +235,8 @@ const (
 	CMWhispering
 	// CMScreaming uppercases all characters (like SCREAMING_SNAKE_CASE).
 	CMScreaming
+	// CMSmartTitle applies smart title case handling prepositions correctly.
+	CMSmartTitle
 )
 
 // UTF8Mode defines how to handle invalid UTF-8 sequences.
@@ -273,7 +275,8 @@ type caseConfig struct {
 	firstUpper     bool
 	firstLower     FirstLowerBehavior
 	utf8Mode       UTF8Mode
-
+	smartTitleSkipWords map[string]bool
+	smartTitleThreshold func(int) float64
 }
 
 // OptionDelimiter sets the delimiter between words.
@@ -309,6 +312,27 @@ func OptionFirstLower() Option {
 // OptionFirstLowerSkipEmpty behaves like OptionFirstLower, but skips lowercasing if the first parsed word is empty.
 func OptionFirstLowerSkipEmpty() Option {
 	return func(cfg *caseConfig) { cfg.firstLower = FirstLowerSkipEmpty }
+}
+
+// OptionSmartTitleSkipWords sets the words to keep lowercase during CMSmartTitle conversion.
+func OptionSmartTitleSkipWords(words ...string) Option {
+	return func(cfg *caseConfig) {
+		if cfg.smartTitleSkipWords == nil {
+			cfg.smartTitleSkipWords = make(map[string]bool)
+		}
+		for _, w := range words {
+			cfg.smartTitleSkipWords[strings.ToLower(w)] = true
+		}
+	}
+}
+
+// OptionSmartTitleThreshold sets a function that defines the ratio of acronyms to words threshold for fallback to title case.
+// For example, if the calculated ratio of acronyms is greater than the threshold returned by this function,
+// words will be treated as standard words (e.g. A_NEW_HOPE -> A New Hope) instead of preserving acronym caps.
+func OptionSmartTitleThreshold(f func(wordCount int) float64) Option {
+	return func(cfg *caseConfig) {
+		cfg.smartTitleThreshold = f
+	}
 }
 
 // OptionMixCaseSupport enables splitting of mixed case words (e.g. CamelCase) into separate words based on uppercase letters.
@@ -402,6 +426,34 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 	var b strings.Builder
 	b.Grow(size)
 
+	// Pre-compute first and last non-separator indices for Smart Title mode
+	firstNonSep, lastNonSep := -1, -1
+	acronymCount := 0
+	wordCount := 0
+	if cfg.caseMode == CMSmartTitle {
+		for i, w := range words {
+			if _, ok := w.(SeparatorWord); !ok {
+				if firstNonSep == -1 {
+					firstNonSep = i
+				}
+				lastNonSep = i
+				wordCount++
+				if _, isAcronym := w.(AcronymWord); isAcronym {
+					acronymCount++
+				} else if _, isUpper := w.(UpperCaseWord); isUpper {
+					acronymCount++
+				}
+			}
+		}
+	}
+
+	treatAcronymsAsWords := false
+	if cfg.smartTitleThreshold != nil && wordCount > 0 {
+		if float64(acronymCount)/float64(wordCount) > cfg.smartTitleThreshold(wordCount) {
+			treatAcronymsAsWords = true
+		}
+	}
+
 	for i, word := range words {
 		if i > 0 {
 			b.WriteString(cfg.delimiter)
@@ -425,6 +477,20 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					return "", err
 				}
 				b.WriteString(w)
+			} else if cfg.caseMode == CMSmartTitle {
+				lowerS := strings.ToLower(s)
+				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+					for _, r := range s {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				} else {
+					var err error
+					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+					if err != nil {
+						return "", err
+					}
+					b.WriteString(w)
+				}
 			} else {
 				for _, r := range s {
 					b.WriteRune(unicode.ToLower(r))
@@ -460,15 +526,50 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					for _, r := range s {
 						b.WriteRune(unicode.ToLower(r))
 					}
+				} else if cfg.caseMode == CMSmartTitle {
+					lowerS := strings.ToLower(s)
+					if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+						for _, r := range s {
+							b.WriteRune(unicode.ToLower(r))
+						}
+					} else {
+						var err error
+						w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+						if err != nil {
+							return "", err
+						}
+						b.WriteString(w)
+					}
+				} else if cfg.caseMode == CMAllTitle {
+					var err error
+					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+					if err != nil {
+						return "", err
+					}
+					b.WriteString(w)
 				} else {
 					b.WriteString(s)
 				}
 			}
 		case FirstUpperCaseWord:
-			var err error
-			s, err := upperCaseFirstLower(string(word), cfg.utf8Mode)
-			if err != nil {
-				return "", err
+			s := string(word)
+			if cfg.caseMode == CMSmartTitle {
+				lowerS := strings.ToLower(s)
+				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+					s = lowerS
+				} else {
+					var err error
+					s, err = upperCaseFirstLower(s, cfg.utf8Mode)
+					if err != nil {
+						return "", err
+					}
+				}
+			} else {
+				var err error
+				s, err = upperCaseFirstLower(s, cfg.utf8Mode)
+				if err != nil {
+					return "", err
+				}
 			}
 			if cfg.mixCaseSupport {
 				casedDelimiter := cfg.delimiter
@@ -498,6 +599,27 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					for _, r := range s {
 						b.WriteRune(unicode.ToLower(r))
 					}
+				} else if cfg.caseMode == CMSmartTitle {
+					lowerS := strings.ToLower(s)
+					if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+						for _, r := range s {
+							b.WriteRune(unicode.ToLower(r))
+						}
+					} else {
+						var err error
+						w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+						if err != nil {
+							return "", err
+						}
+						b.WriteString(w)
+					}
+				} else if cfg.caseMode == CMAllTitle {
+					var err error
+					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+					if err != nil {
+						return "", err
+					}
+					b.WriteString(w)
 				} else {
 					b.WriteString(s)
 				}
@@ -519,6 +641,22 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					return "", err
 				}
 				b.WriteString(w)
+			} else if cfg.caseMode == CMSmartTitle {
+				lowerS := strings.ToLower(s)
+				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+					for _, r := range s {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				} else if treatAcronymsAsWords {
+					var err error
+					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+					if err != nil {
+						return "", err
+					}
+					b.WriteString(w)
+				} else {
+					b.WriteString(s)
+				}
 			} else {
 				b.WriteString(s)
 			}
@@ -539,6 +677,20 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					return "", err
 				}
 				b.WriteString(w)
+			} else if cfg.caseMode == CMSmartTitle {
+				lowerS := strings.ToLower(s)
+				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+					for _, r := range s {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				} else {
+					var err error
+					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+					if err != nil {
+						return "", err
+					}
+					b.WriteString(w)
+				}
 			} else {
 				b.WriteString(s)
 			}

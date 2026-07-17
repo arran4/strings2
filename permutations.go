@@ -30,6 +30,13 @@ func ToPascal(input string, opts ...any) (string, error) {
 	return ToFormattedString(input, append(defaults, opts...)...)
 }
 
+// ToTitle converts an input string (auto-detected format) to Title Case (Smart Title).
+func ToTitle(input string, opts ...any) (string, error) {
+	// Title: Delimiter " ", FirstUpper, SmartTitle, Default Skip Words
+	defaults := []any{OptionDelimiter(" "), OptionFirstUpper(), OptionCaseMode(CMSmartTitle), OptionSmartTitleSkipWords("a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "so", "the", "to", "yet", "with", "from"), OptionSmartTitleThreshold(func(wc int) float64 { return 0.5 })}
+	return ToFormattedString(input, append(defaults, opts...)...)
+}
+
 // ToDarwin converts an input string (auto-detected format) to Darwin_Case.
 func ToDarwin(input string, opts ...any) (string, error) {
 	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMAllTitle)}
@@ -56,6 +63,11 @@ func FromWordsToKebab(words []Word, opts ...Option) (string, error) {
 
 func FromWordsToPascal(words []Word, opts ...Option) (string, error) {
 	defaults := []any{OptionDelimiter(""), OptionFirstUpper(), OptionCaseMode(CMAllTitle)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+func FromWordsToTitle(words []Word, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter(" "), OptionFirstUpper(), OptionCaseMode(CMSmartTitle), OptionSmartTitleSkipWords("a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "so", "the", "to", "yet", "with", "from"), OptionSmartTitleThreshold(func(wc int) float64 { return 0.5 })}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 
@@ -110,6 +122,14 @@ func FromCamelToPascal(input string, opts ...any) (string, error) {
 	return FromWordsToPascal(words, extractOptions(opts)...)
 }
 
+func FromCamelToTitle(input string, opts ...any) (string, error) {
+	words, err := FromCamelToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToTitle(words, extractOptions(opts)...)
+}
+
 func FromCamelToDarwin(input string, opts ...any) (string, error) {
 	words, err := FromCamelToWords(input, opts...)
 	if err != nil {
@@ -142,6 +162,14 @@ func FromSnakeToPascal(input string, opts ...any) (string, error) {
 		return "", err
 	}
 	return FromWordsToPascal(words, extractOptions(opts)...)
+}
+
+func FromSnakeToTitle(input string, opts ...any) (string, error) {
+	words, err := FromSnakeToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToTitle(words, extractOptions(opts)...)
 }
 
 func FromSnakeToDarwin(input string, opts ...any) (string, error) {
@@ -178,6 +206,14 @@ func FromKebabToPascal(input string, opts ...any) (string, error) {
 	return FromWordsToPascal(words, extractOptions(opts)...)
 }
 
+func FromKebabToTitle(input string, opts ...any) (string, error) {
+	words, err := FromKebabToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToTitle(words, extractOptions(opts)...)
+}
+
 func FromKebabToDarwin(input string, opts ...any) (string, error) {
 	words, err := FromKebabToWords(input, opts...)
 	if err != nil {
@@ -210,6 +246,14 @@ func FromPascalToKebab(input string, opts ...any) (string, error) {
 		return "", err
 	}
 	return FromWordsToKebab(words, extractOptions(opts)...)
+}
+
+func FromPascalToTitle(input string, opts ...any) (string, error) {
+	words, err := FromPascalToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToTitle(words, extractOptions(opts)...)
 }
 
 func FromPascalToDarwin(input string, opts ...any) (string, error) {
@@ -261,6 +305,14 @@ func FromDarwinToPascal(input string, opts ...any) (string, error) {
 		return "", err
 	}
 	return FromWordsToPascal(words, extractOptions(opts)...)
+}
+
+func FromDarwinToTitle(input string, opts ...any) (string, error) {
+	words, err := FromDarwinToWords(input, opts...)
+	if err != nil {
+		return "", err
+	}
+	return FromWordsToTitle(words, extractOptions(opts)...)
 }
 
 // extractOptions helpers to get just []Option for formatters
