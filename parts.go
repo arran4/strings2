@@ -153,7 +153,6 @@ func WithCamelCasePartitioner(opts ...any) ParserOption {
 	})
 }
 
-
 // DelimiterDetector detects if a delimiter starts at the given index in subs.
 // It returns the length of the delimiter in subparts (runes), or 0 if no delimiter is found.
 type DelimiterDetector func(subs []SubPart, index int) (length int)

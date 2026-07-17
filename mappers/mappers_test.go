@@ -71,5 +71,6 @@ func TestMapAcronymify(t *testing.T) {
 var _ strings2.WordMapper = mappers.ReverseWords
 var _ strings2.SubPartMapper = mappers.Acronymify
 var _ strings2.PartMapper = mappers.ReverseParts
+
 // Filter returns a WordMapper
 var _ strings2.WordMapper = mappers.FilterWords(func(w strings2.Word) bool { return true })

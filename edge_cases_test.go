@@ -135,7 +135,7 @@ func TestLenOptimization(t *testing.T) {
 	// 7. Verify all word types calculate Len() correctly directly
 	t.Run("Len() Interface correctness", func(t *testing.T) {
 		tests := []struct {
-			word Word
+			word     Word
 			expected int
 		}{
 			{SingleCaseWord("hello"), 5},
