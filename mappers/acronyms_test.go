@@ -3,6 +3,8 @@ package mappers
 import (
 	"bytes"
 	"github.com/arran4/strings2/mappers/samples"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"reflect"
 	"testing"
@@ -107,6 +109,33 @@ func TestMapAcronymsFromBytesAndSamples(t *testing.T) {
 	expected := []strings2.Word{
 		strings2.SingleCaseWord("my"),
 		strings2.AcronymWord("API"),
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected %v, got %v", expected, result)
+	}
+}
+
+func TestMapAcronymsFromURL(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("URL\nHTTP\n"))
+	}))
+	defer ts.Close()
+
+	mapper, err := MapAcronymsFromURL(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	words := []strings2.Word{
+		strings2.SingleCaseWord("my"),
+		strings2.SingleCaseWord("url"),
+	}
+
+	result := mapper(words)
+	expected := []strings2.Word{
+		strings2.SingleCaseWord("my"),
+		strings2.AcronymWord("URL"),
 	}
 
 	if !reflect.DeepEqual(result, expected) {

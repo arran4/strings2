@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 
@@ -71,4 +72,14 @@ func MapAcronymsFromFile(filename string) (func([]strings2.Word) []strings2.Word
 	}
 	defer file.Close()
 	return MapAcronymsFromReader(file)
+}
+
+// MapAcronymsFromURL fetches acronyms from a given URL (one per line) and returns a WordMapper.
+func MapAcronymsFromURL(url string) (func([]strings2.Word) []strings2.Word, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return MapAcronymsFromReader(resp.Body)
 }
