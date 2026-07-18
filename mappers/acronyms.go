@@ -2,6 +2,8 @@ package mappers
 
 import (
 	"bufio"
+	"bytes"
+	"io"
 	"os"
 	"strings"
 
@@ -40,16 +42,10 @@ func MapAcronyms(acronyms ...string) func([]strings2.Word) []strings2.Word {
 	}
 }
 
-// MapAcronymsFromFile reads a file containing one acronym per line and returns a WordMapper.
-func MapAcronymsFromFile(filename string) (func([]strings2.Word) []strings2.Word, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
+// MapAcronymsFromReader reads acronyms from an io.Reader (one per line) and returns a WordMapper.
+func MapAcronymsFromReader(r io.Reader) (func([]strings2.Word) []strings2.Word, error) {
 	var acronyms []string
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line != "" {
@@ -59,6 +55,20 @@ func MapAcronymsFromFile(filename string) (func([]strings2.Word) []strings2.Word
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-
 	return MapAcronyms(acronyms...), nil
+}
+
+// MapAcronymsFromBytes reads acronyms from a []byte (one per line) and returns a WordMapper.
+func MapAcronymsFromBytes(b []byte) (func([]strings2.Word) []strings2.Word, error) {
+	return MapAcronymsFromReader(bytes.NewReader(b))
+}
+
+// MapAcronymsFromFile reads a file containing one acronym per line and returns a WordMapper.
+func MapAcronymsFromFile(filename string) (func([]strings2.Word) []strings2.Word, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	return MapAcronymsFromReader(file)
 }

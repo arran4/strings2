@@ -1,6 +1,8 @@
 package mappers
 
 import (
+	"bytes"
+	"github.com/arran4/strings2/mappers/samples"
 	"os"
 	"reflect"
 	"testing"
@@ -64,5 +66,50 @@ func TestMapAcronymsFromFile(t *testing.T) {
 	_, err = MapAcronymsFromFile("non_existent_file.txt")
 	if err == nil {
 		t.Error("Expected error for missing file")
+	}
+}
+
+func TestMapAcronymsFromReader(t *testing.T) {
+	reader := bytes.NewReader([]byte("HTML\nJSON\n"))
+	mapper, err := MapAcronymsFromReader(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	words := []strings2.Word{
+		strings2.SingleCaseWord("some"),
+		strings2.SingleCaseWord("html"),
+	}
+
+	result := mapper(words)
+	expected := []strings2.Word{
+		strings2.SingleCaseWord("some"),
+		strings2.AcronymWord("HTML"),
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected %v, got %v", expected, result)
+	}
+}
+
+func TestMapAcronymsFromBytesAndSamples(t *testing.T) {
+	mapper, err := MapAcronymsFromBytes(samples.TechAcronyms)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	words := []strings2.Word{
+		strings2.SingleCaseWord("my"),
+		strings2.SingleCaseWord("api"),
+	}
+
+	result := mapper(words)
+	expected := []strings2.Word{
+		strings2.SingleCaseWord("my"),
+		strings2.AcronymWord("API"),
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected %v, got %v", expected, result)
 	}
 }
