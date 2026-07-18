@@ -27,6 +27,8 @@ type Pascal struct {
 	mixCaseSupport  bool
 	noSmartAcronyms bool
 	numberSplitting bool
+	acronym         []string
+	acronymFromFile []string
 	strict          bool
 	args            []string
 	SubCommands     map[string]Cmd
@@ -188,6 +190,28 @@ func (c *Pascal) Execute(args []string) error {
 					c.numberSplitting = true
 				}
 
+			case "acronym":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.acronym = append(c.acronym, value)
+
+			case "acronymFromFile", "acronym-from-file":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.acronymFromFile = append(c.acronymFromFile, value)
+
 			case "strict":
 				if hasValue {
 					b, err := strconv.ParseBool(value)
@@ -270,7 +294,7 @@ func (c *RootCmd) NewPascal() *Pascal {
 
 	v.CommandAction = func(c *Pascal) error {
 
-		cli.Pascal(c.input, c.output, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.mixCaseSupport, c.noSmartAcronyms, c.numberSplitting, c.strict, c.args...)
+		cli.Pascal(c.input, c.output, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.mixCaseSupport, c.noSmartAcronyms, c.numberSplitting, c.acronym, c.acronymFromFile, c.strict, c.args...)
 		return nil
 	}
 

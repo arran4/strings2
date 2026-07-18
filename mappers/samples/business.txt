@@ -1,0 +1,13 @@
+CEO
+CTO
+CFO
+ROI
+KPI
+B2B
+B2C
+HR
+PR
+Q1
+Q2
+Q3
+Q4

@@ -6,7 +6,9 @@ import (
 	"os"
 	"strings"
 
+	"bufio"
 	"github.com/arran4/strings2"
+	"github.com/arran4/strings2/mappers"
 )
 
 func process(input string, output string, args []string, fn func(string, ...any) (string, error), opts ...any) {
@@ -55,7 +57,7 @@ func process(input string, output string, args []string, fn func(string, ...any)
 	fmt.Fprintln(out, res)
 }
 
-func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool) []any {
+func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool) []any {
 	var opts []any
 	if delimiter != "" {
 		opts = append(opts, strings2.OptionDelimiter(delimiter))
@@ -81,6 +83,35 @@ func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper boo
 	if numberSplitting {
 		opts = append(opts, strings2.WithNumberSplitting(true))
 	}
+	var allAcronyms []string
+	if len(acronym) > 0 {
+		allAcronyms = append(allAcronyms, acronym...)
+	}
+	if len(acronymFromFile) > 0 {
+		for _, f := range acronymFromFile {
+			file, err := os.Open(f)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error loading acronym file %s: %v\n", f, err)
+				os.Exit(1)
+			}
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				l := strings.TrimSpace(scanner.Text())
+				if l != "" {
+					allAcronyms = append(allAcronyms, l)
+				}
+			}
+			if err := scanner.Err(); err != nil {
+				fmt.Fprintf(os.Stderr, "Error reading acronym file %s: %v\n", f, err)
+				file.Close()
+				os.Exit(1)
+			}
+			file.Close()
+		}
+	}
+	if len(allAcronyms) > 0 {
+		opts = append(opts, strings2.WordMapper(mappers.MapAcronyms(allAcronyms...)))
+	}
 	if strict {
 		opts = append(opts, strings2.OptionStrict())
 	}
@@ -100,11 +131,13 @@ func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper boo
 //	firstLower: -l --first-lower (default: false) First char lower
 //	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
 //	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Camel(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
-	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+func Camel(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
 	process(input, output, args, strings2.ToCamel, opts...)
 }
 
@@ -121,11 +154,13 @@ func Camel(input string, output string, delimiter string, screaming bool, whispe
 //	firstLower: -l --first-lower (default: false) First char lower
 //	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
 //	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Snake(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
-	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+func Snake(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
 	process(input, output, args, strings2.ToSnake, opts...)
 }
 
@@ -142,11 +177,13 @@ func Snake(input string, output string, delimiter string, screaming bool, whispe
 //	firstLower: -l --first-lower (default: false) First char lower
 //	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
 //	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Kebab(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
-	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+func Kebab(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
 	process(input, output, args, strings2.ToKebab, opts...)
 }
 
@@ -163,11 +200,13 @@ func Kebab(input string, output string, delimiter string, screaming bool, whispe
 //	firstLower: -l --first-lower (default: false) First char lower
 //	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
 //	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Pascal(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
-	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+func Pascal(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
 	process(input, output, args, strings2.ToPascal, opts...)
 }
 
@@ -184,11 +223,13 @@ func Pascal(input string, output string, delimiter string, screaming bool, whisp
 //	firstLower: -l --first-lower (default: false) First char lower
 //	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
 //	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Darwin(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
-	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+func Darwin(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
 	process(input, output, args, strings2.ToDarwin, opts...)
 }
 
@@ -205,10 +246,12 @@ func Darwin(input string, output string, delimiter string, screaming bool, whisp
 //	firstLower: -l --first-lower (default: false) First char lower
 //	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
 //	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func Title(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, strict bool, args ...string) {
-	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, strict)
+func Title(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
 	process(input, output, args, strings2.ToTitle, opts...)
 }

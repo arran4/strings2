@@ -35,6 +35,8 @@ func TestTitle_Execute(t *testing.T) {
 	args = append(args, "--mixCaseSupport")
 	args = append(args, "--noSmartAcronyms")
 	args = append(args, "--numberSplitting")
+	args = append(args, "--acronym")
+	args = append(args, "--acronymFromFile")
 	args = append(args, "--strict")
 
 	err := cmd.Execute(args)
