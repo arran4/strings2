@@ -118,7 +118,7 @@ func TestMapAcronymsFromBytesAndSamples(t *testing.T) {
 
 func TestMapAcronymsFromURL(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("URL\nHTTP\n"))
+		_, _ = w.Write([]byte("URL\nHTTP\n"))
 	}))
 	defer ts.Close()
 
