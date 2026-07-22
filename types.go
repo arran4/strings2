@@ -201,6 +201,8 @@ func WordLength(word Word) (int, error) {
 	switch w := word.(type) {
 	case SingleCaseWord:
 		return len(w), nil
+	case LowercaseWord:
+		return len(w), nil
 	case FirstUpperCaseWord:
 		return len(w), nil
 	case ExactCaseWord:
@@ -478,6 +480,38 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		prevIsIgnore = isIgnore
 
 		switch word := word.(type) {
+		case LowercaseWord:
+			s := string(word)
+			if cfg.allUpper || cfg.screaming {
+				for _, r := range s {
+					b.WriteRune(unicode.ToUpper(r))
+				}
+			} else if cfg.caseMode == CMAllTitle {
+				var err error
+				w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+				if err != nil {
+					return "", err
+				}
+				b.WriteString(w)
+			} else if cfg.caseMode == CMSmartTitle {
+				// Always lower unless first/last
+				if i == firstNonSep || i == lastNonSep {
+					var err error
+					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+					if err != nil {
+						return "", err
+					}
+					b.WriteString(w)
+				} else {
+					for _, r := range s {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				}
+			} else {
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
+			}
 		case SingleCaseWord:
 			s := string(word)
 			if cfg.allUpper || cfg.screaming {
@@ -865,3 +899,9 @@ func ToTitleCase(words []Word, opts ...Option) (string, error) {
 	}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
+
+// LowercaseWord is a word that will be specifically treated as a minor lowercase word by formatters (e.g., smart title case).
+type LowercaseWord string
+
+func (w LowercaseWord) String() string { return string(w) }
+func (w LowercaseWord) Len() int       { return len(w) }

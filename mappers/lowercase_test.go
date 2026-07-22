@@ -27,8 +27,8 @@ func TestMapLowercase(t *testing.T) {
 	if output[3].String() != "at" {
 		t.Errorf("expected at, got %s", output[3].String())
 	}
-	if _, ok := output[3].(strings2.SingleCaseWord); !ok {
-		t.Errorf("expected SingleCaseWord for output[3], got %T", output[3])
+	if _, ok := output[3].(strings2.LowercaseWord); !ok {
+		t.Errorf("expected LowercaseWord for output[3], got %T", output[3])
 	}
 }
 

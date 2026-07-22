@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"fmt"
 
 	"github.com/arran4/strings2"
 )
 
-// MapLowercase returns a WordMapper that converts matching words (case-insensitive) into SingleCaseWord (lowercase).
+// MapLowercase returns a WordMapper that converts matching words (case-insensitive) into LowercaseWord (lowercase).
 // It acts as a predicate for minor words (prepositions, conjunctions) to stay lowercase during title casing.
 func MapLowercase(wordsToKeepLower ...string) func([]strings2.Word) []strings2.Word {
 	if len(wordsToKeepLower) == 0 {
@@ -33,7 +34,7 @@ func MapLowercase(wordsToKeepLower ...string) func([]strings2.Word) []strings2.W
 			s := w.String()
 			lowerS := strings.ToLower(s)
 			if _, ok := lowerMap[lowerS]; ok {
-				result = append(result, strings2.SingleCaseWord(lowerS))
+				result = append(result, strings2.LowercaseWord(lowerS))
 			} else {
 				result = append(result, w)
 			}
@@ -80,5 +81,8 @@ func MapLowercaseFromURL(url string) (func([]strings2.Word) []strings2.Word, err
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("failed to fetch lowercase words from URL: %s, status code: %d", url, resp.StatusCode)
+	}
 	return MapLowercaseFromReader(resp.Body)
 }
