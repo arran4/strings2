@@ -68,6 +68,7 @@ strings2.ToKebabCase(words)  // "hello-world"
 strings2.ToScreamingKebabCase(words) // "HELLO-WORLD"
 strings2.ToSnakeCase(words)  // "hello_world"
 strings2.ToScreamingSnakeCase(words) // "HELLO_WORLD"
+strings2.ToDarwinCase(words) // "Hello_World"
 strings2.ToDelimitedCase(words, '.') // "hello.world"
 strings2.ToScreamingDelimitedCase(words, '.', "", true) // "HELLO.WORLD"
 strings2.ToScreamingDelimitedCase(words, '_', ".", true) // "HELLO.WORLD" (where "." is ignored and preserved)
@@ -144,6 +145,9 @@ strings2 snake --screaming "hello world"
 
 strings2 screamingsnake "hello world"
 # Result: HELLO_WORLD
+
+strings2 darwin "hello world"
+# Result: Hello_World
 
 strings2 kebab --first-upper "hello world"
 # Result: Hello-world
