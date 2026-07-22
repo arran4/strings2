@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/arran4/strings2"
+	"github.com/arran4/strings2/mappers"
 )
 
 func ExampleUpperCaseFirst() {
@@ -55,4 +56,25 @@ func ExampleToTitleCase_screaming() {
 	result, _ := strings2.ToTitleCase(words)
 	fmt.Println(result)
 	// Output: A New Hope
+}
+
+func ExampleToTitleCase_withMappers() {
+	// The Fox Went to Work at IBM
+	input := "The Fox Went To Work At IBM"
+
+	words, _ := strings2.Parse(input)
+
+	// Apply lowercase mapper for "to" and "at"
+	lowercaseMapper := strings2.WordMapper(mappers.MapLowercase("to", "at"))
+	words = lowercaseMapper(words)
+
+	// Apply acronym mapper for "IBM"
+	acronymMapper := strings2.WordMapper(mappers.MapAcronyms("IBM"))
+	words = acronymMapper(words)
+
+	// Since the mappers have already categorized the words, ToTitleCase will properly format them.
+	// AcronymWords and SingleCaseWords will be handled appropriately.
+	result, _ := strings2.ToTitleCase(words)
+	fmt.Println(result)
+	// Output: The Fox Went to Work at IBM
 }
