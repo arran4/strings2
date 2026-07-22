@@ -71,3 +71,17 @@ func ExampleToScreamingDelimited() {
 	// Output:
 	// SOME.KIND.OF.EXAMPLE
 }
+
+func ExampleToDelimited_whispering() {
+	res, _ := strings2.ToDelimited("someKind", '.')
+	fmt.Println(res)
+	// Output:
+	// some.kind
+}
+
+func ExampleToScreamingDelimited_whispering() {
+	res, _ := strings2.ToScreamingDelimited("someKind", '.', "", false)
+	fmt.Println(res)
+	// Output:
+	// some.kind
+}

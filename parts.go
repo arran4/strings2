@@ -159,6 +159,7 @@ func WithCamelCasePartitioner(opts ...any) ParserOption {
 type DelimiterDetector func(subs []SubPart, index int) (length int)
 
 type PartitionerConfig struct {
+	Ignore string
 	Delimiters        map[rune]bool
 	DelimiterDetector DelimiterDetector
 	SplitCamel        bool
@@ -178,17 +179,21 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 			s := subs[i]
 
 			delimLen := 0
-			if cfg.DelimiterDetector != nil {
-				delimLen = cfg.DelimiterDetector(subs, i)
-				if delimLen < 0 {
-					delimLen = 0
+			if cfg.Ignore != "" && strings.ContainsRune(cfg.Ignore, s.Rune()) {
+				// if ignored, it's never a delimiter
+			} else {
+				if cfg.DelimiterDetector != nil {
+					delimLen = cfg.DelimiterDetector(subs, i)
+					if delimLen < 0 {
+						delimLen = 0
+					}
+					if delimLen > len(subs)-i {
+						delimLen = len(subs) - i
+					}
 				}
-				if delimLen > len(subs)-i {
-					delimLen = len(subs) - i
+				if delimLen == 0 && cfg.Delimiters != nil && cfg.Delimiters[s.Rune()] {
+					delimLen = 1
 				}
-			}
-			if delimLen == 0 && cfg.Delimiters != nil && cfg.Delimiters[s.Rune()] {
-				delimLen = 1
 			}
 
 			// Check if current rune(s) is a delimiter

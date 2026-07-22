@@ -828,7 +828,7 @@ func ToScreamingKebabCase(words []Word, opts ...Option) (string, error) {
 
 // ToDelimitedCase converts words into a string separated by a specific delimiter.
 func ToDelimitedCase(words []Word, delimiter uint8, opts ...Option) (string, error) {
-	defaults := []any{OptionDelimiter(string([]byte{delimiter}))}
+	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(CMWhispering)}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 
@@ -837,7 +837,9 @@ func ToScreamingDelimitedCase(words []Word, delimiter uint8, ignore string, scre
 	mode := CMVerbatim
 	if screaming {
 		mode = CMScreaming
-	}
+	} else {
+        mode = CMWhispering
+    }
 	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
 	if ignore != "" {
 		defaults = append(defaults, OptionIgnore(ignore))

@@ -58,7 +58,7 @@ func ToScreamingKebab(input string, opts ...any) (string, error) {
 
 // ToDelimited converts an input string (auto-detected format) to a string separated by a specific delimiter.
 func ToDelimited(input string, delimiter uint8, opts ...any) (string, error) {
-	defaults := []any{OptionDelimiter(string([]byte{delimiter}))}
+	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(CMWhispering)}
 	return ToFormattedString(input, append(defaults, opts...)...)
 }
 
@@ -67,7 +67,9 @@ func ToScreamingDelimited(input string, delimiter uint8, ignore string, screamin
 	mode := CMVerbatim
 	if screaming {
 		mode = CMScreaming
-	}
+	} else {
+        mode = CMWhispering
+    }
 	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
 	if ignore != "" {
 		defaults = append(defaults, OptionIgnore(ignore))
@@ -124,7 +126,7 @@ func FromWordsToScreamingKebab(words []Word, opts ...Option) (string, error) {
 }
 
 func FromWordsToDelimited(words []Word, delimiter uint8, opts ...Option) (string, error) {
-	defaults := []any{OptionDelimiter(string([]byte{delimiter}))}
+	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(CMWhispering)}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 
@@ -132,7 +134,9 @@ func FromWordsToScreamingDelimited(words []Word, delimiter uint8, ignore string,
 	mode := CMVerbatim
 	if screaming {
 		mode = CMScreaming
-	}
+	} else {
+        mode = CMWhispering
+    }
 	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
 	if ignore != "" {
 		defaults = append(defaults, OptionIgnore(ignore))
