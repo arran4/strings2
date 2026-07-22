@@ -36,3 +36,52 @@ func ExampleFromCamelToKebab() {
 	fmt.Println(res)
 	// Output: hello-World
 }
+
+func ExampleToLowerCamel() {
+	res, _ := strings2.ToLowerCamel("some_kind_of_example")
+	fmt.Println(res)
+	// Output:
+	// someKindOfExample
+}
+
+func ExampleToScreamingSnake() {
+	res, _ := strings2.ToScreamingSnake("some_kind_of_example")
+	fmt.Println(res)
+	// Output:
+	// SOME_KIND_OF_EXAMPLE
+}
+
+func ExampleToScreamingKebab() {
+	res, _ := strings2.ToScreamingKebab("some_kind_of_example")
+	fmt.Println(res)
+	// Output:
+	// SOME-KIND-OF-EXAMPLE
+}
+
+func ExampleToDelimited() {
+	res, _ := strings2.ToDelimited("some_kind_of_example", '.')
+	fmt.Println(res)
+	// Output:
+	// some.kind.of.example
+}
+
+func ExampleToScreamingDelimited() {
+	res, _ := strings2.ToScreamingDelimited("some_kind.of_example", '.', "", true)
+	fmt.Println(res)
+	// Output:
+	// SOME.KIND.OF.EXAMPLE
+}
+
+func ExampleToDelimited_whispering() {
+	res, _ := strings2.ToDelimited("someKind", '.')
+	fmt.Println(res)
+	// Output:
+	// some.kind
+}
+
+func ExampleToScreamingDelimited_whispering() {
+	res, _ := strings2.ToScreamingDelimited("someKind", '.', "", false)
+	fmt.Println(res)
+	// Output:
+	// some.kind
+}

@@ -264,6 +264,7 @@ const (
 )
 
 type caseConfig struct {
+	ignore         string
 	caseMode       CaseMode
 	delimiter      string
 	upperIndicator string
@@ -277,6 +278,11 @@ type caseConfig struct {
 	utf8Mode       UTF8Mode
 	smartTitleSkipWords map[string]bool
 	smartTitleThreshold func(int) float64
+}
+
+// OptionIgnore sets characters to be preserved and not considered word boundaries or converted.
+func OptionIgnore(ignore string) Option {
+	return func(cfg *caseConfig) { cfg.ignore = ignore }
 }
 
 // OptionDelimiter sets the delimiter between words.
@@ -454,10 +460,22 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		}
 	}
 
+	var prevIsIgnore bool
 	for i, word := range words {
-		if i > 0 {
+		var isIgnore bool
+		if cfg.ignore != "" {
+			if s, ok := word.(interface{ String() string }); ok {
+				str := s.String()
+				if strings.ContainsAny(str, cfg.ignore) {
+					isIgnore = true
+				}
+			}
+		}
+
+		if i > 0 && !isIgnore && !prevIsIgnore {
 			b.WriteString(cfg.delimiter)
 		}
+		prevIsIgnore = isIgnore
 
 		switch word := word.(type) {
 		case SingleCaseWord:
@@ -792,6 +810,45 @@ func ToCamelCase(words []Word, opts ...Option) (string, error) {
 }
 
 // ToDarwinCase converts words into Darwin_Case format (Title_Case with underscore).
+
+// ToLowerCamelCase converts words into lowerCamelCase format.
+func ToLowerCamelCase(words []Word, opts ...Option) (string, error) {
+	return ToCamelCase(words, opts...)
+}
+
+// ToScreamingSnakeCase converts words into SCREAMING_SNAKE_CASE format.
+func ToScreamingSnakeCase(words []Word, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMScreaming)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+// ToScreamingKebabCase converts words into SCREAMING-KEBAB-CASE format.
+func ToScreamingKebabCase(words []Word, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter("-"), OptionCaseMode(CMScreaming)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+// ToDelimitedCase converts words into a string separated by a specific delimiter.
+func ToDelimitedCase(words []Word, delimiter uint8, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(CMWhispering)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+// ToScreamingDelimitedCase converts words into a SCREAMING string separated by a specific delimiter.
+func ToScreamingDelimitedCase(words []Word, delimiter uint8, ignore string, screaming bool, opts ...Option) (string, error) {
+	var mode CaseMode
+	if screaming {
+		mode = CMScreaming
+	} else {
+        mode = CMWhispering
+    }
+	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
+	if ignore != "" {
+		defaults = append(defaults, OptionIgnore(ignore))
+	}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
 func ToDarwinCase(words []Word, opts ...Option) (string, error) {
 	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMAllTitle)}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
