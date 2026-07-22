@@ -59,9 +59,14 @@ words, err = strings2.Parse("foo::bar", partitioner)
 
 ```go
 strings2.ToCamelCase(words)  // "helloWorld"
+strings2.ToLowerCamelCase(words) // "helloWorld"
 strings2.ToPascalCase(words) // "HelloWorld"
 strings2.ToKebabCase(words)  // "hello-world"
+strings2.ToScreamingKebabCase(words) // "HELLO-WORLD"
 strings2.ToSnakeCase(words)  // "hello_world"
+strings2.ToScreamingSnakeCase(words) // "HELLO_WORLD"
+strings2.ToDelimitedCase(words, '.') // "hello.world"
+strings2.ToScreamingDelimitedCase(words, '.', "", true) // "HELLO.WORLD"
 ```
 
 ### Mapping and Transformation
@@ -127,11 +132,26 @@ The library also provides a command-line interface that exposes all these option
 strings2 camel "hello world"
 # Result: helloWorld
 
+strings2 lowercamel "hello world"
+# Result: helloWorld
+
 strings2 snake --screaming "hello world"
+# Result: HELLO_WORLD
+
+strings2 screamingsnake "hello world"
 # Result: HELLO_WORLD
 
 strings2 kebab --first-upper "hello world"
 # Result: Hello-world
+
+strings2 screamingkebab "hello world"
+# Result: HELLO-WORLD
+
+strings2 delimited "hello world" -d "."
+# Result: hello.world
+
+strings2 screamingdelimited "hello world" -d "."
+# Result: HELLO.WORLD
 ```
 
 You can pipe input into the CLI as well:

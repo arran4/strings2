@@ -264,6 +264,7 @@ const (
 )
 
 type caseConfig struct {
+	ignore         string
 	caseMode       CaseMode
 	delimiter      string
 	upperIndicator string
@@ -277,6 +278,11 @@ type caseConfig struct {
 	utf8Mode       UTF8Mode
 	smartTitleSkipWords map[string]bool
 	smartTitleThreshold func(int) float64
+}
+
+// OptionIgnore sets characters to be preserved and not considered word boundaries or converted.
+func OptionIgnore(ignore string) Option {
+	return func(cfg *caseConfig) { cfg.ignore = ignore }
 }
 
 // OptionDelimiter sets the delimiter between words.
@@ -455,7 +461,17 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 	}
 
 	for i, word := range words {
-		if i > 0 {
+		var isIgnore bool
+		if cfg.ignore != "" {
+			if s, ok := word.(interface{ String() string }); ok {
+				str := s.String()
+				if strings.ContainsAny(str, cfg.ignore) {
+					isIgnore = true
+				}
+			}
+		}
+
+		if i > 0 && !isIgnore {
 			b.WriteString(cfg.delimiter)
 		}
 
@@ -818,12 +834,14 @@ func ToDelimitedCase(words []Word, delimiter uint8, opts ...Option) (string, err
 
 // ToScreamingDelimitedCase converts words into a SCREAMING string separated by a specific delimiter.
 func ToScreamingDelimitedCase(words []Word, delimiter uint8, ignore string, screaming bool, opts ...Option) (string, error) {
-	// ignoring ignore for now as it's a specific strcase feature that strings2 handles differently
 	mode := CMVerbatim
 	if screaming {
 		mode = CMScreaming
 	}
 	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
+	if ignore != "" {
+		defaults = append(defaults, OptionIgnore(ignore))
+	}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 

@@ -69,6 +69,9 @@ func ToScreamingDelimited(input string, delimiter uint8, ignore string, screamin
 		mode = CMScreaming
 	}
 	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
+	if ignore != "" {
+		defaults = append(defaults, OptionIgnore(ignore))
+	}
 	return ToFormattedString(input, append(defaults, opts...)...)
 }
 
@@ -131,6 +134,9 @@ func FromWordsToScreamingDelimited(words []Word, delimiter uint8, ignore string,
 		mode = CMScreaming
 	}
 	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
+	if ignore != "" {
+		defaults = append(defaults, OptionIgnore(ignore))
+	}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 

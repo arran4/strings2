@@ -78,6 +78,7 @@ func Parse(input string, opts ...any) ([]Word, error) {
 
 // ParserConfig holds configuration for the parsing pipeline.
 type ParserConfig struct {
+	Ignore string
 	Partitioner Partitioner
 	// SmartAcronyms controls whether all-uppercase words (longer than 1 char)
 	// should be treated as AcronymWord instead of UpperCaseWord.
@@ -126,6 +127,11 @@ type ParserEmitEmpty bool
 
 func (b ParserEmitEmpty) Apply(p *ParserConfig) {
 	p.EmitEmpty = bool(b)
+}
+
+// WithIgnore configures characters to be ignored during parsing.
+func WithIgnore(ignore string) ParserOption {
+	return funcParserOption(func(p *ParserConfig) { p.Ignore = ignore })
 }
 
 // WithPartitioner sets a specific partitioner strategy.
