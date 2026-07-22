@@ -69,6 +69,8 @@ strings2.ToScreamingKebabCase(words) // "HELLO-WORLD"
 strings2.ToSnakeCase(words)  // "hello_world"
 strings2.ToScreamingSnakeCase(words) // "HELLO_WORLD"
 strings2.ToDarwinCase(words) // "Hello_World"
+titleWords, _ := strings2.Parse("the lord of the rings")
+strings2.ToTitleCase(titleWords)  // "The Lord of the Rings"
 strings2.ToDelimitedCase(words, '.') // "hello.world"
 strings2.ToScreamingDelimitedCase(words, '.', "", true) // "HELLO.WORLD"
 strings2.ToScreamingDelimitedCase(words, '_', ".", true) // "HELLO.WORLD" (where "." is ignored and preserved)
@@ -89,6 +91,13 @@ acronym, _ := strings2.ToFormattedString(
     strings2.OptionDelimiter(""),
 )
 // Result: "NAASA"
+
+// Preserve lowercase words using a lowercase predicate
+mappedTitle, _ := strings2.ToTitleCase(
+    titleWords,
+    strings2.WordMapper(mappers.MapLowercase("via")),
+)
+// Result: "The Lord of the Rings via Middle Earth"
 
 // Reversing words natively
 reversed, _ := strings2.ToCamel("hello world from strings2", strings2.WordMapper(mappers.Reverse))

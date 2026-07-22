@@ -201,6 +201,8 @@ func WordLength(word Word) (int, error) {
 	switch w := word.(type) {
 	case SingleCaseWord:
 		return len(w), nil
+	case LowercaseWord:
+		return len(w), nil
 	case FirstUpperCaseWord:
 		return len(w), nil
 	case ExactCaseWord:
@@ -276,7 +278,7 @@ type caseConfig struct {
 	firstUpper     bool
 	firstLower     FirstLowerBehavior
 	utf8Mode       UTF8Mode
-	smartTitleSkipWords map[string]bool
+	lowercaseWords map[string]bool
 	smartTitleThreshold func(int) float64
 }
 
@@ -320,14 +322,14 @@ func OptionFirstLowerSkipEmpty() Option {
 	return func(cfg *caseConfig) { cfg.firstLower = FirstLowerSkipEmpty }
 }
 
-// OptionSmartTitleSkipWords sets the words to keep lowercase during CMSmartTitle conversion.
-func OptionSmartTitleSkipWords(words ...string) Option {
+// OptionLowercaseWords sets the words to keep lowercase during CMSmartTitle conversion.
+func OptionLowercaseWords(words ...string) Option {
 	return func(cfg *caseConfig) {
-		if cfg.smartTitleSkipWords == nil {
-			cfg.smartTitleSkipWords = make(map[string]bool)
+		if cfg.lowercaseWords == nil {
+			cfg.lowercaseWords = make(map[string]bool)
 		}
 		for _, w := range words {
-			cfg.smartTitleSkipWords[strings.ToLower(w)] = true
+			cfg.lowercaseWords[strings.ToLower(w)] = true
 		}
 	}
 }
@@ -478,6 +480,38 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		prevIsIgnore = isIgnore
 
 		switch word := word.(type) {
+		case LowercaseWord:
+			s := string(word)
+			if cfg.allUpper || cfg.screaming {
+				for _, r := range s {
+					b.WriteRune(unicode.ToUpper(r))
+				}
+			} else if cfg.caseMode == CMAllTitle {
+				var err error
+				w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+				if err != nil {
+					return "", err
+				}
+				b.WriteString(w)
+			} else if cfg.caseMode == CMSmartTitle {
+				// Always lower unless first/last
+				if i == firstNonSep || i == lastNonSep {
+					var err error
+					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+					if err != nil {
+						return "", err
+					}
+					b.WriteString(w)
+				} else {
+					for _, r := range s {
+						b.WriteRune(unicode.ToLower(r))
+					}
+				}
+			} else {
+				for _, r := range s {
+					b.WriteRune(unicode.ToLower(r))
+				}
+			}
 		case SingleCaseWord:
 			s := string(word)
 			if cfg.allUpper || cfg.screaming {
@@ -497,7 +531,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				b.WriteString(w)
 			} else if cfg.caseMode == CMSmartTitle {
 				lowerS := strings.ToLower(s)
-				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+				if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 					for _, r := range s {
 						b.WriteRune(unicode.ToLower(r))
 					}
@@ -546,7 +580,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					}
 				} else if cfg.caseMode == CMSmartTitle {
 					lowerS := strings.ToLower(s)
-					if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+					if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 						for _, r := range s {
 							b.WriteRune(unicode.ToLower(r))
 						}
@@ -573,7 +607,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			s := string(word)
 			if cfg.caseMode == CMSmartTitle {
 				lowerS := strings.ToLower(s)
-				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+				if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 					s = lowerS
 				} else {
 					var err error
@@ -619,7 +653,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					}
 				} else if cfg.caseMode == CMSmartTitle {
 					lowerS := strings.ToLower(s)
-					if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+					if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 						for _, r := range s {
 							b.WriteRune(unicode.ToLower(r))
 						}
@@ -661,7 +695,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				b.WriteString(w)
 			} else if cfg.caseMode == CMSmartTitle {
 				lowerS := strings.ToLower(s)
-				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+				if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 					for _, r := range s {
 						b.WriteRune(unicode.ToLower(r))
 					}
@@ -697,7 +731,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				b.WriteString(w)
 			} else if cfg.caseMode == CMSmartTitle {
 				lowerS := strings.ToLower(s)
-				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+				if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 					for _, r := range s {
 						b.WriteRune(unicode.ToLower(r))
 					}
@@ -852,4 +886,29 @@ func ToScreamingDelimitedCase(words []Word, delimiter uint8, ignore string, scre
 func ToDarwinCase(words []Word, opts ...Option) (string, error) {
 	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMAllTitle)}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+// ToTitleCase converts words into a Title Case string (Smart Title).
+func ToTitleCase(words []Word, opts ...Option) (string, error) {
+	defaults := []any{
+		OptionDelimiter(" "),
+		OptionFirstUpper(),
+		OptionCaseMode(CMSmartTitle),
+		OptionLowercaseWords("a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "so", "the", "to", "yet", "with", "from"),
+		OptionSmartTitleThreshold(func(wc int) float64 { return 0.5 }),
+	}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+// LowercaseWord is a word that will be specifically treated as a minor lowercase word by formatters (e.g., smart title case).
+type LowercaseWord string
+
+func (w LowercaseWord) String() string { return string(w) }
+func (w LowercaseWord) Len() int       { return len(w) }
+
+// OptionSmartTitleSkipWords is a deprecated alias for OptionLowercaseWords to maintain backward compatibility.
+//
+// Deprecated: Use OptionLowercaseWords instead.
+func OptionSmartTitleSkipWords(words ...string) Option {
+	return OptionLowercaseWords(words...)
 }

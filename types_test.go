@@ -853,3 +853,36 @@ func TestToScreamingDelimitedCase(t *testing.T) {
 		t.Errorf("ToScreamingDelimitedCase failed. got: %s, expected: %s", got, expected)
 	}
 }
+
+func TestToTitleCase(t *testing.T) {
+	words := []Word{
+		SingleCaseWord("the"),
+		SingleCaseWord("lord"),
+		SingleCaseWord("of"),
+		SingleCaseWord("the"),
+		SingleCaseWord("rings"),
+	}
+
+	result, err := ToTitleCase(words)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	expected := "The Lord of the Rings"
+	if result != expected {
+		t.Errorf("Expected %s, got %s", expected, result)
+	}
+
+	words2 := []Word{
+		SingleCaseWord("A"),
+		SingleCaseWord("NEW"),
+		SingleCaseWord("HOPE"),
+	}
+	result2, err2 := ToTitleCase(words2)
+	if err2 != nil {
+		t.Errorf("Unexpected error: %v", err2)
+	}
+	expected2 := "A New Hope"
+	if result2 != expected2 {
+		t.Errorf("Expected %s, got %s", expected2, result2)
+	}
+}
