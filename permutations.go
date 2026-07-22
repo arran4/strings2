@@ -64,7 +64,7 @@ func ToDelimited(input string, delimiter uint8, opts ...any) (string, error) {
 
 // ToScreamingDelimited converts an input string (auto-detected format) to a SCREAMING string separated by a specific delimiter.
 func ToScreamingDelimited(input string, delimiter uint8, ignore string, screaming bool, opts ...any) (string, error) {
-	mode := CMVerbatim
+	var mode CaseMode
 	if screaming {
 		mode = CMScreaming
 	} else {
@@ -131,7 +131,7 @@ func FromWordsToDelimited(words []Word, delimiter uint8, opts ...Option) (string
 }
 
 func FromWordsToScreamingDelimited(words []Word, delimiter uint8, ignore string, screaming bool, opts ...Option) (string, error) {
-	mode := CMVerbatim
+	var mode CaseMode
 	if screaming {
 		mode = CMScreaming
 	} else {

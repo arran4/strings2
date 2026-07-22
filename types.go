@@ -460,6 +460,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 		}
 	}
 
+	var prevIsIgnore bool
 	for i, word := range words {
 		var isIgnore bool
 		if cfg.ignore != "" {
@@ -471,9 +472,10 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			}
 		}
 
-		if i > 0 && !isIgnore {
+		if i > 0 && !isIgnore && !prevIsIgnore {
 			b.WriteString(cfg.delimiter)
 		}
+		prevIsIgnore = isIgnore
 
 		switch word := word.(type) {
 		case SingleCaseWord:
@@ -834,7 +836,7 @@ func ToDelimitedCase(words []Word, delimiter uint8, opts ...Option) (string, err
 
 // ToScreamingDelimitedCase converts words into a SCREAMING string separated by a specific delimiter.
 func ToScreamingDelimitedCase(words []Word, delimiter uint8, ignore string, screaming bool, opts ...Option) (string, error) {
-	mode := CMVerbatim
+	var mode CaseMode
 	if screaming {
 		mode = CMScreaming
 	} else {

@@ -29,3 +29,11 @@ func ExampleParseSnakeCase() {
 	fmt.Println(words)
 	// Output: [hello world]
 }
+
+func ExampleWithIgnore() {
+	words, _ := strings2.Parse("some.kind.of.example", strings2.WithIgnore("."))
+	res, _ := strings2.ToScreamingDelimitedCase(words, '.', ".", true)
+	fmt.Println(res)
+	// Output:
+	// SOME.KIND.OF.EXAMPLE
+}

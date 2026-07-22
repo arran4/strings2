@@ -43,6 +43,9 @@ words = strings2.ParseSnakeCase("hello_world")
 // Configure parser
 words, err = strings2.Parse("N.E.W. World", strings2.ParserSmartAcronyms(true))
 
+// Configure parser to ignore characters, preventing them from being consumed as delimiters
+words, err = strings2.Parse("foo.bar", strings2.WithIgnore("."))
+
 // Custom multi-byte delimiters using DelimiterDetector
 partitioner := strings2.NewPartitioner(strings2.PartitionerConfig{
 	DelimiterDetector: func(subs []strings2.SubPart, index int) int {
@@ -67,6 +70,7 @@ strings2.ToSnakeCase(words)  // "hello_world"
 strings2.ToScreamingSnakeCase(words) // "HELLO_WORLD"
 strings2.ToDelimitedCase(words, '.') // "hello.world"
 strings2.ToScreamingDelimitedCase(words, '.', "", true) // "HELLO.WORLD"
+strings2.ToScreamingDelimitedCase(words, '_', ".", true) // "HELLO.WORLD" (where "." is ignored and preserved)
 ```
 
 ### Mapping and Transformation
