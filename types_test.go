@@ -808,3 +808,48 @@ func TestUpperCaseFirstLower_Allocations(t *testing.T) {
 		t.Errorf("upperCaseFirstLower(%q) did not allocate memory when change was needed", input2)
 	}
 }
+
+func TestLowerCamelCaseAlias(t *testing.T) {
+	words := []Word{SingleCaseWord("hello"), SingleCaseWord("world")}
+	got, _ := ToLowerCamelCase(words)
+	expected, _ := ToCamelCase(words)
+	if got != expected {
+		t.Errorf("ToLowerCamelCase did not match ToCamelCase. got: %s, expected: %s", got, expected)
+	}
+}
+
+func TestToScreamingSnakeCase(t *testing.T) {
+	words := []Word{SingleCaseWord("hello"), SingleCaseWord("world")}
+	got, _ := ToScreamingSnakeCase(words)
+	expected := "HELLO_WORLD"
+	if got != expected {
+		t.Errorf("ToScreamingSnakeCase failed. got: %s, expected: %s", got, expected)
+	}
+}
+
+func TestToScreamingKebabCase(t *testing.T) {
+	words := []Word{SingleCaseWord("hello"), SingleCaseWord("world")}
+	got, _ := ToScreamingKebabCase(words)
+	expected := "HELLO-WORLD"
+	if got != expected {
+		t.Errorf("ToScreamingKebabCase failed. got: %s, expected: %s", got, expected)
+	}
+}
+
+func TestToDelimitedCase(t *testing.T) {
+	words := []Word{SingleCaseWord("hello"), SingleCaseWord("world")}
+	got, _ := ToDelimitedCase(words, '.')
+	expected := "hello.world"
+	if got != expected {
+		t.Errorf("ToDelimitedCase failed. got: %s, expected: %s", got, expected)
+	}
+}
+
+func TestToScreamingDelimitedCase(t *testing.T) {
+	words := []Word{SingleCaseWord("hello"), SingleCaseWord("world")}
+	got, _ := ToScreamingDelimitedCase(words, '.', "", true)
+	expected := "HELLO.WORLD"
+	if got != expected {
+		t.Errorf("ToScreamingDelimitedCase failed. got: %s, expected: %s", got, expected)
+	}
+}

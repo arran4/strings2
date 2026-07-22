@@ -792,6 +792,41 @@ func ToCamelCase(words []Word, opts ...Option) (string, error) {
 }
 
 // ToDarwinCase converts words into Darwin_Case format (Title_Case with underscore).
+
+// ToLowerCamelCase converts words into lowerCamelCase format.
+func ToLowerCamelCase(words []Word, opts ...Option) (string, error) {
+	return ToCamelCase(words, opts...)
+}
+
+// ToScreamingSnakeCase converts words into SCREAMING_SNAKE_CASE format.
+func ToScreamingSnakeCase(words []Word, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMScreaming)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+// ToScreamingKebabCase converts words into SCREAMING-KEBAB-CASE format.
+func ToScreamingKebabCase(words []Word, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter("-"), OptionCaseMode(CMScreaming)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+// ToDelimitedCase converts words into a string separated by a specific delimiter.
+func ToDelimitedCase(words []Word, delimiter uint8, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter(string([]byte{delimiter}))}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+// ToScreamingDelimitedCase converts words into a SCREAMING string separated by a specific delimiter.
+func ToScreamingDelimitedCase(words []Word, delimiter uint8, ignore string, screaming bool, opts ...Option) (string, error) {
+	// ignoring ignore for now as it's a specific strcase feature that strings2 handles differently
+	mode := CMVerbatim
+	if screaming {
+		mode = CMScreaming
+	}
+	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
 func ToDarwinCase(words []Word, opts ...Option) (string, error) {
 	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMAllTitle)}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)

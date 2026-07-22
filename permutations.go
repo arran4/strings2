@@ -38,6 +38,40 @@ func ToTitle(input string, opts ...any) (string, error) {
 }
 
 // ToDarwin converts an input string (auto-detected format) to Darwin_Case.
+
+// ToLowerCamel converts an input string (auto-detected format) to lowerCamelCase.
+func ToLowerCamel(input string, opts ...any) (string, error) {
+	return ToCamel(input, opts...)
+}
+
+// ToScreamingSnake converts an input string (auto-detected format) to SCREAMING_SNAKE_CASE.
+func ToScreamingSnake(input string, opts ...any) (string, error) {
+	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMScreaming)}
+	return ToFormattedString(input, append(defaults, opts...)...)
+}
+
+// ToScreamingKebab converts an input string (auto-detected format) to SCREAMING-KEBAB-CASE.
+func ToScreamingKebab(input string, opts ...any) (string, error) {
+	defaults := []any{OptionDelimiter("-"), OptionCaseMode(CMScreaming)}
+	return ToFormattedString(input, append(defaults, opts...)...)
+}
+
+// ToDelimited converts an input string (auto-detected format) to a string separated by a specific delimiter.
+func ToDelimited(input string, delimiter uint8, opts ...any) (string, error) {
+	defaults := []any{OptionDelimiter(string([]byte{delimiter}))}
+	return ToFormattedString(input, append(defaults, opts...)...)
+}
+
+// ToScreamingDelimited converts an input string (auto-detected format) to a SCREAMING string separated by a specific delimiter.
+func ToScreamingDelimited(input string, delimiter uint8, ignore string, screaming bool, opts ...any) (string, error) {
+	mode := CMVerbatim
+	if screaming {
+		mode = CMScreaming
+	}
+	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
+	return ToFormattedString(input, append(defaults, opts...)...)
+}
+
 func ToDarwin(input string, opts ...any) (string, error) {
 	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMAllTitle)}
 	return ToFormattedString(input, append(defaults, opts...)...)
@@ -68,6 +102,35 @@ func FromWordsToPascal(words []Word, opts ...Option) (string, error) {
 
 func FromWordsToTitle(words []Word, opts ...Option) (string, error) {
 	defaults := []any{OptionDelimiter(" "), OptionFirstUpper(), OptionCaseMode(CMSmartTitle), OptionSmartTitleSkipWords("a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "so", "the", "to", "yet", "with", "from"), OptionSmartTitleThreshold(func(wc int) float64 { return 0.5 })}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+
+func FromWordsToLowerCamel(words []Word, opts ...Option) (string, error) {
+	return FromWordsToCamel(words, opts...)
+}
+
+func FromWordsToScreamingSnake(words []Word, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter("_"), OptionCaseMode(CMScreaming)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+func FromWordsToScreamingKebab(words []Word, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter("-"), OptionCaseMode(CMScreaming)}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+func FromWordsToDelimited(words []Word, delimiter uint8, opts ...Option) (string, error) {
+	defaults := []any{OptionDelimiter(string([]byte{delimiter}))}
+	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
+}
+
+func FromWordsToScreamingDelimited(words []Word, delimiter uint8, ignore string, screaming bool, opts ...Option) (string, error) {
+	mode := CMVerbatim
+	if screaming {
+		mode = CMScreaming
+	}
+	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 

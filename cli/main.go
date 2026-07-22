@@ -255,3 +255,133 @@ func Title(input string, output string, delimiter string, screaming bool, whispe
 	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
 	process(input, output, args, strings2.ToTitle, opts...)
 }
+
+
+// LowerCamel is a subcommand `strings2 lowercamel`
+//
+// Flags:
+//
+//	input: -i --input (default: "") Input file or - for stdin
+//	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: "") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
+//	args: ... String to convert if file/stdin not provided
+func LowerCamel(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
+	process(input, output, args, strings2.ToLowerCamel, opts...)
+}
+
+// ScreamingSnake is a subcommand `strings2 screamingsnake`
+//
+// Flags:
+//
+//	input: -i --input (default: "") Input file or - for stdin
+//	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: "") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
+//	args: ... String to convert if file/stdin not provided
+func ScreamingSnake(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
+	process(input, output, args, strings2.ToScreamingSnake, opts...)
+}
+
+// ScreamingKebab is a subcommand `strings2 screamingkebab`
+//
+// Flags:
+//
+//	input: -i --input (default: "") Input file or - for stdin
+//	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: "") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
+//	args: ... String to convert if file/stdin not provided
+func ScreamingKebab(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
+	process(input, output, args, strings2.ToScreamingKebab, opts...)
+}
+
+// Delimited is a subcommand `strings2 delimited`
+//
+// Flags:
+//
+//	input: -i --input (default: "") Input file or - for stdin
+//	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: ".") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
+//	args: ... String to convert if file/stdin not provided
+func Delimited(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
+	del := uint8('.')
+	if len(delimiter) > 0 {
+		del = delimiter[0]
+	}
+	fn := func(in string, options ...any) (string, error) {
+		return strings2.ToDelimited(in, del, options...)
+	}
+	process(input, output, args, fn, opts...)
+}
+
+// ScreamingDelimited is a subcommand `strings2 screamingdelimited`
+//
+// Flags:
+//
+//	input: -i --input (default: "") Input file or - for stdin
+//	output: -o --output (default: "") Output file or - for stdout
+//	delimiter: -d --delimiter (default: ".") Delimiter
+//	screaming: -S --screaming (default: false) Screaming mode
+//	whispering: -w --whispering (default: false) Whispering mode
+//	firstUpper: -U --first-upper (default: false) First char upper
+//	firstLower: -l --first-lower (default: false) First char lower
+//	mixCaseSupport: -m --mix-case-support (default: false) Mix case support
+//	noSmartAcronyms: --no-smart-acronyms (default: false) Disable smart acronyms
+//	acronym: --acronym (default: []) Acronym to preserve case
+//	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
+//	numberSplitting: --number-splitting (default: false) Enable number splitting
+//	strict: --strict (default: false) Strict UTF8 mode
+//	args: ... String to convert if file/stdin not provided
+func ScreamingDelimited(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
+	opts := buildOpts(delimiter, screaming, whispering, firstUpper, firstLower, mixCaseSupport, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
+	del := uint8('.')
+	if len(delimiter) > 0 {
+		del = delimiter[0]
+	}
+	fn := func(in string, options ...any) (string, error) {
+		return strings2.ToScreamingDelimited(in, del, "", true, options...)
+	}
+	process(input, output, args, fn, opts...)
+}

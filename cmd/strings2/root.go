@@ -73,8 +73,13 @@ func (c *RootCmd) UsageRecursive() {
 	fmt.Fprintln(os.Stderr, "  Commands:")
 	fmt.Fprintf(os.Stderr, "    %s\n", "camel")
 	fmt.Fprintf(os.Stderr, "    %s\n", "darwin")
+	fmt.Fprintf(os.Stderr, "    %s\n", "delimited")
 	fmt.Fprintf(os.Stderr, "    %s\n", "kebab")
+	fmt.Fprintf(os.Stderr, "    %s\n", "lowercamel")
 	fmt.Fprintf(os.Stderr, "    %s\n", "pascal")
+	fmt.Fprintf(os.Stderr, "    %s\n", "screamingdelimited")
+	fmt.Fprintf(os.Stderr, "    %s\n", "screamingkebab")
+	fmt.Fprintf(os.Stderr, "    %s\n", "screamingsnake")
 	fmt.Fprintf(os.Stderr, "    %s\n", "snake")
 	fmt.Fprintf(os.Stderr, "    %s\n", "title")
 }
@@ -91,8 +96,13 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 
 	c.Commands["camel"] = c.NewCamel()
 	c.Commands["darwin"] = c.NewDarwin()
+	c.Commands["delimited"] = c.NewDelimited()
 	c.Commands["kebab"] = c.NewKebab()
+	c.Commands["lowercamel"] = c.NewLowercamel()
 	c.Commands["pascal"] = c.NewPascal()
+	c.Commands["screamingdelimited"] = c.NewScreamingdelimited()
+	c.Commands["screamingkebab"] = c.NewScreamingkebab()
+	c.Commands["screamingsnake"] = c.NewScreamingsnake()
 	c.Commands["snake"] = c.NewSnake()
 	c.Commands["title"] = c.NewTitle()
 	c.Commands["help"] = &InternalCommand{
