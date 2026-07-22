@@ -276,7 +276,7 @@ type caseConfig struct {
 	firstUpper     bool
 	firstLower     FirstLowerBehavior
 	utf8Mode       UTF8Mode
-	smartTitleSkipWords map[string]bool
+	lowercaseWords map[string]bool
 	smartTitleThreshold func(int) float64
 }
 
@@ -320,14 +320,14 @@ func OptionFirstLowerSkipEmpty() Option {
 	return func(cfg *caseConfig) { cfg.firstLower = FirstLowerSkipEmpty }
 }
 
-// OptionSmartTitleSkipWords sets the words to keep lowercase during CMSmartTitle conversion.
-func OptionSmartTitleSkipWords(words ...string) Option {
+// OptionLowercaseWords sets the words to keep lowercase during CMSmartTitle conversion.
+func OptionLowercaseWords(words ...string) Option {
 	return func(cfg *caseConfig) {
-		if cfg.smartTitleSkipWords == nil {
-			cfg.smartTitleSkipWords = make(map[string]bool)
+		if cfg.lowercaseWords == nil {
+			cfg.lowercaseWords = make(map[string]bool)
 		}
 		for _, w := range words {
-			cfg.smartTitleSkipWords[strings.ToLower(w)] = true
+			cfg.lowercaseWords[strings.ToLower(w)] = true
 		}
 	}
 }
@@ -497,7 +497,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				b.WriteString(w)
 			} else if cfg.caseMode == CMSmartTitle {
 				lowerS := strings.ToLower(s)
-				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+				if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 					for _, r := range s {
 						b.WriteRune(unicode.ToLower(r))
 					}
@@ -546,7 +546,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					}
 				} else if cfg.caseMode == CMSmartTitle {
 					lowerS := strings.ToLower(s)
-					if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+					if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 						for _, r := range s {
 							b.WriteRune(unicode.ToLower(r))
 						}
@@ -573,7 +573,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 			s := string(word)
 			if cfg.caseMode == CMSmartTitle {
 				lowerS := strings.ToLower(s)
-				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+				if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 					s = lowerS
 				} else {
 					var err error
@@ -619,7 +619,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					}
 				} else if cfg.caseMode == CMSmartTitle {
 					lowerS := strings.ToLower(s)
-					if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+					if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 						for _, r := range s {
 							b.WriteRune(unicode.ToLower(r))
 						}
@@ -661,7 +661,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				b.WriteString(w)
 			} else if cfg.caseMode == CMSmartTitle {
 				lowerS := strings.ToLower(s)
-				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+				if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 					for _, r := range s {
 						b.WriteRune(unicode.ToLower(r))
 					}
@@ -697,7 +697,7 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 				b.WriteString(w)
 			} else if cfg.caseMode == CMSmartTitle {
 				lowerS := strings.ToLower(s)
-				if cfg.smartTitleSkipWords[lowerS] && i != firstNonSep && i != lastNonSep {
+				if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
 					for _, r := range s {
 						b.WriteRune(unicode.ToLower(r))
 					}
@@ -860,7 +860,7 @@ func ToTitleCase(words []Word, opts ...Option) (string, error) {
 		OptionDelimiter(" "),
 		OptionFirstUpper(),
 		OptionCaseMode(CMSmartTitle),
-		OptionSmartTitleSkipWords("a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "so", "the", "to", "yet", "with", "from"),
+		OptionLowercaseWords("a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "so", "the", "to", "yet", "with", "from"),
 		OptionSmartTitleThreshold(func(wc int) float64 { return 0.5 }),
 	}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
