@@ -127,6 +127,8 @@ Behaviour can be tuned with options passed to each function. Some commonly used 
   - `CMScreaming`
 - `OptionFirstUpper()` – force the result to start with an uppercase letter.
 - `OptionFirstLower()` – force the result to start with a lowercase letter.
+- `OptionAcronymList([]string)` – ensures listed acronyms retain their exact casing.
+- `LoadAcronymsFromFile(filepath)` – loads acronyms from a file, line-by-line.
 
 Examples:
 
@@ -136,6 +138,10 @@ fmt.Println(strings2.ToKebabCase(words, strings2.OptionDelimiter("|")))
 
 // Screaming snake case
 fmt.Println(strings2.ToSnakeCase(words, strings2.OptionCaseMode(strings2.CMScreaming)))
+
+// Map predefined acronyms
+result, _ := strings2.ToSnake("Http Json Config", strings2.OptionAcronymList([]string{"HTTP", "JSON"}))
+// Result: "HTTP_JSON_Config"
 ```
 
 ### CLI Mode

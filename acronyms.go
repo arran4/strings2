@@ -16,6 +16,8 @@ func OptionAcronymList(acronyms []string) WordMapper {
 	acronymMap := make(map[string]string, len(acronyms))
 	for _, a := range acronyms {
 		acronymMap[strings.ToLower(a)] = a
+		// Map the exact case back to itself to be consistent with lowercase mappings
+		acronymMap[a] = a
 	}
 
 	return func(words []Word) []Word {
@@ -26,11 +28,18 @@ func OptionAcronymList(acronyms []string) WordMapper {
 				continue
 			}
 			s := w.String()
+
+			// Attempt to match lowercase representation
 			lowerS := strings.ToLower(s)
 			if replacement, ok := acronymMap[lowerS]; ok {
 				result = append(result, AcronymWord(replacement))
 			} else {
-				result = append(result, w)
+				// We also check exact original case match just in case
+				if replacement, ok := acronymMap[s]; ok {
+					result = append(result, AcronymWord(replacement))
+				} else {
+					result = append(result, w)
+				}
 			}
 		}
 		return result
