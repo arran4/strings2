@@ -78,3 +78,15 @@ func ExampleToTitleCase_withMappers() {
 	fmt.Println(result)
 	// Output: The Fox Went to Work at IBM
 }
+
+func ExampleLowercaseWord() {
+	words := []strings2.Word{
+		strings2.FirstUpperCaseWord("Travel"),
+		strings2.LowercaseWord("via"),
+		strings2.FirstUpperCaseWord("Rome"),
+	}
+
+	result, _ := strings2.ToTitleCase(words)
+	fmt.Println(result)
+	// Output: Travel via Rome
+}

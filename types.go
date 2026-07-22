@@ -905,3 +905,10 @@ type LowercaseWord string
 
 func (w LowercaseWord) String() string { return string(w) }
 func (w LowercaseWord) Len() int       { return len(w) }
+
+// OptionSmartTitleSkipWords is a deprecated alias for OptionLowercaseWords to maintain backward compatibility.
+//
+// Deprecated: Use OptionLowercaseWords instead.
+func OptionSmartTitleSkipWords(words ...string) Option {
+	return OptionLowercaseWords(words...)
+}
