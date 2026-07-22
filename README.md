@@ -69,6 +69,7 @@ strings2.ToScreamingKebabCase(words) // "HELLO-WORLD"
 strings2.ToSnakeCase(words)  // "hello_world"
 strings2.ToScreamingSnakeCase(words) // "HELLO_WORLD"
 strings2.ToDarwinCase(words) // "Hello_World"
+strings2.ToTitleCase(words)  // "The Lord of the Rings"
 strings2.ToDelimitedCase(words, '.') // "hello.world"
 strings2.ToScreamingDelimitedCase(words, '.', "", true) // "HELLO.WORLD"
 strings2.ToScreamingDelimitedCase(words, '_', ".", true) // "HELLO.WORLD" (where "." is ignored and preserved)
