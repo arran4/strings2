@@ -32,3 +32,27 @@ func ExampleToDarwinCase() {
 	// Camel_Case_Input
 	// Mixed_Up_Kebab
 }
+
+func ExampleToTitleCase() {
+	words := []strings2.Word{
+		strings2.SingleCaseWord("the"),
+		strings2.SingleCaseWord("lord"),
+		strings2.SingleCaseWord("of"),
+		strings2.SingleCaseWord("the"),
+		strings2.SingleCaseWord("rings"),
+	}
+	result, _ := strings2.ToTitleCase(words)
+	fmt.Println(result)
+	// Output: The Lord of the Rings
+}
+
+func ExampleToTitleCase_screaming() {
+	words := []strings2.Word{
+		strings2.SingleCaseWord("A"),
+		strings2.SingleCaseWord("NEW"),
+		strings2.SingleCaseWord("HOPE"),
+	}
+	result, _ := strings2.ToTitleCase(words)
+	fmt.Println(result)
+	// Output: A New Hope
+}
