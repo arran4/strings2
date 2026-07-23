@@ -3,6 +3,8 @@
 [![CI Status](https://github.com/arran4/strings2/actions/workflows/ci.yml/badge.svg)](https://github.com/arran4/strings2/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/arran4/strings2.svg)](https://pkg.go.dev/github.com/arran4/strings2)
 
+> **Note:** Changes will be made to make this library more flexible and correct, and to add tests to ensure that it's still operating as expected between releases. The API will stabilize when we are confident in the results.
+
 strings2 provides utilities for converting slices of words into various casing conventions. It is intended to supplement Go's standard library `strings` package with helpers for creating formats such as `camelCase`, `PascalCase`, `snake_case` and `kebab-case`.
 
 ## Installation
