@@ -986,13 +986,11 @@ func ToDarwinCase(words []Word, opts ...Option) (string, error) {
 
 // ToTitleCase converts words into a Title Case string (Smart Title).
 func ToTitleCase(words []Word, opts ...Option) (string, error) {
-	//nolint:staticcheck // Ignore deprecation warning for default
 	defaults := []any{
 		OptionDelimiter(" "),
 		OptionFirstUpper(),
 		OptionCaseMode(CMSmartTitle),
 		OptionLowercaseWords("a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "so", "the", "to", "yet", "with", "from"),
-		OptionSmartTitleThreshold(func(wc int) float64 { return 0.5 }),
 	}
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }

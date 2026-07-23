@@ -100,12 +100,12 @@
     "description": "Ambiguous string of acronyms or screaming snake",
     "input": "NASA_API_CLIENT",
     "expected": {
-      "AcronymPredicate": "Nasa Api Client",
+      "AcronymPredicate": "NASA API Client",
       "ExplicitMode": "Nasa Api Client",
       "LexicalShape": "Nasa Api Client",
       "Provenance": "NASA API CLIENT",
       "Ratio": "Nasa Api Client",
-      "Scoring": "Nasa Api Client",
+      "Scoring": "Nasa API Client",
       "StagedHybrid": "Nasa Api Client",
       "Structural": "Nasa Api Client",
       "WholeSource": "Nasa Api Client"
@@ -116,7 +116,7 @@
     "description": "Acronym containing numbers",
     "input": "COVID_19_RESPONSE",
     "expected": {
-      "AcronymPredicate": "Covid 19 Response",
+      "AcronymPredicate": "COVID 19 Response",
       "ExplicitMode": "Covid 19 Response",
       "LexicalShape": "Covid 19 Response",
       "Provenance": "COVID 19 RESPONSE",
@@ -148,12 +148,12 @@
     "description": "Just an acronym",
     "input": "API",
     "expected": {
-      "AcronymPredicate": "Api",
+      "AcronymPredicate": "API",
       "ExplicitMode": "Api",
       "LexicalShape": "Api",
       "Provenance": "API",
       "Ratio": "Api",
-      "Scoring": "Api",
+      "Scoring": "API",
       "StagedHybrid": "Api",
       "Structural": "Api",
       "WholeSource": "Api"
@@ -164,7 +164,7 @@
     "description": "Short words that could be acronyms",
     "input": "GO_TO_URL",
     "expected": {
-      "AcronymPredicate": "Go to Url",
+      "AcronymPredicate": "Go to URL",
       "ExplicitMode": "Go to Url",
       "LexicalShape": "Go to Url",
       "Provenance": "GO to URL",
@@ -212,13 +212,13 @@
     "description": "Screaming block inside mixed case",
     "input": "One_TWO_THREE_Four",
     "expected": {
-      "AcronymPredicate": "One TWO THREE Four",
+      "AcronymPredicate": "One Two Three Four",
       "ExplicitMode": "One Two Three Four",
-      "LexicalShape": "One TWO THREE Four",
+      "LexicalShape": "One Two Three Four",
       "Provenance": "One TWO THREE Four",
       "Ratio": "One TWO THREE Four",
-      "Scoring": "One TWO THREE Four",
-      "StagedHybrid": "One TWO THREE Four",
+      "Scoring": "One Two Three Four",
+      "StagedHybrid": "One Two Three Four",
       "Structural": "One Two Three Four",
       "WholeSource": "One TWO THREE Four"
     }
@@ -244,12 +244,12 @@
     "description": "Multiple leading acronyms",
     "input": "JSON_API_response",
     "expected": {
-      "AcronymPredicate": "Json Api Response",
+      "AcronymPredicate": "Json API Response",
       "ExplicitMode": "Json Api Response",
       "LexicalShape": "Json Api Response",
       "Provenance": "JSON API Response",
       "Ratio": "Json Api Response",
-      "Scoring": "Json Api Response",
+      "Scoring": "Json API Response",
       "StagedHybrid": "Json Api Response",
       "Structural": "Json Api Response",
       "WholeSource": "JSON API Response"
@@ -292,12 +292,12 @@
     "description": "Numbers and trailing acronym",
     "input": "version_2_API",
     "expected": {
-      "AcronymPredicate": "Version 2 Api",
+      "AcronymPredicate": "Version 2 API",
       "ExplicitMode": "Version 2 Api",
       "LexicalShape": "Version 2 Api",
       "Provenance": "Version 2 API",
       "Ratio": "Version 2 Api",
-      "Scoring": "Version 2 Api",
+      "Scoring": "Version 2 API",
       "StagedHybrid": "Version 2 Api",
       "Structural": "Version 2 Api",
       "WholeSource": "Version 2 API"
