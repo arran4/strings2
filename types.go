@@ -265,21 +265,35 @@ const (
 	FirstLowerSkipEmpty
 )
 
+// SmartTitleUpperMode defines how uppercase words are treated in CMSmartTitle.
+type SmartTitleUpperMode int
+
+const (
+	// SmartTitleUpperAuto infers whether the source is screaming-case or mixed, preserving acronyms when possible.
+	SmartTitleUpperAuto SmartTitleUpperMode = iota
+	// SmartTitleUpperNormalize forces all uppercase words and acronyms to standard title case.
+	SmartTitleUpperNormalize
+	// SmartTitleUpperPreserve forces all uppercase words and acronyms to remain uppercase.
+	SmartTitleUpperPreserve
+)
+
 type caseConfig struct {
-	ignore         string
-	caseMode       CaseMode
-	delimiter      string
-	upperIndicator string
-	allUpper       bool
-	allLower       bool
-	screaming      bool
-	whispering     bool
-	mixCaseSupport bool
-	firstUpper     bool
-	firstLower     FirstLowerBehavior
-	utf8Mode       UTF8Mode
-	lowercaseWords map[string]bool
+	ignore              string
+	caseMode            CaseMode
+	delimiter           string
+	upperIndicator      string
+	allUpper            bool
+	allLower            bool
+	screaming           bool
+	whispering          bool
+	mixCaseSupport      bool
+	firstUpper          bool
+	firstLower          FirstLowerBehavior
+	utf8Mode            UTF8Mode
+	lowercaseWords      map[string]bool
 	smartTitleThreshold func(int) float64
+	smartTitleUpperMode SmartTitleUpperMode
+	acronymPredicate    func(string) bool
 }
 
 // OptionIgnore sets characters to be preserved and not considered word boundaries or converted.
@@ -337,9 +351,26 @@ func OptionLowercaseWords(words ...string) Option {
 // OptionSmartTitleThreshold sets a function that defines the ratio of acronyms to words threshold for fallback to title case.
 // For example, if the calculated ratio of acronyms is greater than the threshold returned by this function,
 // words will be treated as standard words (e.g. A_NEW_HOPE -> A New Hope) instead of preserving acronym caps.
+//
+// Deprecated: Use OptionSmartTitleUpperMode or OptionSmartTitleAcronymPredicate instead.
 func OptionSmartTitleThreshold(f func(wordCount int) float64) Option {
 	return func(cfg *caseConfig) {
 		cfg.smartTitleThreshold = f
+	}
+}
+
+// OptionSmartTitleUpperMode sets the policy for how uppercase words are handled in smart title formatting.
+func OptionSmartTitleUpperMode(mode SmartTitleUpperMode) Option {
+	return func(cfg *caseConfig) {
+		cfg.smartTitleUpperMode = mode
+		cfg.smartTitleThreshold = nil // Clear threshold to favor the new mode
+	}
+}
+
+// OptionSmartTitleAcronymPredicate sets a caller-defined function to positively identify genuine acronyms.
+func OptionSmartTitleAcronymPredicate(pred func(string) bool) Option {
+	return func(cfg *caseConfig) {
+		cfg.acronymPredicate = pred
 	}
 }
 
@@ -457,8 +488,44 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 
 	treatAcronymsAsWords := false
 	if cfg.smartTitleThreshold != nil && wordCount > 0 {
+		// Legacy ratio behavior
 		if float64(acronymCount)/float64(wordCount) > cfg.smartTitleThreshold(wordCount) {
 			treatAcronymsAsWords = true
+		}
+	}
+
+	globalScreaming := false
+	if cfg.caseMode == CMSmartTitle && cfg.smartTitleThreshold == nil {
+		if cfg.smartTitleUpperMode == SmartTitleUpperNormalize {
+			treatAcronymsAsWords = true
+		} else if cfg.smartTitleUpperMode == SmartTitleUpperAuto {
+			// Check global screaming state: all non-separator words are AcronymWord or UpperCaseWord
+			globalScreaming = true
+			for _, w := range words {
+				if _, ok := w.(SeparatorWord); !ok {
+					isUpperType := false
+					if _, ok := w.(AcronymWord); ok {
+						isUpperType = true
+					} else if _, ok := w.(UpperCaseWord); ok {
+						isUpperType = true
+					} else if s, ok := w.(ExactCaseWord); ok && s == "" {
+						isUpperType = true
+					} else if sw, ok := w.(SingleCaseWord); ok {
+						// Only allow if it's purely numbers/punctuation and no letters
+						isUpperType = true
+						for _, r := range string(sw) {
+							if unicode.IsLetter(r) && unicode.IsLower(r) {
+								isUpperType = false
+								break
+							}
+						}
+					}
+					if !isUpperType {
+						globalScreaming = false
+						break
+					}
+				}
+			}
 		}
 	}
 
@@ -676,44 +743,13 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 					b.WriteString(s)
 				}
 			}
-		case AcronymWord:
-			s := string(word)
-			if cfg.screaming {
-				for _, r := range s {
-					b.WriteRune(unicode.ToUpper(r))
-				}
-			} else if cfg.whispering {
-				for _, r := range s {
-					b.WriteRune(unicode.ToLower(r))
-				}
-			} else if cfg.caseMode == CMAllTitle {
-				var err error
-				w, err := upperCaseFirstLower(s, cfg.utf8Mode)
-				if err != nil {
-					return "", err
-				}
-				b.WriteString(w)
-			} else if cfg.caseMode == CMSmartTitle {
-				lowerS := strings.ToLower(s)
-				if cfg.lowercaseWords[lowerS] && i != firstNonSep && i != lastNonSep {
-					for _, r := range s {
-						b.WriteRune(unicode.ToLower(r))
-					}
-				} else if treatAcronymsAsWords {
-					var err error
-					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
-					if err != nil {
-						return "", err
-					}
-					b.WriteString(w)
-				} else {
-					b.WriteString(s)
-				}
+		case AcronymWord, UpperCaseWord:
+			var s string
+			if a, ok := word.(AcronymWord); ok {
+				s = string(a)
 			} else {
-				b.WriteString(s)
+				s = string(word.(UpperCaseWord))
 			}
-		case UpperCaseWord:
-			s := string(word)
 			if cfg.allUpper || cfg.screaming {
 				for _, r := range s {
 					b.WriteRune(unicode.ToUpper(r))
@@ -736,14 +772,74 @@ func WordsToFormattedCase(words []Word, opts ...any) (string, error) {
 						b.WriteRune(unicode.ToLower(r))
 					}
 				} else {
-					var err error
-					w, err := upperCaseFirstLower(s, cfg.utf8Mode)
-					if err != nil {
-						return "", err
+					normalize := treatAcronymsAsWords
+					if cfg.smartTitleThreshold == nil {
+						// Hybrid Staged Algorithm rules
+						if cfg.smartTitleUpperMode == SmartTitleUpperPreserve {
+							normalize = false
+						} else if cfg.acronymPredicate != nil && cfg.acronymPredicate(s) {
+							normalize = false
+						} else if cfg.smartTitleUpperMode == SmartTitleUpperAuto {
+							if globalScreaming {
+								normalize = true
+							} else {
+								// Check for structural isolation:
+								// If surrounded by mixed/lowercase words, preserve it.
+								isIsolated := true
+								// Look back
+								for j := i - 1; j >= 0; j-- {
+									if _, ok := words[j].(SeparatorWord); !ok {
+										if _, ok := words[j].(AcronymWord); ok {
+											isIsolated = false
+										} else if _, ok := words[j].(UpperCaseWord); ok {
+											isIsolated = false
+										}
+										break
+									}
+								}
+								// Look forward
+								for j := i + 1; j < len(words); j++ {
+									if _, ok := words[j].(SeparatorWord); !ok {
+										if _, ok := words[j].(AcronymWord); ok {
+											isIsolated = false
+										} else if _, ok := words[j].(UpperCaseWord); ok {
+											isIsolated = false
+										}
+										break
+									}
+								}
+								normalize = !isIsolated
+							}
+						}
 					}
-					b.WriteString(w)
+
+					// UpperCaseWord legacy fallback: originally it was ALWAYS treated like treatAcronymsAsWords but inverted... wait, originally UpperCaseWord was normalized to title case unless verbatim?
+					// Wait, looking at the original code for UpperCaseWord in CMSmartTitle: it always upperCaseFirstLower(s)!
+					// EXCEPT treatAcronymsAsWords was only applied to AcronymWord. UpperCaseWord was ALWAYS upperCaseFirstLower.
+					// BUT the prompt asks us to treat Acronyms and UpperCaseWords conceptually together under the Hybrid Algorithm.
+					// Let's ensure backward compatibility if threshold IS used:
+					if cfg.smartTitleThreshold != nil {
+						_, isAcronym := word.(AcronymWord)
+						if isAcronym {
+							normalize = treatAcronymsAsWords
+						} else {
+							normalize = true // UpperCaseWord was ALWAYS normalized in threshold mode
+						}
+					}
+
+					if normalize {
+						var err error
+						w, err := upperCaseFirstLower(s, cfg.utf8Mode)
+						if err != nil {
+							return "", err
+						}
+						b.WriteString(w)
+					} else {
+						b.WriteString(s)
+					}
 				}
 			} else {
+				// Verbatim case fallback for non-screaming/whispering modes (e.g. Camel Case wouldn't hit this since it overrides)
 				b.WriteString(s)
 			}
 		case SeparatorWord:

@@ -125,8 +125,11 @@ Behaviour can be tuned with options passed to each function. Some commonly used 
   - `CMFirstLower`
   - `CMWhispering`
   - `CMScreaming`
+  - `CMSmartTitle`
 - `OptionFirstUpper()` – force the result to start with an uppercase letter.
 - `OptionFirstLower()` – force the result to start with a lowercase letter.
+- `OptionSmartTitleUpperMode(SmartTitleUpperMode)` – force normalization or preservation of uppercase words in `CMSmartTitle`.
+- `OptionSmartTitleAcronymPredicate(func(string) bool)` – provide custom knowledge for matching domain acronyms.
 
 Examples:
 
