@@ -10,6 +10,7 @@ type SmartTitleAlgorithm func(words []Word, input string) string
 
 // Algo A: Ratio
 func algoRatio(words []Word, input string) string {
+	//nolint:staticcheck // Ignoring deprecation warning for the purpose of testing the algorithm
 	res, _ := ToTitleCase(words, OptionSmartTitleThreshold(func(wc int) float64 { return 0.5 }))
 	return res
 }

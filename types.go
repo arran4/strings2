@@ -986,6 +986,7 @@ func ToDarwinCase(words []Word, opts ...Option) (string, error) {
 
 // ToTitleCase converts words into a Title Case string (Smart Title).
 func ToTitleCase(words []Word, opts ...Option) (string, error) {
+	//nolint:staticcheck // Ignore deprecation warning for default
 	defaults := []any{
 		OptionDelimiter(" "),
 		OptionFirstUpper(),
