@@ -96,53 +96,59 @@ func algoStagedHybrid(words []Word, input string) string {
 }
 
 func TestSmartTitleAlgorithms(t *testing.T) {
-	tests := []string{
-		"the lord of the rings",
-		"A_NEW_HOPE",
-		"THE_LORD_OF_THE_RINGS",
-		"parse_HTTP_request",
-		"HTTP_request",
-		"mixed-UP-Kebab",
-		"NASA_API_CLIENT",
-		"COVID_19_RESPONSE",
-		"A_B_TESTING",
-		"API",
-		"GO_TO_URL",
-		"ONE_TWO",
-		"ONE_TWO_THREE_FOUR",
-		"One_TWO_THREE_Four",
-		"XMLHttpRequest",
-		"JSON_API_response",
-		"user_ID",
-		"ID_user",
-		"version_2_API",
-		"single",
-		"I",
-		"",
-		"_",
-		"123",
-		"café_BISTRO", // Unicode test
+	tests := []struct {
+		input    string
+		expected map[string]string // Example of asserting expected outputs if desired, or just log
+	}{
+		{input: "the lord of the rings"},
+		{input: "A_NEW_HOPE"},
+		{input: "THE_LORD_OF_THE_RINGS"},
+		{input: "parse_HTTP_request"},
+		{input: "HTTP_request"},
+		{input: "mixed-UP-Kebab"},
+		{input: "NASA_API_CLIENT"},
+		{input: "COVID_19_RESPONSE"},
+		{input: "A_B_TESTING"},
+		{input: "API"},
+		{input: "GO_TO_URL"},
+		{input: "ONE_TWO"},
+		{input: "ONE_TWO_THREE_FOUR"},
+		{input: "One_TWO_THREE_Four"},
+		{input: "XMLHttpRequest"},
+		{input: "JSON_API_response"},
+		{input: "user_ID"},
+		{input: "ID_user"},
+		{input: "version_2_API"},
+		{input: "single"},
+		{input: "I"},
+		{input: ""},
+		{input: "_"},
+		{input: "123"},
+		{input: "café_BISTRO"},
 	}
 
-	algos := map[string]SmartTitleAlgorithm{
-		"Ratio":             algoRatio,
-		"WholeSource":       algoWholeSource,
-		"Provenance":        algoProvenance,
-		"Structural":        algoStructural,
-		"LexicalShape":      algoLexicalShape,
-		"AcronymPredicate":  algoAcronymPredicate,
-		"ExplicitMode":      algoExplicitMode,
-		"Scoring":           algoScoring,
-		"StagedHybrid":      algoStagedHybrid,
+	algos := []struct {
+		name string
+		fn   SmartTitleAlgorithm
+	}{
+		{"Ratio", algoRatio},
+		{"WholeSource", algoWholeSource},
+		{"Provenance", algoProvenance},
+		{"Structural", algoStructural},
+		{"LexicalShape", algoLexicalShape},
+		{"AcronymPredicate", algoAcronymPredicate},
+		{"ExplicitMode", algoExplicitMode},
+		{"Scoring", algoScoring},
+		{"StagedHybrid", algoStagedHybrid},
 	}
 
-	for _, input := range tests {
-		t.Run(input, func(t *testing.T) {
-			words, _ := Parse(input)
-			t.Logf("Input: %q", input)
-			for name, fn := range algos {
-				out := fn(words, input)
-				t.Logf("  %16s : %q", name, out)
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			words, _ := Parse(tt.input)
+			t.Logf("Input: %q", tt.input)
+			for _, algo := range algos {
+				out := algo.fn(words, tt.input)
+				t.Logf("  %16s : %q", algo.name, out)
 			}
 		})
 	}
