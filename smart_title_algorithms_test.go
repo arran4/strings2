@@ -1,9 +1,14 @@
 package strings2
 
 import (
+	"encoding/json"
+	_ "embed"
 	"strings"
 	"testing"
 )
+
+//go:embed testdata/smart_title_algorithms_matrix.json
+var smartTitleAlgorithmsMatrix []byte
 
 // SmartTitleAlgorithm interface for evaluating multiple distinct uppercase parsing logic.
 type SmartTitleAlgorithm func(words []Word, input string) string
@@ -96,286 +101,18 @@ func algoStagedHybrid(words []Word, input string) string {
 	return res
 }
 
+type SmartTitleAlgorithmTestCase struct {
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Input       string            `json:"input"`
+	Expected    map[string]string `json:"expected"`
+}
+
 func TestSmartTitleAlgorithms(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected map[string]string // Example of asserting expected outputs if desired, or just log
-	}{
-		{input: "the lord of the rings", expected: map[string]string{
-			"Ratio": "The Lord of the Rings",
-			"WholeSource": "The Lord of the Rings",
-			"Provenance": "The Lord of the Rings",
-			"Structural": "The Lord of the Rings",
-			"LexicalShape": "The Lord of the Rings",
-			"AcronymPredicate": "The Lord of the Rings",
-			"ExplicitMode": "The Lord of the Rings",
-			"Scoring": "The Lord of the Rings",
-			"StagedHybrid": "The Lord of the Rings",
-		}},
-		{input: "A_NEW_HOPE", expected: map[string]string{
-			"Ratio": "A New Hope",
-			"WholeSource": "A New Hope",
-			"Provenance": "A NEW HOPE",
-			"Structural": "A New Hope",
-			"LexicalShape": "A New Hope",
-			"AcronymPredicate": "A New Hope",
-			"ExplicitMode": "A New Hope",
-			"Scoring": "A New Hope",
-			"StagedHybrid": "A New Hope",
-		}},
-		{input: "THE_LORD_OF_THE_RINGS", expected: map[string]string{
-			"Ratio": "The Lord of the Rings",
-			"WholeSource": "The Lord of the Rings",
-			"Provenance": "THE LORD of the RINGS",
-			"Structural": "The Lord of the Rings",
-			"LexicalShape": "The Lord of the Rings",
-			"AcronymPredicate": "The Lord of the Rings",
-			"ExplicitMode": "The Lord of the Rings",
-			"Scoring": "The Lord of the Rings",
-			"StagedHybrid": "The Lord of the Rings",
-		}},
-		{input: "parse_HTTP_request", expected: map[string]string{
-			"Ratio": "Parse HTTP Request",
-			"WholeSource": "Parse HTTP Request",
-			"Provenance": "Parse HTTP Request",
-			"Structural": "Parse HTTP Request",
-			"LexicalShape": "Parse HTTP Request",
-			"AcronymPredicate": "Parse HTTP Request",
-			"ExplicitMode": "Parse Http Request",
-			"Scoring": "Parse HTTP Request",
-			"StagedHybrid": "Parse HTTP Request",
-		}},
-		{input: "HTTP_request", expected: map[string]string{
-			"Ratio": "HTTP Request",
-			"WholeSource": "HTTP Request",
-			"Provenance": "HTTP Request",
-			"Structural": "HTTP Request",
-			"LexicalShape": "HTTP Request",
-			"AcronymPredicate": "HTTP Request",
-			"ExplicitMode": "Http Request",
-			"Scoring": "HTTP Request",
-			"StagedHybrid": "HTTP Request",
-		}},
-		{input: "mixed-UP-Kebab", expected: map[string]string{
-			"Ratio": "Mixed UP Kebab",
-			"WholeSource": "Mixed UP Kebab",
-			"Provenance": "Mixed UP Kebab",
-			"Structural": "Mixed UP Kebab",
-			"LexicalShape": "Mixed UP Kebab",
-			"AcronymPredicate": "Mixed UP Kebab",
-			"ExplicitMode": "Mixed Up Kebab",
-			"Scoring": "Mixed UP Kebab",
-			"StagedHybrid": "Mixed UP Kebab",
-		}},
-		{input: "NASA_API_CLIENT", expected: map[string]string{
-			"Ratio": "Nasa Api Client",
-			"WholeSource": "Nasa Api Client",
-			"Provenance": "NASA API CLIENT",
-			"Structural": "Nasa Api Client",
-			"LexicalShape": "Nasa Api Client",
-			"AcronymPredicate": "Nasa Api Client",
-			"ExplicitMode": "Nasa Api Client",
-			"Scoring": "Nasa Api Client",
-			"StagedHybrid": "Nasa Api Client",
-		}},
-		{input: "COVID_19_RESPONSE", expected: map[string]string{
-			"Ratio": "Covid 19 Response",
-			"WholeSource": "Covid 19 Response",
-			"Provenance": "COVID 19 RESPONSE",
-			"Structural": "Covid 19 Response",
-			"LexicalShape": "Covid 19 Response",
-			"AcronymPredicate": "Covid 19 Response",
-			"ExplicitMode": "Covid 19 Response",
-			"Scoring": "Covid 19 Response",
-			"StagedHybrid": "Covid 19 Response",
-		}},
-		{input: "A_B_TESTING", expected: map[string]string{
-			"Ratio": "A B Testing",
-			"WholeSource": "A B Testing",
-			"Provenance": "A B TESTING",
-			"Structural": "A B Testing",
-			"LexicalShape": "A B Testing",
-			"AcronymPredicate": "A B Testing",
-			"ExplicitMode": "A B Testing",
-			"Scoring": "A B Testing",
-			"StagedHybrid": "A B Testing",
-		}},
-		{input: "API", expected: map[string]string{
-			"Ratio": "Api",
-			"WholeSource": "Api",
-			"Provenance": "API",
-			"Structural": "Api",
-			"LexicalShape": "Api",
-			"AcronymPredicate": "Api",
-			"ExplicitMode": "Api",
-			"Scoring": "Api",
-			"StagedHybrid": "Api",
-		}},
-		{input: "GO_TO_URL", expected: map[string]string{
-			"Ratio": "Go to Url",
-			"WholeSource": "Go to Url",
-			"Provenance": "GO to URL",
-			"Structural": "Go to Url",
-			"LexicalShape": "Go to Url",
-			"AcronymPredicate": "Go to Url",
-			"ExplicitMode": "Go to Url",
-			"Scoring": "Go to Url",
-			"StagedHybrid": "Go to Url",
-		}},
-		{input: "ONE_TWO", expected: map[string]string{
-			"Ratio": "One Two",
-			"WholeSource": "One Two",
-			"Provenance": "ONE TWO",
-			"Structural": "One Two",
-			"LexicalShape": "One Two",
-			"AcronymPredicate": "One Two",
-			"ExplicitMode": "One Two",
-			"Scoring": "One Two",
-			"StagedHybrid": "One Two",
-		}},
-		{input: "ONE_TWO_THREE_FOUR", expected: map[string]string{
-			"Ratio": "One Two Three Four",
-			"WholeSource": "One Two Three Four",
-			"Provenance": "ONE TWO THREE FOUR",
-			"Structural": "One Two Three Four",
-			"LexicalShape": "One Two Three Four",
-			"AcronymPredicate": "One Two Three Four",
-			"ExplicitMode": "One Two Three Four",
-			"Scoring": "One Two Three Four",
-			"StagedHybrid": "One Two Three Four",
-		}},
-		{input: "One_TWO_THREE_Four", expected: map[string]string{
-			"Ratio": "One TWO THREE Four",
-			"WholeSource": "One TWO THREE Four",
-			"Provenance": "One TWO THREE Four",
-			"Structural": "One Two Three Four",
-			"LexicalShape": "One TWO THREE Four",
-			"AcronymPredicate": "One TWO THREE Four",
-			"ExplicitMode": "One Two Three Four",
-			"Scoring": "One TWO THREE Four",
-			"StagedHybrid": "One TWO THREE Four",
-		}},
-		{input: "XMLHttpRequest", expected: map[string]string{
-			"Ratio": "XML Http Request",
-			"WholeSource": "XML Http Request",
-			"Provenance": "XML Http Request",
-			"Structural": "XML Http Request",
-			"LexicalShape": "XML Http Request",
-			"AcronymPredicate": "XML Http Request",
-			"ExplicitMode": "Xml Http Request",
-			"Scoring": "XML Http Request",
-			"StagedHybrid": "XML Http Request",
-		}},
-		{input: "JSON_API_response", expected: map[string]string{
-			"Ratio": "Json Api Response",
-			"WholeSource": "JSON API Response",
-			"Provenance": "JSON API Response",
-			"Structural": "Json Api Response",
-			"LexicalShape": "Json Api Response",
-			"AcronymPredicate": "Json Api Response",
-			"ExplicitMode": "Json Api Response",
-			"Scoring": "Json Api Response",
-			"StagedHybrid": "Json Api Response",
-		}},
-		{input: "user_ID", expected: map[string]string{
-			"Ratio": "User ID",
-			"WholeSource": "User ID",
-			"Provenance": "User ID",
-			"Structural": "User ID",
-			"LexicalShape": "User ID",
-			"AcronymPredicate": "User ID",
-			"ExplicitMode": "User Id",
-			"Scoring": "User ID",
-			"StagedHybrid": "User ID",
-		}},
-		{input: "ID_user", expected: map[string]string{
-			"Ratio": "ID User",
-			"WholeSource": "ID User",
-			"Provenance": "ID User",
-			"Structural": "ID User",
-			"LexicalShape": "ID User",
-			"AcronymPredicate": "ID User",
-			"ExplicitMode": "Id User",
-			"Scoring": "ID User",
-			"StagedHybrid": "ID User",
-		}},
-		{input: "version_2_API", expected: map[string]string{
-			"Ratio": "Version 2 Api",
-			"WholeSource": "Version 2 API",
-			"Provenance": "Version 2 API",
-			"Structural": "Version 2 Api",
-			"LexicalShape": "Version 2 Api",
-			"AcronymPredicate": "Version 2 Api",
-			"ExplicitMode": "Version 2 Api",
-			"Scoring": "Version 2 Api",
-			"StagedHybrid": "Version 2 Api",
-		}},
-		{input: "single", expected: map[string]string{
-			"Ratio": "Single",
-			"WholeSource": "Single",
-			"Provenance": "Single",
-			"Structural": "Single",
-			"LexicalShape": "Single",
-			"AcronymPredicate": "Single",
-			"ExplicitMode": "Single",
-			"Scoring": "Single",
-			"StagedHybrid": "Single",
-		}},
-		{input: "I", expected: map[string]string{
-			"Ratio": "I",
-			"WholeSource": "I",
-			"Provenance": "I",
-			"Structural": "I",
-			"LexicalShape": "I",
-			"AcronymPredicate": "I",
-			"ExplicitMode": "I",
-			"Scoring": "I",
-			"StagedHybrid": "I",
-		}},
-		{input: "", expected: map[string]string{
-			"Ratio": "",
-			"WholeSource": "",
-			"Provenance": "",
-			"Structural": "",
-			"LexicalShape": "",
-			"AcronymPredicate": "",
-			"ExplicitMode": "",
-			"Scoring": "",
-			"StagedHybrid": "",
-		}},
-		{input: "_", expected: map[string]string{
-			"Ratio": "",
-			"WholeSource": "",
-			"Provenance": "",
-			"Structural": "",
-			"LexicalShape": "",
-			"AcronymPredicate": "",
-			"ExplicitMode": "",
-			"Scoring": "",
-			"StagedHybrid": "",
-		}},
-		{input: "123", expected: map[string]string{
-			"Ratio": "123",
-			"WholeSource": "123",
-			"Provenance": "123",
-			"Structural": "123",
-			"LexicalShape": "123",
-			"AcronymPredicate": "123",
-			"ExplicitMode": "123",
-			"Scoring": "123",
-			"StagedHybrid": "123",
-		}},
-		{input: "café_BISTRO", expected: map[string]string{
-			"Ratio": "Café BISTRO",
-			"WholeSource": "Café BISTRO",
-			"Provenance": "Café BISTRO",
-			"Structural": "Café BISTRO",
-			"LexicalShape": "Café BISTRO",
-			"AcronymPredicate": "Café BISTRO",
-			"ExplicitMode": "Café Bistro",
-			"Scoring": "Café BISTRO",
-			"StagedHybrid": "Café BISTRO",
-		}},
+	var tests []SmartTitleAlgorithmTestCase
+	err := json.Unmarshal(smartTitleAlgorithmsMatrix, &tests)
+	if err != nil {
+		t.Fatalf("Failed to parse smart_title_algorithms_matrix.json: %v", err)
 	}
 
 	algos := []struct {
@@ -394,11 +131,14 @@ func TestSmartTitleAlgorithms(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			words, _ := Parse(tt.input)
-			t.Logf("Input: %q", tt.input)
+		t.Run(tt.Name, func(t *testing.T) {
+			words, _ := Parse(tt.Input)
+			t.Logf("Input: %q (%s)", tt.Input, tt.Description)
 			for _, algo := range algos {
-				out := algo.fn(words, tt.input)
+				out := algo.fn(words, tt.Input)
+				if expected, ok := tt.Expected[algo.name]; ok && out != expected {
+					t.Errorf("Algorithm %s: expected %q, got %q", algo.name, expected, out)
+				}
 				t.Logf("  %16s : %q", algo.name, out)
 			}
 		})

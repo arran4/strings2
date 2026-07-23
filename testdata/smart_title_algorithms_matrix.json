@@ -1,0 +1,402 @@
+[
+  {
+    "name": "all_lower_spaces",
+    "description": "Standard lowercase words with spaces",
+    "input": "the lord of the rings",
+    "expected": {
+      "AcronymPredicate": "The Lord of the Rings",
+      "ExplicitMode": "The Lord of the Rings",
+      "LexicalShape": "The Lord of the Rings",
+      "Provenance": "The Lord of the Rings",
+      "Ratio": "The Lord of the Rings",
+      "Scoring": "The Lord of the Rings",
+      "StagedHybrid": "The Lord of the Rings",
+      "Structural": "The Lord of the Rings",
+      "WholeSource": "The Lord of the Rings"
+    }
+  },
+  {
+    "name": "screaming_snake",
+    "description": "Screaming snake case input",
+    "input": "A_NEW_HOPE",
+    "expected": {
+      "AcronymPredicate": "A New Hope",
+      "ExplicitMode": "A New Hope",
+      "LexicalShape": "A New Hope",
+      "Provenance": "A NEW HOPE",
+      "Ratio": "A New Hope",
+      "Scoring": "A New Hope",
+      "StagedHybrid": "A New Hope",
+      "Structural": "A New Hope",
+      "WholeSource": "A New Hope"
+    }
+  },
+  {
+    "name": "screaming_snake_long",
+    "description": "Long screaming snake case input",
+    "input": "THE_LORD_OF_THE_RINGS",
+    "expected": {
+      "AcronymPredicate": "The Lord of the Rings",
+      "ExplicitMode": "The Lord of the Rings",
+      "LexicalShape": "The Lord of the Rings",
+      "Provenance": "THE LORD of the RINGS",
+      "Ratio": "The Lord of the Rings",
+      "Scoring": "The Lord of the Rings",
+      "StagedHybrid": "The Lord of the Rings",
+      "Structural": "The Lord of the Rings",
+      "WholeSource": "The Lord of the Rings"
+    }
+  },
+  {
+    "name": "isolated_acronym",
+    "description": "Acronym isolated between lowercase words",
+    "input": "parse_HTTP_request",
+    "expected": {
+      "AcronymPredicate": "Parse HTTP Request",
+      "ExplicitMode": "Parse Http Request",
+      "LexicalShape": "Parse HTTP Request",
+      "Provenance": "Parse HTTP Request",
+      "Ratio": "Parse HTTP Request",
+      "Scoring": "Parse HTTP Request",
+      "StagedHybrid": "Parse HTTP Request",
+      "Structural": "Parse HTTP Request",
+      "WholeSource": "Parse HTTP Request"
+    }
+  },
+  {
+    "name": "leading_acronym",
+    "description": "Acronym at the beginning",
+    "input": "HTTP_request",
+    "expected": {
+      "AcronymPredicate": "HTTP Request",
+      "ExplicitMode": "Http Request",
+      "LexicalShape": "HTTP Request",
+      "Provenance": "HTTP Request",
+      "Ratio": "HTTP Request",
+      "Scoring": "HTTP Request",
+      "StagedHybrid": "HTTP Request",
+      "Structural": "HTTP Request",
+      "WholeSource": "HTTP Request"
+    }
+  },
+  {
+    "name": "mixed_kebab",
+    "description": "Mixed case with acronym and kebab delimiter",
+    "input": "mixed-UP-Kebab",
+    "expected": {
+      "AcronymPredicate": "Mixed UP Kebab",
+      "ExplicitMode": "Mixed Up Kebab",
+      "LexicalShape": "Mixed UP Kebab",
+      "Provenance": "Mixed UP Kebab",
+      "Ratio": "Mixed UP Kebab",
+      "Scoring": "Mixed UP Kebab",
+      "StagedHybrid": "Mixed UP Kebab",
+      "Structural": "Mixed UP Kebab",
+      "WholeSource": "Mixed UP Kebab"
+    }
+  },
+  {
+    "name": "ambiguous_acronyms",
+    "description": "Ambiguous string of acronyms or screaming snake",
+    "input": "NASA_API_CLIENT",
+    "expected": {
+      "AcronymPredicate": "Nasa Api Client",
+      "ExplicitMode": "Nasa Api Client",
+      "LexicalShape": "Nasa Api Client",
+      "Provenance": "NASA API CLIENT",
+      "Ratio": "Nasa Api Client",
+      "Scoring": "Nasa Api Client",
+      "StagedHybrid": "Nasa Api Client",
+      "Structural": "Nasa Api Client",
+      "WholeSource": "Nasa Api Client"
+    }
+  },
+  {
+    "name": "acronym_with_number",
+    "description": "Acronym containing numbers",
+    "input": "COVID_19_RESPONSE",
+    "expected": {
+      "AcronymPredicate": "Covid 19 Response",
+      "ExplicitMode": "Covid 19 Response",
+      "LexicalShape": "Covid 19 Response",
+      "Provenance": "COVID 19 RESPONSE",
+      "Ratio": "Covid 19 Response",
+      "Scoring": "Covid 19 Response",
+      "StagedHybrid": "Covid 19 Response",
+      "Structural": "Covid 19 Response",
+      "WholeSource": "Covid 19 Response"
+    }
+  },
+  {
+    "name": "single_letter_acronyms",
+    "description": "Single letter acronyms",
+    "input": "A_B_TESTING",
+    "expected": {
+      "AcronymPredicate": "A B Testing",
+      "ExplicitMode": "A B Testing",
+      "LexicalShape": "A B Testing",
+      "Provenance": "A B TESTING",
+      "Ratio": "A B Testing",
+      "Scoring": "A B Testing",
+      "StagedHybrid": "A B Testing",
+      "Structural": "A B Testing",
+      "WholeSource": "A B Testing"
+    }
+  },
+  {
+    "name": "single_acronym",
+    "description": "Just an acronym",
+    "input": "API",
+    "expected": {
+      "AcronymPredicate": "Api",
+      "ExplicitMode": "Api",
+      "LexicalShape": "Api",
+      "Provenance": "API",
+      "Ratio": "Api",
+      "Scoring": "Api",
+      "StagedHybrid": "Api",
+      "Structural": "Api",
+      "WholeSource": "Api"
+    }
+  },
+  {
+    "name": "short_words",
+    "description": "Short words that could be acronyms",
+    "input": "GO_TO_URL",
+    "expected": {
+      "AcronymPredicate": "Go to Url",
+      "ExplicitMode": "Go to Url",
+      "LexicalShape": "Go to Url",
+      "Provenance": "GO to URL",
+      "Ratio": "Go to Url",
+      "Scoring": "Go to Url",
+      "StagedHybrid": "Go to Url",
+      "Structural": "Go to Url",
+      "WholeSource": "Go to Url"
+    }
+  },
+  {
+    "name": "screaming_short",
+    "description": "Short screaming case",
+    "input": "ONE_TWO",
+    "expected": {
+      "AcronymPredicate": "One Two",
+      "ExplicitMode": "One Two",
+      "LexicalShape": "One Two",
+      "Provenance": "ONE TWO",
+      "Ratio": "One Two",
+      "Scoring": "One Two",
+      "StagedHybrid": "One Two",
+      "Structural": "One Two",
+      "WholeSource": "One Two"
+    }
+  },
+  {
+    "name": "screaming_medium",
+    "description": "Medium screaming case",
+    "input": "ONE_TWO_THREE_FOUR",
+    "expected": {
+      "AcronymPredicate": "One Two Three Four",
+      "ExplicitMode": "One Two Three Four",
+      "LexicalShape": "One Two Three Four",
+      "Provenance": "ONE TWO THREE FOUR",
+      "Ratio": "One Two Three Four",
+      "Scoring": "One Two Three Four",
+      "StagedHybrid": "One Two Three Four",
+      "Structural": "One Two Three Four",
+      "WholeSource": "One Two Three Four"
+    }
+  },
+  {
+    "name": "mixed_middle_screaming",
+    "description": "Screaming block inside mixed case",
+    "input": "One_TWO_THREE_Four",
+    "expected": {
+      "AcronymPredicate": "One TWO THREE Four",
+      "ExplicitMode": "One Two Three Four",
+      "LexicalShape": "One TWO THREE Four",
+      "Provenance": "One TWO THREE Four",
+      "Ratio": "One TWO THREE Four",
+      "Scoring": "One TWO THREE Four",
+      "StagedHybrid": "One TWO THREE Four",
+      "Structural": "One Two Three Four",
+      "WholeSource": "One TWO THREE Four"
+    }
+  },
+  {
+    "name": "pascal_with_acronym",
+    "description": "Pascal case with leading acronym",
+    "input": "XMLHttpRequest",
+    "expected": {
+      "AcronymPredicate": "XML Http Request",
+      "ExplicitMode": "Xml Http Request",
+      "LexicalShape": "XML Http Request",
+      "Provenance": "XML Http Request",
+      "Ratio": "XML Http Request",
+      "Scoring": "XML Http Request",
+      "StagedHybrid": "XML Http Request",
+      "Structural": "XML Http Request",
+      "WholeSource": "XML Http Request"
+    }
+  },
+  {
+    "name": "multiple_acronyms_leading",
+    "description": "Multiple leading acronyms",
+    "input": "JSON_API_response",
+    "expected": {
+      "AcronymPredicate": "Json Api Response",
+      "ExplicitMode": "Json Api Response",
+      "LexicalShape": "Json Api Response",
+      "Provenance": "JSON API Response",
+      "Ratio": "Json Api Response",
+      "Scoring": "Json Api Response",
+      "StagedHybrid": "Json Api Response",
+      "Structural": "Json Api Response",
+      "WholeSource": "JSON API Response"
+    }
+  },
+  {
+    "name": "trailing_acronym",
+    "description": "Acronym at the end",
+    "input": "user_ID",
+    "expected": {
+      "AcronymPredicate": "User ID",
+      "ExplicitMode": "User Id",
+      "LexicalShape": "User ID",
+      "Provenance": "User ID",
+      "Ratio": "User ID",
+      "Scoring": "User ID",
+      "StagedHybrid": "User ID",
+      "Structural": "User ID",
+      "WholeSource": "User ID"
+    }
+  },
+  {
+    "name": "leading_acronym_underscore",
+    "description": "Leading acronym with underscore",
+    "input": "ID_user",
+    "expected": {
+      "AcronymPredicate": "ID User",
+      "ExplicitMode": "Id User",
+      "LexicalShape": "ID User",
+      "Provenance": "ID User",
+      "Ratio": "ID User",
+      "Scoring": "ID User",
+      "StagedHybrid": "ID User",
+      "Structural": "ID User",
+      "WholeSource": "ID User"
+    }
+  },
+  {
+    "name": "number_and_acronym",
+    "description": "Numbers and trailing acronym",
+    "input": "version_2_API",
+    "expected": {
+      "AcronymPredicate": "Version 2 Api",
+      "ExplicitMode": "Version 2 Api",
+      "LexicalShape": "Version 2 Api",
+      "Provenance": "Version 2 API",
+      "Ratio": "Version 2 Api",
+      "Scoring": "Version 2 Api",
+      "StagedHybrid": "Version 2 Api",
+      "Structural": "Version 2 Api",
+      "WholeSource": "Version 2 API"
+    }
+  },
+  {
+    "name": "single_word",
+    "description": "Single lowercase word",
+    "input": "single",
+    "expected": {
+      "AcronymPredicate": "Single",
+      "ExplicitMode": "Single",
+      "LexicalShape": "Single",
+      "Provenance": "Single",
+      "Ratio": "Single",
+      "Scoring": "Single",
+      "StagedHybrid": "Single",
+      "Structural": "Single",
+      "WholeSource": "Single"
+    }
+  },
+  {
+    "name": "single_letter",
+    "description": "Single letter word",
+    "input": "I",
+    "expected": {
+      "AcronymPredicate": "I",
+      "ExplicitMode": "I",
+      "LexicalShape": "I",
+      "Provenance": "I",
+      "Ratio": "I",
+      "Scoring": "I",
+      "StagedHybrid": "I",
+      "Structural": "I",
+      "WholeSource": "I"
+    }
+  },
+  {
+    "name": "empty",
+    "description": "Empty string",
+    "input": "",
+    "expected": {
+      "AcronymPredicate": "",
+      "ExplicitMode": "",
+      "LexicalShape": "",
+      "Provenance": "",
+      "Ratio": "",
+      "Scoring": "",
+      "StagedHybrid": "",
+      "Structural": "",
+      "WholeSource": ""
+    }
+  },
+  {
+    "name": "only_delimiter",
+    "description": "Only delimiter",
+    "input": "_",
+    "expected": {
+      "AcronymPredicate": "",
+      "ExplicitMode": "",
+      "LexicalShape": "",
+      "Provenance": "",
+      "Ratio": "",
+      "Scoring": "",
+      "StagedHybrid": "",
+      "Structural": "",
+      "WholeSource": ""
+    }
+  },
+  {
+    "name": "only_numbers",
+    "description": "Only numbers",
+    "input": "123",
+    "expected": {
+      "AcronymPredicate": "123",
+      "ExplicitMode": "123",
+      "LexicalShape": "123",
+      "Provenance": "123",
+      "Ratio": "123",
+      "Scoring": "123",
+      "StagedHybrid": "123",
+      "Structural": "123",
+      "WholeSource": "123"
+    }
+  },
+  {
+    "name": "unicode",
+    "description": "Unicode characters",
+    "input": "café_BISTRO",
+    "expected": {
+      "AcronymPredicate": "Café BISTRO",
+      "ExplicitMode": "Café Bistro",
+      "LexicalShape": "Café BISTRO",
+      "Provenance": "Café BISTRO",
+      "Ratio": "Café BISTRO",
+      "Scoring": "Café BISTRO",
+      "StagedHybrid": "Café BISTRO",
+      "Structural": "Café BISTRO",
+      "WholeSource": "Café BISTRO"
+    }
+  }
+]
