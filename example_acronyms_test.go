@@ -23,7 +23,7 @@ func ExampleLoadAcronymsFromFile() {
 	dir, _ := os.MkdirTemp("", "acronyms")
 	defer os.RemoveAll(dir)
 	file := filepath.Join(dir, "acronyms.txt")
-	os.WriteFile(file, []byte("HTTP\nJSON\n"), 0644)
+	strings2.Must("", os.WriteFile(file, []byte("HTTP\nJSON\n"), 0644))
 
 	mapper, _ := strings2.LoadAcronymsFromFile(file)
 
