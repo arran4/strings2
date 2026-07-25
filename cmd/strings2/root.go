@@ -76,12 +76,21 @@ func (c *RootCmd) UsageRecursive() {
 	fmt.Fprintf(os.Stderr, "    %s\n", "delimited")
 	fmt.Fprintf(os.Stderr, "    %s\n", "kebab")
 	fmt.Fprintf(os.Stderr, "    %s\n", "lowercamel")
+	fmt.Fprintf(os.Stderr, "    %s\n", "parts")
 	fmt.Fprintf(os.Stderr, "    %s\n", "pascal")
 	fmt.Fprintf(os.Stderr, "    %s\n", "screamingdelimited")
 	fmt.Fprintf(os.Stderr, "    %s\n", "screamingkebab")
 	fmt.Fprintf(os.Stderr, "    %s\n", "screamingsnake")
 	fmt.Fprintf(os.Stderr, "    %s\n", "snake")
+	fmt.Fprintf(os.Stderr, "    %s\n", "subparts")
 	fmt.Fprintf(os.Stderr, "    %s\n", "title")
+	fmt.Fprintf(os.Stderr, "    %s\n", "words")
+	fmt.Fprintf(os.Stderr, "    %s\n", "wordstocamel")
+	fmt.Fprintf(os.Stderr, "    %s\n", "wordstodarwin")
+	fmt.Fprintf(os.Stderr, "    %s\n", "wordstokebab")
+	fmt.Fprintf(os.Stderr, "    %s\n", "wordstopascal")
+	fmt.Fprintf(os.Stderr, "    %s\n", "wordstosnake")
+	fmt.Fprintf(os.Stderr, "    %s\n", "wordstotitle")
 }
 
 func NewRoot(name, version, commit, date string) (*RootCmd, error) {
@@ -99,12 +108,21 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 	c.Commands["delimited"] = c.NewDelimited()
 	c.Commands["kebab"] = c.NewKebab()
 	c.Commands["lowercamel"] = c.NewLowercamel()
+	c.Commands["parts"] = c.NewParts()
 	c.Commands["pascal"] = c.NewPascal()
 	c.Commands["screamingdelimited"] = c.NewScreamingdelimited()
 	c.Commands["screamingkebab"] = c.NewScreamingkebab()
 	c.Commands["screamingsnake"] = c.NewScreamingsnake()
 	c.Commands["snake"] = c.NewSnake()
+	c.Commands["subparts"] = c.NewSubparts()
 	c.Commands["title"] = c.NewTitle()
+	c.Commands["words"] = c.NewWords()
+	c.Commands["wordstocamel"] = c.NewWordstocamel()
+	c.Commands["wordstodarwin"] = c.NewWordstodarwin()
+	c.Commands["wordstokebab"] = c.NewWordstokebab()
+	c.Commands["wordstopascal"] = c.NewWordstopascal()
+	c.Commands["wordstosnake"] = c.NewWordstosnake()
+	c.Commands["wordstotitle"] = c.NewWordstotitle()
 	c.Commands["help"] = &InternalCommand{
 		Exec: func(args []string) error {
 			for _, arg := range args {

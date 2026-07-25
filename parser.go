@@ -13,6 +13,58 @@ import (
 // - Partitioner function
 // - PartitionerConfig
 // - ParserSmartAcronyms bool
+
+// ParseToParts parses the input string into a slice of Parts based on detection or provided options.
+func ParseToParts(input string, opts ...any) ([]Part, error) {
+	// Level 5: Scan
+	subs, stats := StringToSubParts(input)
+
+	p := &ParserConfig{
+		SmartAcronyms: true,
+		NumberMode:    NumberModeNone,
+	}
+
+	var subPartMappers []SubPartMapper
+	var partMappers []PartMapper
+
+	for _, opt := range opts {
+		switch o := opt.(type) {
+		case Partitioner:
+			p.Partitioner = o
+		case PartitionerConfig:
+			p.Partitioner = NewPartitioner(o)
+		case ParserOption:
+			o.Apply(p)
+		case SubPartMapper:
+			subPartMappers = append(subPartMappers, o)
+		case PartMapper:
+			partMappers = append(partMappers, o)
+		}
+	}
+
+	for _, m := range subPartMappers {
+		if m != nil {
+			subs = m(subs)
+		}
+	}
+
+	// Level 4: Partition
+	partitioner := p.Partitioner
+	if partitioner == nil {
+		partitioner = DetectPartitioner(stats, p)
+	}
+
+	parts := SubPartsToParts(subs, partitioner)
+
+	for _, m := range partMappers {
+		if m != nil {
+			parts = m(parts)
+		}
+	}
+
+	return parts, nil
+}
+
 func Parse(input string, opts ...any) ([]Word, error) {
 	// Level 5: Scan
 	subs, stats := StringToSubParts(input)
@@ -309,4 +361,84 @@ func ParseDarwinCase(input string, opts ...any) ([]Word, error) {
 	combinedOpts = append(combinedOpts, opts...)
 	combinedOpts = append(combinedOpts, WithSnakeCasePartitioner())
 	return Parse(input, combinedOpts...)
+}
+
+func ParseSnakeCaseToParts(input string, opts ...any) ([]Part, error) {
+	combinedOpts := make([]any, 0, len(opts)+1)
+	combinedOpts = append(combinedOpts, opts...)
+	combinedOpts = append(combinedOpts, WithSnakeCasePartitioner())
+	return ParseToParts(input, combinedOpts...)
+}
+
+func ParseCamelCaseToParts(input string, opts ...any) ([]Part, error) {
+	combinedOpts := make([]any, 0, len(opts)+1)
+	combinedOpts = append(combinedOpts, opts...)
+	combinedOpts = append(combinedOpts, WithCamelCasePartitioner())
+	return ParseToParts(input, combinedOpts...)
+}
+
+func ParseKebabCaseToParts(input string, opts ...any) ([]Part, error) {
+	combinedOpts := make([]any, 0, len(opts)+1)
+	combinedOpts = append(combinedOpts, opts...)
+	combinedOpts = append(combinedOpts, WithKebabCasePartitioner())
+	return ParseToParts(input, combinedOpts...)
+}
+
+func ParseDarwinCaseToParts(input string, opts ...any) ([]Part, error) {
+	combinedOpts := make([]any, 0, len(opts)+1)
+	combinedOpts = append(combinedOpts, opts...)
+	combinedOpts = append(combinedOpts, WithSnakeCasePartitioner())
+	return ParseToParts(input, combinedOpts...)
+}
+
+func ParseTitleCase(input string, opts ...any) ([]Word, error) {
+	combinedOpts := make([]any, 0, len(opts)+1)
+	combinedOpts = append(combinedOpts, opts...)
+	combinedOpts = append(combinedOpts, NewPartitioner(PartitionerConfig{
+		Delimiters: map[rune]bool{' ': true},
+		SplitCamel: false, // Title case may contain camelCase words, typically don't split unless specified, but let's just stick to spaces.
+	}))
+	return Parse(input, combinedOpts...)
+}
+
+func ParseTitleCaseToParts(input string, opts ...any) ([]Part, error) {
+	combinedOpts := make([]any, 0, len(opts)+1)
+	combinedOpts = append(combinedOpts, opts...)
+	combinedOpts = append(combinedOpts, NewPartitioner(PartitionerConfig{
+		Delimiters: map[rune]bool{' ': true},
+		SplitCamel: false,
+	}))
+	return ParseToParts(input, combinedOpts...)
+}
+
+func ParsePascalCase(input string, opts ...any) ([]Word, error) {
+	return ParseCamelCase(input, opts...)
+}
+
+func ParsePascalCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseCamelCaseToParts(input, opts...)
+}
+
+func ParseLowerCamelCase(input string, opts ...any) ([]Word, error) {
+	return ParseCamelCase(input, opts...)
+}
+
+func ParseLowerCamelCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseCamelCaseToParts(input, opts...)
+}
+
+func ParseScreamingSnakeCase(input string, opts ...any) ([]Word, error) {
+	return ParseSnakeCase(input, opts...)
+}
+
+func ParseScreamingSnakeCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseSnakeCaseToParts(input, opts...)
+}
+
+func ParseScreamingKebabCase(input string, opts ...any) ([]Word, error) {
+	return ParseKebabCase(input, opts...)
+}
+
+func ParseScreamingKebabCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseKebabCaseToParts(input, opts...)
 }
