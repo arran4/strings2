@@ -128,8 +128,18 @@ Behaviour can be tuned with options passed to each function. Some commonly used 
   - `CMSmartTitle`
 - `OptionFirstUpper()` – force the result to start with an uppercase letter.
 - `OptionFirstLower()` – force the result to start with a lowercase letter.
-- `OptionSmartTitleUpperMode(SmartTitleUpperMode)` – force normalization or preservation of uppercase words in `CMSmartTitle`.
-- `OptionSmartTitleAcronymPredicate(func(string) bool)` – provide custom knowledge for matching domain acronyms.
+
+#### Smart Title Casing and Acronyms
+
+When using `CMSmartTitle` (the default for title casing functions), the library must differentiate between true acronyms and words that are only uppercase because the source format was screaming case (like `A_NEW_HOPE`).
+The behavior can be customized heavily depending on your domain constraints:
+
+- `OptionSmartTitleUpperMode(SmartTitleUpperAuto)` – (Default) Uses a Staged Hybrid algorithm that analyzes the global source shape and structural isolation to normalize format-induced uppercase words, while preserving explicitly isolated acronyms.
+- `OptionSmartTitleUpperMode(SmartTitleUpperNormalize)` – Normalizes all ambiguous uppercase words to title case (Algorithm: Explicit Mode / Whole Source).
+- `OptionSmartTitleUpperMode(SmartTitleUpperPreserve)` – Preserves all uppercase words verbatim (Algorithm: Provenance).
+- `OptionSmartTitleAcronymPredicate(func(string) bool)` – Provide a custom function to definitively identify domain-specific acronyms (Algorithm: Acronym Predicate / Lexical Shape / Scoring).
+
+For historical backward compatibility, `OptionSmartTitleThreshold` (Ratio Algorithm) is available but deprecated.
 
 Examples:
 
