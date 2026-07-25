@@ -2,6 +2,8 @@ package strings2
 
 import (
 	"bufio"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -46,16 +48,10 @@ func OptionAcronymList(acronyms []string) WordMapper {
 	}
 }
 
-// LoadAcronymsFromFile reads a file containing one acronym per line and returns a WordMapper.
-func LoadAcronymsFromFile(filepath string) (WordMapper, error) {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
+// LoadAcronymsFromReader reads acronyms from an io.Reader (one per line) and returns a WordMapper.
+func LoadAcronymsFromReader(r io.Reader) (WordMapper, error) {
 	var acronyms []string
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line != "" {
@@ -67,4 +63,24 @@ func LoadAcronymsFromFile(filepath string) (WordMapper, error) {
 	}
 
 	return OptionAcronymList(acronyms), nil
+}
+
+// LoadAcronymsFromFile reads a file containing one acronym per line and returns a WordMapper.
+func LoadAcronymsFromFile(filepath string) (WordMapper, error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	return LoadAcronymsFromReader(file)
+}
+
+// LoadAcronymsFromURL fetches acronyms from a given URL (one per line) and returns a WordMapper.
+func LoadAcronymsFromURL(url string) (WordMapper, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return LoadAcronymsFromReader(resp.Body)
 }
