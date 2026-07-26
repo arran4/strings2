@@ -63,12 +63,6 @@ func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper boo
 	var opts []any
 	if delimiter != "" {
 		opts = append(opts, strings2.OptionDelimiter(delimiter))
-		if len(delimiter) > 0 {
-			opts = append(opts, strings2.NewPartitioner(strings2.PartitionerConfig{
-				Delimiters: map[rune]bool{rune(delimiter[0]): true},
-				SplitCamel: true,
-			}))
-		}
 	}
 
 	if screaming {
@@ -410,7 +404,6 @@ func writeLines[T any](out io.Writer, slice []T, stringer func(T) string) {
 }
 
 
-
 type wordData struct {
 	Type  string `json:"type"`
 	Value string `json:"value"`
@@ -434,7 +427,6 @@ func getWord(typ string, val string) strings2.Word {
 		return strings2.ExactCaseWord(val)
 	}
 }
-
 
 func writeWords(out io.Writer, words []strings2.Word, jsonOut bool) {
 	if jsonOut {
@@ -497,6 +489,42 @@ func getIO(input, output string, args []string) (io.Reader, io.Writer) {
 //	args: ... String to convert if file/stdin not provided
 func Words(input string, output string, jsonOut bool, delimiter string, noSmartAcronyms bool, numberSplitting bool, acronym []string, acronymFromFile []string, strict bool, args ...string) {
 	opts := buildOpts(delimiter, false, false, false, false, false, noSmartAcronyms, numberSplitting, acronym, acronymFromFile, strict)
+	if delimiter != "" {
+		r, _ := utf8.DecodeRuneInString(delimiter)
+		numMode := strings2.NumberModeNone
+		if numberSplitting {
+			numMode = strings2.NumberModeSplitAlways
+		}
+		opts = append(opts, strings2.NewPartitioner(strings2.PartitionerConfig{
+			Delimiters: map[rune]bool{r: true},
+			SplitCamel: true,
+			NumberMode: numMode,
+		}))
+	}
+	if delimiter != "" {
+		r, _ := utf8.DecodeRuneInString(delimiter)
+		numMode := strings2.NumberModeNone
+		if numberSplitting {
+			numMode = strings2.NumberModeSplitAlways
+		}
+		opts = append(opts, strings2.NewPartitioner(strings2.PartitionerConfig{
+			Delimiters: map[rune]bool{r: true},
+			SplitCamel: true,
+			NumberMode: numMode,
+		}))
+	}
+	if delimiter != "" {
+		r, _ := utf8.DecodeRuneInString(delimiter)
+		numMode := strings2.NumberModeNone
+		if numberSplitting {
+			numMode = strings2.NumberModeSplitAlways
+		}
+		opts = append(opts, strings2.NewPartitioner(strings2.PartitionerConfig{
+			Delimiters: map[rune]bool{r: true},
+			SplitCamel: true,
+			NumberMode: numMode,
+		}))
+	}
 
 	in, out := getIO(input, output, args)
 	b, err := io.ReadAll(in)
@@ -533,6 +561,42 @@ func Words(input string, output string, jsonOut bool, delimiter string, noSmartA
 //	args: ... String to convert if file/stdin not provided
 func Parts(input string, output string, jsonOut bool, delimiter string, numberSplitting bool, strict bool, args ...string) {
 	opts := buildOpts(delimiter, false, false, false, false, false, false, numberSplitting, nil, nil, strict)
+	if delimiter != "" {
+		r, _ := utf8.DecodeRuneInString(delimiter)
+		numMode := strings2.NumberModeNone
+		if numberSplitting {
+			numMode = strings2.NumberModeSplitAlways
+		}
+		opts = append(opts, strings2.NewPartitioner(strings2.PartitionerConfig{
+			Delimiters: map[rune]bool{r: true},
+			SplitCamel: true,
+			NumberMode: numMode,
+		}))
+	}
+	if delimiter != "" {
+		r, _ := utf8.DecodeRuneInString(delimiter)
+		numMode := strings2.NumberModeNone
+		if numberSplitting {
+			numMode = strings2.NumberModeSplitAlways
+		}
+		opts = append(opts, strings2.NewPartitioner(strings2.PartitionerConfig{
+			Delimiters: map[rune]bool{r: true},
+			SplitCamel: true,
+			NumberMode: numMode,
+		}))
+	}
+	if delimiter != "" {
+		r, _ := utf8.DecodeRuneInString(delimiter)
+		numMode := strings2.NumberModeNone
+		if numberSplitting {
+			numMode = strings2.NumberModeSplitAlways
+		}
+		opts = append(opts, strings2.NewPartitioner(strings2.PartitionerConfig{
+			Delimiters: map[rune]bool{r: true},
+			SplitCamel: true,
+			NumberMode: numMode,
+		}))
+	}
 
 	in, out := getIO(input, output, args)
 	b, err := io.ReadAll(in)
@@ -591,23 +655,27 @@ func readWords(in io.Reader, jsonInput bool) ([]strings2.Word, error) {
 	if err != nil {
 		return nil, err
 	}
-	var stringWords []string
+	var words []strings2.Word
 	if jsonInput {
-		if err := json.Unmarshal(b, &stringWords); err != nil {
+		var wd []wordData
+		if err := json.Unmarshal(b, &wd); err != nil {
 			return nil, err
 		}
+		for _, w := range wd {
+			words = append(words, getWord(w.Type, w.Value))
+		}
 	} else {
-		// one per line
 		lines := strings.Split(string(b), "\n")
 		for _, l := range lines {
 			if l != "" {
-				stringWords = append(stringWords, l)
+				parts := strings.SplitN(l, ":", 2)
+				if len(parts) == 2 {
+					words = append(words, getWord(parts[0], parts[1]))
+				} else {
+					words = append(words, getWord("ExactCaseWord", l))
+				}
 			}
 		}
-	}
-	var words []strings2.Word
-	for _, sw := range stringWords {
-		words = append(words, strings2.ExactCaseWord(sw)) // best guess for string->word
 	}
 	return words, nil
 }
