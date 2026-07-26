@@ -20,6 +20,7 @@ type Subparts struct {
 	input         string
 	output        string
 	jsonOut       bool
+	strict        bool
 	args          []string
 	SubCommands   map[string]Cmd
 	CommandAction func(c *Subparts) error
@@ -102,6 +103,17 @@ func (c *Subparts) Execute(args []string) error {
 				} else {
 					c.jsonOut = true
 				}
+
+			case "strict":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.strict = b
+				} else {
+					c.strict = true
+				}
 			case "help", "h":
 				c.Usage()
 				return nil
@@ -148,11 +160,13 @@ func (c *RootCmd) NewSubparts() *Subparts {
 	set.StringVar(&v.output, "o", "", "Output file or - for stdout")
 
 	set.BoolVar(&v.jsonOut, "json", false, "Output as JSON")
+
+	set.BoolVar(&v.strict, "strict", false, "Strict UTF8 mode")
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Subparts) error {
 
-		cli.SubParts(c.input, c.output, c.jsonOut, c.args...)
+		cli.SubParts(c.input, c.output, c.jsonOut, c.strict, c.args...)
 		return nil
 	}
 

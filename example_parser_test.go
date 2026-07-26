@@ -37,3 +37,23 @@ func ExampleWithIgnore() {
 	// Output:
 	// SOME.KIND.OF.EXAMPLE
 }
+
+func ExampleParseToParts() {
+	parts, _ := strings2.ParseToParts("hello_world", strings2.WithSnakeCasePartitioner())
+	for _, p := range parts {
+		fmt.Println(p.String())
+	}
+	// Output:
+	// hello
+	// world
+}
+
+func ExampleParseTitleCase() {
+	words, _ := strings2.ParseTitleCase("Hello World")
+	for _, w := range words {
+		fmt.Println(w.String())
+	}
+	// Output:
+	// Hello
+	// World
+}

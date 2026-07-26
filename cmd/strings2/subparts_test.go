@@ -27,6 +27,7 @@ func TestSubparts_Execute(t *testing.T) {
 	args = append(args, "--output")
 	args = append(args, "test")
 	args = append(args, "--jsonOut")
+	args = append(args, "--strict")
 
 	err := cmd.Execute(args)
 	if err != nil {
@@ -44,5 +45,8 @@ func TestSubparts_Execute(t *testing.T) {
 	}
 	if cmd.jsonOut != true {
 		t.Errorf("Expected jsonOut to be true, got '%v'", cmd.jsonOut)
+	}
+	if cmd.strict != true {
+		t.Errorf("Expected strict to be true, got '%v'", cmd.strict)
 	}
 }

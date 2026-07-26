@@ -216,3 +216,17 @@ Options are composable so multiple behaviours can be applied at once. See the do
 ## License
 
 This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE) file for details.
+
+## New Parsing & Serialization
+
+The library provides fine-grained control over parsing with intermediate structures like `Part` and `SubPart`.
+
+You can extract words or parts using commands such as `ParseToParts`, `ParseTitleCaseToParts`, and format wrappers like `FromWordsToSnakeCase`.
+
+```go
+words, err := strings2.ParseTitleCase("My Custom Title")
+parts, err := strings2.ParseCamelCaseToParts("MyCamelString")
+subparts, stats := strings2.StringToSubParts("MyCamelString")
+```
+
+The CLI supports extraction of these types via the `words`, `parts`, and `subparts` commands, outputting line-by-line or via `--json`. Re-parsing them from JSON is supported via `--json-input` on formatting commands like `wordstocamel`.

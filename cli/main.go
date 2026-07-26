@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"unicode/utf8"
 
 	"bufio"
 	"github.com/arran4/strings2"
@@ -62,7 +63,14 @@ func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper boo
 	var opts []any
 	if delimiter != "" {
 		opts = append(opts, strings2.OptionDelimiter(delimiter))
+		if len(delimiter) > 0 {
+			opts = append(opts, strings2.NewPartitioner(strings2.PartitionerConfig{
+				Delimiters: map[rune]bool{rune(delimiter[0]): true},
+				SplitCamel: true,
+			}))
+		}
 	}
+
 	if screaming {
 		opts = append(opts, strings2.OptionCaseMode(strings2.CMScreaming))
 	}
@@ -401,6 +409,47 @@ func writeLines[T any](out io.Writer, slice []T, stringer func(T) string) {
 	}
 }
 
+
+
+type wordData struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+func getWord(typ string, val string) strings2.Word {
+	switch typ {
+	case "SingleCaseWord":
+		return strings2.SingleCaseWord(val)
+	case "FirstUpperCaseWord":
+		return strings2.FirstUpperCaseWord(val)
+	case "ExactCaseWord":
+		return strings2.ExactCaseWord(val)
+	case "AcronymWord":
+		return strings2.AcronymWord(val)
+	case "UpperCaseWord":
+		return strings2.UpperCaseWord(val)
+	case "SeparatorWord":
+		return strings2.SeparatorWord(val)
+	default:
+		return strings2.ExactCaseWord(val)
+	}
+}
+
+
+func writeWords(out io.Writer, words []strings2.Word, jsonOut bool) {
+	if jsonOut {
+		var wd []wordData
+		for _, w := range words {
+			wd = append(wd, wordData{Type: fmt.Sprintf("%T", w)[9:], Value: w.String()})
+		}
+		writeJSON(out, wd)
+	} else {
+		for _, w := range words {
+			fmt.Fprintf(out, "%s:%s\n", fmt.Sprintf("%T", w)[9:], w.String())
+		}
+	}
+}
+
 func getIO(input, output string, args []string) (io.Reader, io.Writer) {
 	var in io.Reader
 	if input == "-" {
@@ -456,27 +505,19 @@ func Words(input string, output string, jsonOut bool, delimiter string, noSmartA
 		os.Exit(1)
 	}
 
+	if strict && !utf8.ValidString(string(b)) {
+		fmt.Fprintf(os.Stderr, "Error: input is not valid UTF-8\n")
+		os.Exit(1)
+	}
+
 	words, err := strings2.Parse(string(b), opts...)
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing: %v\n", err)
 		os.Exit(1)
 	}
 
-	if jsonOut {
-		// Outputting JSON array of string representations for words? Or their raw structs?
-		// User said: "if it's []Word or []SubPart or []Part output / input, it's one per line. With an optional --json mode (--json-input for input)"
-		// Since interfaces might not serialize easily without types, we map to strings if it's one per line, or custom JSON format.
-		// Actually, `json.Marshal(words)` marshals the structs based on their JSON tags or exports.
-		// `Word` is an interface. Wait, `json.Marshal` on `[]Word` will serialize the underlying struct types.
-		// Wait, Word is an interface containing String() string. It might not marshal cleanly unless we wrap it.
-		// Let's just output `words` and see if `json.Marshal` works on interfaces. (It does for structs).
-
-		// To be safe and useful: Let's marshal string values, or a struct {Type string, Value string}.
-		// But let's just marshal the slice itself as it requested.
-		writeJSON(out, words)
-	} else {
-		writeLines(out, words, func(w strings2.Word) string { return w.String() })
-	}
+	writeWords(out, words, jsonOut)
 }
 
 // Parts is a subcommand `strings2 parts`
@@ -500,7 +541,13 @@ func Parts(input string, output string, jsonOut bool, delimiter string, numberSp
 		os.Exit(1)
 	}
 
+	if strict && !utf8.ValidString(string(b)) {
+		fmt.Fprintf(os.Stderr, "Error: input is not valid UTF-8\n")
+		os.Exit(1)
+	}
+
 	parts, err := strings2.ParseToParts(string(b), opts...)
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing: %v\n", err)
 		os.Exit(1)
@@ -520,8 +567,9 @@ func Parts(input string, output string, jsonOut bool, delimiter string, numberSp
 //	input: -i --input (default: "") Input file or - for stdin
 //	output: -o --output (default: "") Output file or - for stdout
 //	jsonOut: --json (default: false) Output as JSON
+//	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
-func SubParts(input string, output string, jsonOut bool, args ...string) {
+func SubParts(input string, output string, jsonOut bool, strict bool, args ...string) {
 	in, out := getIO(input, output, args)
 	b, err := io.ReadAll(in)
 	if err != nil {

@@ -9,6 +9,7 @@ Flags:
     --input, -i string                       Input file or - for stdin
     --output, -o string                      Output file or - for stdout
     --json                (default: false)   Output as JSON
+    --strict              (default: false)   Strict UTF8 mode
 
 Positional Arguments:
     args       String to convert if file/stdin not provided

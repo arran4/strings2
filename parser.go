@@ -130,7 +130,7 @@ func Parse(input string, opts ...any) ([]Word, error) {
 
 // ParserConfig holds configuration for the parsing pipeline.
 type ParserConfig struct {
-	Ignore string
+	Ignore      string
 	Partitioner Partitioner
 	// SmartAcronyms controls whether all-uppercase words (longer than 1 char)
 	// should be treated as AcronymWord instead of UpperCaseWord.
@@ -391,23 +391,29 @@ func ParseDarwinCaseToParts(input string, opts ...any) ([]Part, error) {
 	return ParseToParts(input, combinedOpts...)
 }
 
+// WithTitleCasePartitioner returns a ParserOption that configures a partitioner for Title Case (space delimited).
+func WithTitleCasePartitioner() ParserOption {
+	return funcParserOption(func(p *ParserConfig) {
+		p.Partitioner = NewPartitioner(PartitionerConfig{
+			Delimiters: map[rune]bool{' ': true},
+			SplitCamel: false,
+			NumberMode: p.NumberMode,
+			EmitEmpty:  p.EmitEmpty,
+		})
+	})
+}
+
 func ParseTitleCase(input string, opts ...any) ([]Word, error) {
 	combinedOpts := make([]any, 0, len(opts)+1)
 	combinedOpts = append(combinedOpts, opts...)
-	combinedOpts = append(combinedOpts, NewPartitioner(PartitionerConfig{
-		Delimiters: map[rune]bool{' ': true},
-		SplitCamel: false, // Title case may contain camelCase words, typically don't split unless specified, but let's just stick to spaces.
-	}))
+	combinedOpts = append(combinedOpts, WithTitleCasePartitioner())
 	return Parse(input, combinedOpts...)
 }
 
 func ParseTitleCaseToParts(input string, opts ...any) ([]Part, error) {
 	combinedOpts := make([]any, 0, len(opts)+1)
 	combinedOpts = append(combinedOpts, opts...)
-	combinedOpts = append(combinedOpts, NewPartitioner(PartitionerConfig{
-		Delimiters: map[rune]bool{' ': true},
-		SplitCamel: false,
-	}))
+	combinedOpts = append(combinedOpts, WithTitleCasePartitioner())
 	return ParseToParts(input, combinedOpts...)
 }
 
