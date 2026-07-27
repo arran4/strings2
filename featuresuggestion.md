@@ -28,3 +28,5 @@ strings2 camel "..." --delimiter-detector "union(whitespace, not(tab))"
 ## Impact
 
 This allows users to pass sophisticated detection rules directly to the `PartitionerConfig.DelimiterDetector` function dynamically at runtime, reducing the need for hardcoded boolean options in both the `strings2` library API and the CLI application itself.
+
+*Tracked in issue: [https://github.com/arran4/strings2/issues/68](https://github.com/arran4/strings2/issues/68)*
