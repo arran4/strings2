@@ -30,6 +30,7 @@ func TestParts_Execute(t *testing.T) {
 	args = append(args, "--delimiter")
 	args = append(args, "test")
 	args = append(args, "--numberSplitting")
+	args = append(args, "--nonAlphanumeric")
 	args = append(args, "--strict")
 
 	err := cmd.Execute(args)
@@ -54,6 +55,9 @@ func TestParts_Execute(t *testing.T) {
 	}
 	if cmd.numberSplitting != true {
 		t.Errorf("Expected numberSplitting to be true, got '%v'", cmd.numberSplitting)
+	}
+	if cmd.nonAlphanumeric != true {
+		t.Errorf("Expected nonAlphanumeric to be true, got '%v'", cmd.nonAlphanumeric)
 	}
 	if cmd.strict != true {
 		t.Errorf("Expected strict to be true, got '%v'", cmd.strict)

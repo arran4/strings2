@@ -140,6 +140,8 @@ type ParserConfig struct {
 	NumberMode NumberMode
 	// EmitEmpty controls whether empty parts are emitted for delimiters
 	EmitEmpty bool
+	// NonAlphanumericAsDelimiter controls whether non-alphanumeric characters are treated as delimiters
+	NonAlphanumericAsDelimiter bool
 }
 
 // NumberMode defines the strategy for handling numbers during parsing.
@@ -179,6 +181,18 @@ type ParserEmitEmpty bool
 
 func (b ParserEmitEmpty) Apply(p *ParserConfig) {
 	p.EmitEmpty = bool(b)
+}
+
+// ParserNonAlphanumericAsDelimiter is a typed option for NonAlphanumericAsDelimiter configuration.
+type ParserNonAlphanumericAsDelimiter bool
+
+func (b ParserNonAlphanumericAsDelimiter) Apply(p *ParserConfig) {
+	p.NonAlphanumericAsDelimiter = bool(b)
+}
+
+// WithNonAlphanumericAsDelimiter enables or disables treating non-alphanumeric characters as delimiters.
+func WithNonAlphanumericAsDelimiter(enabled bool) ParserOption {
+	return ParserNonAlphanumericAsDelimiter(enabled)
 }
 
 // WithIgnore configures characters to be ignored during parsing.
@@ -247,16 +261,19 @@ func DetectPartitioner(stats Stats, config ...*ParserConfig) Partitioner {
 
 	numberMode := NumberModeNone
 	emitEmpty := false
+	nonAlphanumeric := false
 	if len(config) > 0 && config[0] != nil {
 		numberMode = config[0].NumberMode
 		emitEmpty = config[0].EmitEmpty
+		nonAlphanumeric = config[0].NonAlphanumericAsDelimiter
 	}
 
 	return NewPartitioner(PartitionerConfig{
-		Delimiters: delimiters,
-		SplitCamel: true,
-		NumberMode: numberMode,
-		EmitEmpty:  emitEmpty,
+		Delimiters:                 delimiters,
+		SplitCamel:                 true,
+		NumberMode:                 numberMode,
+		EmitEmpty:                  emitEmpty,
+		NonAlphanumericAsDelimiter: nonAlphanumeric,
 	})
 }
 
@@ -395,10 +412,11 @@ func ParseDarwinCaseToParts(input string, opts ...any) ([]Part, error) {
 func WithTitleCasePartitioner() ParserOption {
 	return funcParserOption(func(p *ParserConfig) {
 		p.Partitioner = NewPartitioner(PartitionerConfig{
-			Delimiters: map[rune]bool{' ': true},
-			SplitCamel: false,
-			NumberMode: p.NumberMode,
-			EmitEmpty:  p.EmitEmpty,
+			Delimiters:                 map[rune]bool{' ': true},
+			SplitCamel:                 false,
+			NumberMode:                 p.NumberMode,
+			EmitEmpty:                  p.EmitEmpty,
+			NonAlphanumericAsDelimiter: p.NonAlphanumericAsDelimiter,
 		})
 	})
 }

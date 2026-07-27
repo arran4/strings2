@@ -194,3 +194,21 @@ func TestExplicitParsers(t *testing.T) {
 		}
 	})
 }
+
+func TestWithNonAlphanumericAsDelimiter(t *testing.T) {
+	input := "hello_world 123!@#fooBar"
+	words, err := strings2.Parse(input, strings2.WithNonAlphanumericAsDelimiter(true))
+	if err != nil {
+		t.Fatalf("Parse failed: %v", err)
+	}
+
+	res, err := strings2.ToCamelCase(words)
+	if err != nil {
+		t.Fatalf("ToCamelCase failed: %v", err)
+	}
+
+	expected := "helloWorld123FooBar"
+	if res != expected {
+		t.Errorf("Expected %q, got %q", expected, res)
+	}
+}

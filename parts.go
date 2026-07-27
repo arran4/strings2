@@ -48,6 +48,8 @@ func overridePartitionerConfig(pcfg *PartitionerConfig, opts ...any) {
 			pcfg.NumberMode = o
 		case ParserEmitEmpty:
 			pcfg.EmitEmpty = bool(o)
+		case ParserNonAlphanumericAsDelimiter:
+			pcfg.NonAlphanumericAsDelimiter = bool(o)
 		}
 	}
 }
@@ -93,10 +95,11 @@ func WithSnakeCasePartitioner(opts ...any) ParserOption {
 			return
 		}
 		pcfg := PartitionerConfig{
-			Delimiters: map[rune]bool{'_': true},
-			SplitCamel: true,
-			NumberMode: cfg.NumberMode,
-			EmitEmpty:  cfg.EmitEmpty,
+			Delimiters:                 map[rune]bool{'_': true},
+			SplitCamel:                 true,
+			NumberMode:                 cfg.NumberMode,
+			EmitEmpty:                  cfg.EmitEmpty,
+			NonAlphanumericAsDelimiter: cfg.NonAlphanumericAsDelimiter,
 		}
 		overridePartitionerConfig(&pcfg, opts...)
 		cfg.Partitioner = NewPartitioner(pcfg)
@@ -110,10 +113,11 @@ func WithKebabCasePartitioner(opts ...any) ParserOption {
 			return
 		}
 		pcfg := PartitionerConfig{
-			Delimiters: map[rune]bool{'-': true},
-			SplitCamel: true,
-			NumberMode: cfg.NumberMode,
-			EmitEmpty:  cfg.EmitEmpty,
+			Delimiters:                 map[rune]bool{'-': true},
+			SplitCamel:                 true,
+			NumberMode:                 cfg.NumberMode,
+			EmitEmpty:                  cfg.EmitEmpty,
+			NonAlphanumericAsDelimiter: cfg.NonAlphanumericAsDelimiter,
 		}
 		overridePartitionerConfig(&pcfg, opts...)
 		cfg.Partitioner = NewPartitioner(pcfg)
@@ -127,10 +131,11 @@ func WithSplitByDelimiter(delim rune, opts ...any) ParserOption {
 			return
 		}
 		pcfg := PartitionerConfig{
-			Delimiters: map[rune]bool{delim: true},
-			SplitCamel: true,
-			NumberMode: cfg.NumberMode,
-			EmitEmpty:  cfg.EmitEmpty,
+			Delimiters:                 map[rune]bool{delim: true},
+			SplitCamel:                 true,
+			NumberMode:                 cfg.NumberMode,
+			EmitEmpty:                  cfg.EmitEmpty,
+			NonAlphanumericAsDelimiter: cfg.NonAlphanumericAsDelimiter,
 		}
 		overridePartitionerConfig(&pcfg, opts...)
 		cfg.Partitioner = NewPartitioner(pcfg)
@@ -144,9 +149,10 @@ func WithCamelCasePartitioner(opts ...any) ParserOption {
 			return
 		}
 		pcfg := PartitionerConfig{
-			SplitCamel: true,
-			NumberMode: cfg.NumberMode,
-			EmitEmpty:  cfg.EmitEmpty,
+			SplitCamel:                 true,
+			NumberMode:                 cfg.NumberMode,
+			EmitEmpty:                  cfg.EmitEmpty,
+			NonAlphanumericAsDelimiter: cfg.NonAlphanumericAsDelimiter,
 		}
 		overridePartitionerConfig(&pcfg, opts...)
 		cfg.Partitioner = NewPartitioner(pcfg)
@@ -159,10 +165,11 @@ func WithCamelCasePartitioner(opts ...any) ParserOption {
 type DelimiterDetector func(subs []SubPart, index int) (length int)
 
 type PartitionerConfig struct {
-	Ignore string
-	Delimiters        map[rune]bool
-	DelimiterDetector DelimiterDetector
-	SplitCamel        bool
+	Ignore                     string
+	Delimiters                 map[rune]bool
+	DelimiterDetector          DelimiterDetector
+	SplitCamel                 bool
+	NonAlphanumericAsDelimiter bool // If true, treats any non-alphanumeric character as a delimiter
 
 	NumberMode  NumberMode
 	PreserveSep bool // If true, delimiters are returned as SeparatorPart instead of discarded
@@ -192,6 +199,9 @@ func NewPartitioner(cfg PartitionerConfig) Partitioner {
 					}
 				}
 				if delimLen == 0 && cfg.Delimiters != nil && cfg.Delimiters[s.Rune()] {
+					delimLen = 1
+				}
+				if delimLen == 0 && cfg.NonAlphanumericAsDelimiter && !s.IsLetter() && !s.IsDigit() {
 					delimLen = 1
 				}
 			}
