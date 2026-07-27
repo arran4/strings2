@@ -68,8 +68,8 @@ func ToScreamingDelimited(input string, delimiter uint8, ignore string, screamin
 	if screaming {
 		mode = CMScreaming
 	} else {
-        mode = CMWhispering
-    }
+		mode = CMWhispering
+	}
 	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
 	if ignore != "" {
 		defaults = append(defaults, OptionIgnore(ignore))
@@ -110,7 +110,6 @@ func FromWordsToTitle(words []Word, opts ...Option) (string, error) {
 	return WordsToFormattedCase(words, append(defaults, convertOptions(opts)...)...)
 }
 
-
 func FromWordsToLowerCamel(words []Word, opts ...Option) (string, error) {
 	return FromWordsToCamel(words, opts...)
 }
@@ -135,8 +134,8 @@ func FromWordsToScreamingDelimited(words []Word, delimiter uint8, ignore string,
 	if screaming {
 		mode = CMScreaming
 	} else {
-        mode = CMWhispering
-    }
+		mode = CMWhispering
+	}
 	defaults := []any{OptionDelimiter(string([]byte{delimiter})), OptionCaseMode(mode)}
 	if ignore != "" {
 		defaults = append(defaults, OptionIgnore(ignore))
@@ -410,4 +409,186 @@ func Must(s string, err error) string {
 		panic(err)
 	}
 	return s
+}
+
+// --- Global parsers ---
+func ToWords(input string, opts ...any) ([]Word, error)           { return Parse(input, opts...) }
+func FromStringToWords(input string, opts ...any) ([]Word, error) { return Parse(input, opts...) }
+func ToParts(input string, opts ...any) ([]Part, error)           { return ParseToParts(input, opts...) }
+func FromStringToParts(input string, opts ...any) ([]Part, error) {
+	return ParseToParts(input, opts...)
+}
+func ParseToSubParts(input string) ([]SubPart, Stats)      { return StringToSubParts(input) }
+func ToSubParts(input string) ([]SubPart, Stats)           { return StringToSubParts(input) }
+func FromStringToSubParts(input string) ([]SubPart, Stats) { return StringToSubParts(input) }
+
+// --- FromWordsTo[Format]Case ---
+func FromWordsToCamelCase(words []Word, opts ...Option) (string, error) {
+	return ToCamelCase(words, opts...)
+}
+func FromWordsToSnakeCase(words []Word, opts ...Option) (string, error) {
+	return ToSnakeCase(words, opts...)
+}
+func FromWordsToKebabCase(words []Word, opts ...Option) (string, error) {
+	return ToKebabCase(words, opts...)
+}
+func FromWordsToPascalCase(words []Word, opts ...Option) (string, error) {
+	return ToPascalCase(words, opts...)
+}
+func FromWordsToDarwinCase(words []Word, opts ...Option) (string, error) {
+	return ToDarwinCase(words, opts...)
+}
+func FromWordsToTitleCase(words []Word, opts ...Option) (string, error) {
+	return ToTitleCase(words, opts...)
+}
+func FromWordsToLowerCamelCase(words []Word, opts ...Option) (string, error) {
+	return ToLowerCamelCase(words, opts...)
+}
+func FromWordsToScreamingSnakeCase(words []Word, opts ...Option) (string, error) {
+	return ToScreamingSnakeCase(words, opts...)
+}
+func FromWordsToScreamingKebabCase(words []Word, opts ...Option) (string, error) {
+	return ToScreamingKebabCase(words, opts...)
+}
+func FromWordsToDelimitedCase(words []Word, delimiter uint8, opts ...Option) (string, error) {
+	return ToDelimitedCase(words, delimiter, opts...)
+}
+func FromWordsToScreamingDelimitedCase(words []Word, delimiter uint8, ignore string, screaming bool, opts ...Option) (string, error) {
+	return ToScreamingDelimitedCase(words, delimiter, ignore, screaming, opts...)
+}
+
+// --- From[Format]Case[To...] ---
+func FromCamelCase(input string, opts ...any) ([]Word, error) { return ParseCamelCase(input, opts...) }
+func FromCamelCaseToWords(input string, opts ...any) ([]Word, error) {
+	return ParseCamelCase(input, opts...)
+}
+func FromCamelCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseCamelCaseToParts(input, opts...)
+}
+func FromCamelCaseToSubParts(input string) ([]SubPart, Stats) { return StringToSubParts(input) }
+func FromSnakeCase(input string, opts ...any) ([]Word, error) { return ParseSnakeCase(input, opts...) }
+func FromSnakeCaseToWords(input string, opts ...any) ([]Word, error) {
+	return ParseSnakeCase(input, opts...)
+}
+func FromSnakeCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseSnakeCaseToParts(input, opts...)
+}
+func FromSnakeCaseToSubParts(input string) ([]SubPart, Stats) { return StringToSubParts(input) }
+func FromKebabCase(input string, opts ...any) ([]Word, error) { return ParseKebabCase(input, opts...) }
+func FromKebabCaseToWords(input string, opts ...any) ([]Word, error) {
+	return ParseKebabCase(input, opts...)
+}
+func FromKebabCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseKebabCaseToParts(input, opts...)
+}
+func FromKebabCaseToSubParts(input string) ([]SubPart, Stats) { return StringToSubParts(input) }
+func FromPascalCase(input string, opts ...any) ([]Word, error) {
+	return ParsePascalCase(input, opts...)
+}
+func FromPascalCaseToWords(input string, opts ...any) ([]Word, error) {
+	return ParsePascalCase(input, opts...)
+}
+func FromPascalCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParsePascalCaseToParts(input, opts...)
+}
+func FromPascalCaseToSubParts(input string) ([]SubPart, Stats) { return StringToSubParts(input) }
+func FromDarwinCase(input string, opts ...any) ([]Word, error) {
+	return ParseDarwinCase(input, opts...)
+}
+func FromDarwinCaseToWords(input string, opts ...any) ([]Word, error) {
+	return ParseDarwinCase(input, opts...)
+}
+func FromDarwinCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseDarwinCaseToParts(input, opts...)
+}
+func FromDarwinCaseToSubParts(input string) ([]SubPart, Stats) { return StringToSubParts(input) }
+func FromTitleCase(input string, opts ...any) ([]Word, error)  { return ParseTitleCase(input, opts...) }
+func FromTitleCaseToWords(input string, opts ...any) ([]Word, error) {
+	return ParseTitleCase(input, opts...)
+}
+func FromTitleCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseTitleCaseToParts(input, opts...)
+}
+func FromTitleCaseToSubParts(input string) ([]SubPart, Stats) { return StringToSubParts(input) }
+func FromLowerCamelCase(input string, opts ...any) ([]Word, error) {
+	return ParseLowerCamelCase(input, opts...)
+}
+func FromLowerCamelCaseToWords(input string, opts ...any) ([]Word, error) {
+	return ParseLowerCamelCase(input, opts...)
+}
+func FromLowerCamelCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseLowerCamelCaseToParts(input, opts...)
+}
+func FromLowerCamelCaseToSubParts(input string) ([]SubPart, Stats) { return StringToSubParts(input) }
+func FromScreamingSnakeCase(input string, opts ...any) ([]Word, error) {
+	return ParseScreamingSnakeCase(input, opts...)
+}
+func FromScreamingSnakeCaseToWords(input string, opts ...any) ([]Word, error) {
+	return ParseScreamingSnakeCase(input, opts...)
+}
+func FromScreamingSnakeCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseScreamingSnakeCaseToParts(input, opts...)
+}
+func FromScreamingSnakeCaseToSubParts(input string) ([]SubPart, Stats) {
+	return StringToSubParts(input)
+}
+func FromScreamingKebabCase(input string, opts ...any) ([]Word, error) {
+	return ParseScreamingKebabCase(input, opts...)
+}
+func FromScreamingKebabCaseToWords(input string, opts ...any) ([]Word, error) {
+	return ParseScreamingKebabCase(input, opts...)
+}
+func FromScreamingKebabCaseToParts(input string, opts ...any) ([]Part, error) {
+	return ParseScreamingKebabCaseToParts(input, opts...)
+}
+func FromScreamingKebabCaseToSubParts(input string) ([]SubPart, Stats) {
+	return StringToSubParts(input)
+}
+
+// --- FromStringTo[Format] ---
+func FromStringToCamel(input string, opts ...any) (string, error)     { return ToCamel(input, opts...) }
+func FromStringToCamelCase(input string, opts ...any) (string, error) { return ToCamel(input, opts...) }
+func FromStringToSnake(input string, opts ...any) (string, error)     { return ToSnake(input, opts...) }
+func FromStringToSnakeCase(input string, opts ...any) (string, error) { return ToSnake(input, opts...) }
+func FromStringToKebab(input string, opts ...any) (string, error)     { return ToKebab(input, opts...) }
+func FromStringToKebabCase(input string, opts ...any) (string, error) { return ToKebab(input, opts...) }
+func FromStringToPascal(input string, opts ...any) (string, error)    { return ToPascal(input, opts...) }
+func FromStringToPascalCase(input string, opts ...any) (string, error) {
+	return ToPascal(input, opts...)
+}
+func FromStringToDarwin(input string, opts ...any) (string, error) { return ToDarwin(input, opts...) }
+func FromStringToDarwinCase(input string, opts ...any) (string, error) {
+	return ToDarwin(input, opts...)
+}
+func FromStringToTitle(input string, opts ...any) (string, error)     { return ToTitle(input, opts...) }
+func FromStringToTitleCase(input string, opts ...any) (string, error) { return ToTitle(input, opts...) }
+func FromStringToLowerCamel(input string, opts ...any) (string, error) {
+	return ToLowerCamel(input, opts...)
+}
+func FromStringToLowerCamelCase(input string, opts ...any) (string, error) {
+	return ToLowerCamel(input, opts...)
+}
+func FromStringToScreamingSnake(input string, opts ...any) (string, error) {
+	return ToScreamingSnake(input, opts...)
+}
+func FromStringToScreamingSnakeCase(input string, opts ...any) (string, error) {
+	return ToScreamingSnake(input, opts...)
+}
+func FromStringToScreamingKebab(input string, opts ...any) (string, error) {
+	return ToScreamingKebab(input, opts...)
+}
+func FromStringToScreamingKebabCase(input string, opts ...any) (string, error) {
+	return ToScreamingKebab(input, opts...)
+}
+func FromStringToDelimited(input string, delimiter uint8, opts ...any) (string, error) {
+	return ToDelimited(input, delimiter, opts...)
+}
+func FromStringToDelimitedCase(input string, delimiter uint8, opts ...any) (string, error) {
+	return ToDelimited(input, delimiter, opts...)
+}
+func FromStringToScreamingDelimited(input string, delimiter uint8, ignore string, screaming bool, opts ...any) (string, error) {
+	return ToScreamingDelimited(input, delimiter, ignore, screaming, opts...)
+}
+func FromStringToScreamingDelimitedCase(input string, delimiter uint8, ignore string, screaming bool, opts ...any) (string, error) {
+	return ToScreamingDelimited(input, delimiter, ignore, screaming, opts...)
 }
