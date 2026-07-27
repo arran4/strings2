@@ -22,6 +22,7 @@ type Parts struct {
 	jsonOut         bool
 	delimiter       string
 	numberSplitting bool
+	nonAlphanumeric bool
 	strict          bool
 	args            []string
 	SubCommands     map[string]Cmd
@@ -128,6 +129,17 @@ func (c *Parts) Execute(args []string) error {
 					c.numberSplitting = true
 				}
 
+			case "nonAlphanumeric", "non-alphanumeric", "alphanumeric", "N":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.nonAlphanumeric = b
+				} else {
+					c.nonAlphanumeric = true
+				}
+
 			case "strict":
 				if hasValue {
 					b, err := strconv.ParseBool(value)
@@ -190,12 +202,16 @@ func (c *RootCmd) NewParts() *Parts {
 
 	set.BoolVar(&v.numberSplitting, "number-splitting", false, "Enable number splitting")
 
+	set.BoolVar(&v.nonAlphanumeric, "non-alphanumeric", false, "Treat non characters as delimiters")
+	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
+	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
+
 	set.BoolVar(&v.strict, "strict", false, "Strict UTF8 mode")
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Parts) error {
 
-		cli.Parts(c.input, c.output, c.jsonOut, c.delimiter, c.numberSplitting, c.strict, c.args...)
+		cli.Parts(c.input, c.output, c.jsonOut, c.delimiter, c.numberSplitting, c.nonAlphanumeric, c.strict, c.args...)
 		return nil
 	}
 

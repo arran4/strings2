@@ -27,6 +27,7 @@ type Snake struct {
 	mixCaseSupport  bool
 	noSmartAcronyms bool
 	numberSplitting bool
+	nonAlphanumeric bool
 	acronym         []string
 	acronymFromFile []string
 	strict          bool
@@ -190,6 +191,17 @@ func (c *Snake) Execute(args []string) error {
 					c.numberSplitting = true
 				}
 
+			case "nonAlphanumeric", "non-alphanumeric", "alphanumeric", "N":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.nonAlphanumeric = b
+				} else {
+					c.nonAlphanumeric = true
+				}
+
 			case "acronym":
 				if !hasValue {
 					if i+1 < len(args) {
@@ -289,12 +301,16 @@ func (c *RootCmd) NewSnake() *Snake {
 
 	set.BoolVar(&v.numberSplitting, "number-splitting", false, "Enable number splitting")
 
+	set.BoolVar(&v.nonAlphanumeric, "non-alphanumeric", false, "Treat non characters as delimiters")
+	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
+	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
+
 	set.BoolVar(&v.strict, "strict", false, "Strict UTF8 mode")
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Snake) error {
 
-		cli.Snake(c.input, c.output, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.mixCaseSupport, c.noSmartAcronyms, c.numberSplitting, c.acronym, c.acronymFromFile, c.strict, c.args...)
+		cli.Snake(c.input, c.output, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.mixCaseSupport, c.noSmartAcronyms, c.numberSplitting, c.nonAlphanumeric, c.acronym, c.acronymFromFile, c.strict, c.args...)
 		return nil
 	}
 

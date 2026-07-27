@@ -16,19 +16,20 @@ var _ Cmd = (*Wordstokebab)(nil)
 
 type Wordstokebab struct {
 	*RootCmd
-	Flags         *flag.FlagSet
-	input         string
-	output        string
-	jsonInput     bool
-	delimiter     string
-	screaming     bool
-	whispering    bool
-	firstUpper    bool
-	firstLower    bool
-	strict        bool
-	args          []string
-	SubCommands   map[string]Cmd
-	CommandAction func(c *Wordstokebab) error
+	Flags           *flag.FlagSet
+	input           string
+	output          string
+	jsonInput       bool
+	delimiter       string
+	screaming       bool
+	whispering      bool
+	firstUpper      bool
+	firstLower      bool
+	nonAlphanumeric bool
+	strict          bool
+	args            []string
+	SubCommands     map[string]Cmd
+	CommandAction   func(c *Wordstokebab) error
 }
 
 type UsageDataWordstokebab struct {
@@ -164,6 +165,17 @@ func (c *Wordstokebab) Execute(args []string) error {
 					c.firstLower = true
 				}
 
+			case "nonAlphanumeric", "non-alphanumeric", "alphanumeric", "N":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.nonAlphanumeric = b
+				} else {
+					c.nonAlphanumeric = true
+				}
+
 			case "strict":
 				if hasValue {
 					b, err := strconv.ParseBool(value)
@@ -236,12 +248,16 @@ func (c *RootCmd) NewWordstokebab() *Wordstokebab {
 	set.BoolVar(&v.firstLower, "first-lower", false, "First char lower")
 	set.BoolVar(&v.firstLower, "l", false, "First char lower")
 
+	set.BoolVar(&v.nonAlphanumeric, "non-alphanumeric", false, "Treat non characters as delimiters")
+	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
+	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
+
 	set.BoolVar(&v.strict, "strict", false, "Strict UTF8 mode")
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Wordstokebab) error {
 
-		cli.WordsToKebab(c.input, c.output, c.jsonInput, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.strict, c.args...)
+		cli.WordsToKebab(c.input, c.output, c.jsonInput, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.nonAlphanumeric, c.strict, c.args...)
 		return nil
 	}
 

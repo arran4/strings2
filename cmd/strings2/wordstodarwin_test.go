@@ -33,6 +33,7 @@ func TestWordstodarwin_Execute(t *testing.T) {
 	args = append(args, "--whispering")
 	args = append(args, "--firstUpper")
 	args = append(args, "--firstLower")
+	args = append(args, "--nonAlphanumeric")
 	args = append(args, "--strict")
 
 	err := cmd.Execute(args)
@@ -66,6 +67,9 @@ func TestWordstodarwin_Execute(t *testing.T) {
 	}
 	if cmd.firstLower != true {
 		t.Errorf("Expected firstLower to be true, got '%v'", cmd.firstLower)
+	}
+	if cmd.nonAlphanumeric != true {
+		t.Errorf("Expected nonAlphanumeric to be true, got '%v'", cmd.nonAlphanumeric)
 	}
 	if cmd.strict != true {
 		t.Errorf("Expected strict to be true, got '%v'", cmd.strict)

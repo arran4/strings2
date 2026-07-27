@@ -31,6 +31,7 @@ func TestWords_Execute(t *testing.T) {
 	args = append(args, "test")
 	args = append(args, "--noSmartAcronyms")
 	args = append(args, "--numberSplitting")
+	args = append(args, "--nonAlphanumeric")
 	args = append(args, "--acronym")
 	args = append(args, "--acronymFromFile")
 	args = append(args, "--strict")
@@ -60,6 +61,9 @@ func TestWords_Execute(t *testing.T) {
 	}
 	if cmd.numberSplitting != true {
 		t.Errorf("Expected numberSplitting to be true, got '%v'", cmd.numberSplitting)
+	}
+	if cmd.nonAlphanumeric != true {
+		t.Errorf("Expected nonAlphanumeric to be true, got '%v'", cmd.nonAlphanumeric)
 	}
 	if cmd.strict != true {
 		t.Errorf("Expected strict to be true, got '%v'", cmd.strict)
