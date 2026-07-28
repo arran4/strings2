@@ -11,7 +11,7 @@ func TestParts_Execute(t *testing.T) {
 
 	parent := &RootCmd{
 		FlagSet:  flag.NewFlagSet("root", flag.ContinueOnError),
-		Commands: make(map[string]Cmd),
+		Commands: make(map[string]func() Cmd),
 	}
 	cmd := parent.NewParts()
 
@@ -26,17 +26,20 @@ func TestParts_Execute(t *testing.T) {
 	args = append(args, "test")
 	args = append(args, "--output")
 	args = append(args, "test")
-	args = append(args, "--jsonOut")
+	args = append(args, "--json")
 	args = append(args, "--delimiter")
 	args = append(args, "test")
-	args = append(args, "--numberSplitting")
-	args = append(args, "--nonAlphanumeric")
+	args = append(args, "--number-splitting")
+	args = append(args, "--non-alphanumeric")
+	args = append(args, "--delimiter-detector")
+	args = append(args, "test")
 	args = append(args, "--strict")
 
 	err := cmd.Execute(args)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
+
 	if !called {
 		t.Error("CommandAction was not called")
 	}
@@ -59,7 +62,32 @@ func TestParts_Execute(t *testing.T) {
 	if cmd.nonAlphanumeric != true {
 		t.Errorf("Expected nonAlphanumeric to be true, got '%v'", cmd.nonAlphanumeric)
 	}
+	if cmd.delimiterDetector != "test" {
+		t.Errorf("Expected delimiterDetector to be 'test', got '%v'", cmd.delimiterDetector)
+	}
 	if cmd.strict != true {
 		t.Errorf("Expected strict to be true, got '%v'", cmd.strict)
+	}
+}
+
+func TestParts_ExecuteHelpAndUnknownFlags(t *testing.T) {
+
+	parent := &RootCmd{
+		FlagSet:  flag.NewFlagSet("root", flag.ContinueOnError),
+		Commands: make(map[string]func() Cmd),
+	}
+	cmd := parent.NewParts()
+
+	if err := cmd.Execute([]string{"--help"}); err != nil {
+		t.Errorf("--help returned an error: %v", err)
+	}
+	if err := cmd.Execute([]string{"-h"}); err != nil {
+		t.Errorf("-h returned an error: %v", err)
+	}
+	if err := cmd.Execute([]string{"--not-a-real-flag"}); err == nil {
+		t.Error("expected an error for an unknown long flag")
+	}
+	if err := cmd.Execute([]string{"-?"}); err == nil {
+		t.Error("expected an error for an unknown short flag")
 	}
 }

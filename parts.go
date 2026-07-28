@@ -50,6 +50,8 @@ func overridePartitionerConfig(pcfg *PartitionerConfig, opts ...any) {
 			pcfg.EmitEmpty = bool(o)
 		case ParserNonAlphanumericAsDelimiter:
 			pcfg.NonAlphanumericAsDelimiter = bool(o)
+		case ParserDelimiterDetector:
+			pcfg.DelimiterDetector = o.Detector
 		}
 	}
 }

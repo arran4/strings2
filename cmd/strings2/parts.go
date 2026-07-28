@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -16,17 +17,18 @@ var _ Cmd = (*Parts)(nil)
 
 type Parts struct {
 	*RootCmd
-	Flags           *flag.FlagSet
-	input           string
-	output          string
-	jsonOut         bool
-	delimiter       string
-	numberSplitting bool
-	nonAlphanumeric bool
-	strict          bool
-	args            []string
-	SubCommands     map[string]Cmd
-	CommandAction   func(c *Parts) error
+	Flags             *flag.FlagSet
+	input             string
+	output            string
+	jsonOut           bool
+	delimiter         string
+	numberSplitting   bool
+	nonAlphanumeric   bool
+	delimiterDetector string
+	strict            bool
+	args              []string
+	SubCommands       map[string]func() Cmd
+	CommandAction     func(c *Parts) error
 }
 
 type UsageDataParts struct {
@@ -49,11 +51,6 @@ func (c *Parts) UsageRecursive() {
 }
 
 func (c *Parts) Execute(args []string) error {
-	if len(args) > 0 {
-		if cmd, ok := c.SubCommands[args[0]]; ok {
-			return cmd.Execute(args[1:])
-		}
-	}
 	var remainingArgs []string
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
@@ -61,20 +58,25 @@ func (c *Parts) Execute(args []string) error {
 			remainingArgs = append(remainingArgs, args[i+1:]...)
 			break
 		}
-		if strings.HasPrefix(arg, "-") && arg != "-" {
-			name := arg
+		if strings.HasPrefix(arg, "--") {
+			if arg == "--help" {
+				c.Usage()
+				return nil
+			}
+			name := arg[2:]
 			value := ""
 			hasValue := false
-			if strings.Contains(arg, "=") {
-				parts := strings.SplitN(arg, "=", 2)
+			if strings.Contains(name, "=") {
+				parts := strings.SplitN(name, "=", 2)
 				name = parts[0]
 				value = parts[1]
 				hasValue = true
 			}
-			trimmedName := strings.TrimLeft(name, "-")
-			switch trimmedName {
+			_ = value
+			_ = hasValue
+			switch name {
 
-			case "input", "i":
+			case "input":
 				if !hasValue {
 					if i+1 < len(args) {
 						value = args[i+1]
@@ -85,7 +87,7 @@ func (c *Parts) Execute(args []string) error {
 				}
 				c.input = value
 
-			case "output", "o":
+			case "output":
 				if !hasValue {
 					if i+1 < len(args) {
 						value = args[i+1]
@@ -107,7 +109,7 @@ func (c *Parts) Execute(args []string) error {
 					c.jsonOut = true
 				}
 
-			case "delimiter", "d":
+			case "delimiter":
 				if !hasValue {
 					if i+1 < len(args) {
 						value = args[i+1]
@@ -129,7 +131,7 @@ func (c *Parts) Execute(args []string) error {
 					c.numberSplitting = true
 				}
 
-			case "nonAlphanumeric", "non-alphanumeric", "alphanumeric", "N":
+			case "nonAlphanumeric", "non-alphanumeric", "alphanumeric":
 				if hasValue {
 					b, err := strconv.ParseBool(value)
 					if err != nil {
@@ -139,6 +141,17 @@ func (c *Parts) Execute(args []string) error {
 				} else {
 					c.nonAlphanumeric = true
 				}
+
+			case "delimiterDetector", "delimiter-detector":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.delimiterDetector = value
 
 			case "strict":
 				if hasValue {
@@ -150,14 +163,107 @@ func (c *Parts) Execute(args []string) error {
 				} else {
 					c.strict = true
 				}
-			case "help", "h":
-				c.Usage()
-				return nil
 			default:
-				return fmt.Errorf("unknown flag: %s", name)
+				return fmt.Errorf("unknown flag: --%s", name)
+			}
+		} else if strings.HasPrefix(arg, "-") && arg != "-" {
+			// Short flags
+			shorts := arg[1:]
+			for j := 0; j < len(shorts); j++ {
+				char := string(shorts[j])
+				if char == "h" {
+					c.Usage()
+					return nil
+				}
+				found := false
+
+				if char == "i" {
+					found = true
+					// Value flag
+					value := ""
+					if j+1 < len(shorts) {
+						// Value is the rest of the short flag
+						value = shorts[j+1:]
+						if strings.HasPrefix(value, "=") {
+							value = value[1:]
+						}
+						j = len(shorts) // break inner loop
+					} else {
+						// Value is the next arg
+						if i+1 < len(args) {
+							value = args[i+1]
+							i++
+						} else {
+							return fmt.Errorf("flag -%s requires a value", char)
+						}
+					}
+					c.input = value
+				}
+
+				if char == "o" {
+					found = true
+					// Value flag
+					value := ""
+					if j+1 < len(shorts) {
+						// Value is the rest of the short flag
+						value = shorts[j+1:]
+						if strings.HasPrefix(value, "=") {
+							value = value[1:]
+						}
+						j = len(shorts) // break inner loop
+					} else {
+						// Value is the next arg
+						if i+1 < len(args) {
+							value = args[i+1]
+							i++
+						} else {
+							return fmt.Errorf("flag -%s requires a value", char)
+						}
+					}
+					c.output = value
+				}
+
+				if char == "d" {
+					found = true
+					// Value flag
+					value := ""
+					if j+1 < len(shorts) {
+						// Value is the rest of the short flag
+						value = shorts[j+1:]
+						if strings.HasPrefix(value, "=") {
+							value = value[1:]
+						}
+						j = len(shorts) // break inner loop
+					} else {
+						// Value is the next arg
+						if i+1 < len(args) {
+							value = args[i+1]
+							i++
+						} else {
+							return fmt.Errorf("flag -%s requires a value", char)
+						}
+					}
+					c.delimiter = value
+				}
+
+				if char == "N" {
+					found = true
+					c.nonAlphanumeric = true
+				}
+
+				if !found {
+					return fmt.Errorf("unknown flag: -%s", char)
+				}
 			}
 		} else {
-			remainingArgs = append(remainingArgs, arg)
+			remainingArgs = append(remainingArgs, args[i:]...)
+			break
+		}
+	}
+
+	if len(remainingArgs) > 0 {
+		if cmd, ok := c.SubCommands[remainingArgs[0]]; ok {
+			return cmd().Execute(remainingArgs[1:])
 		}
 	}
 	// Handle vararg args
@@ -186,7 +292,7 @@ func (c *RootCmd) NewParts() *Parts {
 	v := &Parts{
 		RootCmd:     c,
 		Flags:       set,
-		SubCommands: make(map[string]Cmd),
+		SubCommands: make(map[string]func() Cmd),
 	}
 
 	set.StringVar(&v.input, "input", "", "Input file or - for stdin")
@@ -206,40 +312,42 @@ func (c *RootCmd) NewParts() *Parts {
 	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
 	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
 
+	set.StringVar(&v.delimiterDetector, "delimiter-detector", "", "Delimiter detector expression")
+
 	set.BoolVar(&v.strict, "strict", false, "Strict UTF8 mode")
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Parts) error {
 
-		cli.Parts(c.input, c.output, c.jsonOut, c.delimiter, c.numberSplitting, c.nonAlphanumeric, c.strict, c.args...)
+		cli.Parts(c.input, c.output, c.jsonOut, c.delimiter, c.numberSplitting, c.nonAlphanumeric, c.delimiterDetector, c.strict, c.args...)
 		return nil
 	}
 
-	v.SubCommands["help"] = &InternalCommand{
-		Exec: func(args []string) error {
-			for _, arg := range args {
-				if arg == "-deep" {
+	v.SubCommands["help"] = func() Cmd {
+		return &InternalCommand{
+			Exec: func(args []string) error {
+				if slices.Contains(args, "-deep") {
 					v.UsageRecursive()
 					return nil
 				}
-			}
-			v.Usage()
-			return nil
-		},
-		UsageFunc: v.Usage,
+				v.Usage()
+				return nil
+			},
+			UsageFunc: v.Usage,
+		}
 	}
-	v.SubCommands["usage"] = &InternalCommand{
-		Exec: func(args []string) error {
-			for _, arg := range args {
-				if arg == "-deep" {
+	v.SubCommands["usage"] = func() Cmd {
+		return &InternalCommand{
+			Exec: func(args []string) error {
+				if slices.Contains(args, "-deep") {
 					v.UsageRecursive()
 					return nil
 				}
-			}
-			v.Usage()
-			return nil
-		},
-		UsageFunc: v.Usage,
+				v.Usage()
+				return nil
+			},
+			UsageFunc: v.Usage,
+		}
 	}
 	return v
 }
