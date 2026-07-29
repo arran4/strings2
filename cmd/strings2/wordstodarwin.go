@@ -178,7 +178,7 @@ func (c *Wordstodarwin) Execute(args []string) error {
 					c.nonAlphanumeric = true
 				}
 
-			case "delimiters":
+			case "delimiters", "delimiters-func":
 				if !hasValue {
 					if i+1 < len(args) {
 						value = args[i+1]
@@ -378,7 +378,8 @@ func (c *RootCmd) NewWordstodarwin() *Wordstodarwin {
 	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
 	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
 
-	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters expression")
+	set.StringVar(&v.delimiters, "delimiters-func", "", "Delimiters expression or function")
+	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters expression or function")
 
 	set.BoolVar(&v.strict, "strict", false, "Strict UTF8 mode")
 	set.Usage = v.Usage

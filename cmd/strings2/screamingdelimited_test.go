@@ -36,7 +36,7 @@ func TestScreamingdelimited_Execute(t *testing.T) {
 	args = append(args, "--no-smart-acronyms")
 	args = append(args, "--number-splitting")
 	args = append(args, "--non-alphanumeric")
-	args = append(args, "--delimiters")
+	args = append(args, "--delimiters-func")
 	args = append(args, "test")
 	args = append(args, "--acronym")
 	args = append(args, "test")

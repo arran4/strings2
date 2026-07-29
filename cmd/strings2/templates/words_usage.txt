@@ -15,7 +15,7 @@ Flags:
     --no-smart-acronyms                      (default: false)   Disable smart acronyms
     --number-splitting                       (default: false)   Enable number splitting
     --non-alphanumeric, --alphanumeric, -N   (default: false)   Treat non characters as delimiters
-    --delimiters string                                         Delimiters expression
+    --delimiters-func, --delimiters string                      Delimiters expression or function
     --acronym []string                       (default: [])      Acronym to preserve case
     --acronym-from-file []string             (default: [])      File containing acronyms to preserve case
     --strict                                 (default: false)   Strict UTF8 mode

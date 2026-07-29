@@ -34,7 +34,7 @@ func TestWordstopascal_Execute(t *testing.T) {
 	args = append(args, "--first-upper")
 	args = append(args, "--first-lower")
 	args = append(args, "--non-alphanumeric")
-	args = append(args, "--delimiters")
+	args = append(args, "--delimiters-func")
 	args = append(args, "test")
 	args = append(args, "--strict")
 

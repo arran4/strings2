@@ -149,7 +149,7 @@ func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper boo
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func Camel(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -174,7 +174,7 @@ func Camel(input string, output string, delimiter string, screaming bool, whispe
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func Snake(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -199,7 +199,7 @@ func Snake(input string, output string, delimiter string, screaming bool, whispe
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func Kebab(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -224,7 +224,7 @@ func Kebab(input string, output string, delimiter string, screaming bool, whispe
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func Pascal(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -249,7 +249,7 @@ func Pascal(input string, output string, delimiter string, screaming bool, whisp
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func Darwin(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -274,7 +274,7 @@ func Darwin(input string, output string, delimiter string, screaming bool, whisp
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func Title(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -299,7 +299,7 @@ func Title(input string, output string, delimiter string, screaming bool, whispe
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func LowerCamel(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -324,7 +324,7 @@ func LowerCamel(input string, output string, delimiter string, screaming bool, w
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func ScreamingSnake(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -349,7 +349,7 @@ func ScreamingSnake(input string, output string, delimiter string, screaming boo
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func ScreamingKebab(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -374,7 +374,7 @@ func ScreamingKebab(input string, output string, delimiter string, screaming boo
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func Delimited(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -406,7 +406,7 @@ func Delimited(input string, output string, delimiter string, screaming bool, wh
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func ScreamingDelimited(input string, output string, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, mixCaseSupport bool, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -519,7 +519,7 @@ func getIO(input, output string, args []string) (io.Reader, io.Writer) {
 //	acronymFromFile: --acronym-from-file (default: []) File containing acronyms to preserve case
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func Words(input string, output string, jsonOut bool, delimiter string, noSmartAcronyms bool, numberSplitting bool, nonAlphanumeric bool, delimiters string, acronym []string, acronymFromFile []string, strict bool, args ...string) {
@@ -570,7 +570,7 @@ func Words(input string, output string, jsonOut bool, delimiter string, noSmartA
 //	delimiter: -d --delimiter (default: "") Delimiter
 //	numberSplitting: --number-splitting (default: false) Enable number splitting
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func Parts(input string, output string, jsonOut bool, delimiter string, numberSplitting bool, nonAlphanumeric bool, delimiters string, strict bool, args ...string) {
@@ -709,7 +709,7 @@ func processWordsTo(input string, output string, args []string, jsonInput bool, 
 //	firstUpper: -U --first-upper (default: false) First char upper
 //	firstLower: -l --first-lower (default: false) First char lower
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func WordsToCamel(input string, output string, jsonInput bool, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, nonAlphanumeric bool, delimiters string, strict bool, args ...string) {
@@ -730,7 +730,7 @@ func WordsToCamel(input string, output string, jsonInput bool, delimiter string,
 //	firstUpper: -U --first-upper (default: false) First char upper
 //	firstLower: -l --first-lower (default: false) First char lower
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func WordsToSnake(input string, output string, jsonInput bool, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, nonAlphanumeric bool, delimiters string, strict bool, args ...string) {
@@ -751,7 +751,7 @@ func WordsToSnake(input string, output string, jsonInput bool, delimiter string,
 //	firstUpper: -U --first-upper (default: false) First char upper
 //	firstLower: -l --first-lower (default: false) First char lower
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func WordsToKebab(input string, output string, jsonInput bool, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, nonAlphanumeric bool, delimiters string, strict bool, args ...string) {
@@ -772,7 +772,7 @@ func WordsToKebab(input string, output string, jsonInput bool, delimiter string,
 //	firstUpper: -U --first-upper (default: false) First char upper
 //	firstLower: -l --first-lower (default: false) First char lower
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func WordsToPascal(input string, output string, jsonInput bool, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, nonAlphanumeric bool, delimiters string, strict bool, args ...string) {
@@ -793,7 +793,7 @@ func WordsToPascal(input string, output string, jsonInput bool, delimiter string
 //	firstUpper: -U --first-upper (default: false) First char upper
 //	firstLower: -l --first-lower (default: false) First char lower
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func WordsToDarwin(input string, output string, jsonInput bool, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, nonAlphanumeric bool, delimiters string, strict bool, args ...string) {
@@ -814,7 +814,7 @@ func WordsToDarwin(input string, output string, jsonInput bool, delimiter string
 //	firstUpper: -U --first-upper (default: false) First char upper
 //	firstLower: -l --first-lower (default: false) First char lower
 //	nonAlphanumeric: -N --non-alphanumeric (default: false) Treat non-alphanumeric characters as delimiters
-//	delimiters: --delimiters (default: "") Delimiters expression
+//	delimiters: --delimiters --delimiters-func (default: "") Delimiters expression or function
 //	strict: --strict (default: false) Strict UTF8 mode
 //	args: ... String to convert if file/stdin not provided
 func WordsToTitle(input string, output string, jsonInput bool, delimiter string, screaming bool, whispering bool, firstUpper bool, firstLower bool, nonAlphanumeric bool, delimiters string, strict bool, args ...string) {
