@@ -143,9 +143,6 @@ type ParserConfig struct {
 	// NonAlphanumericAsDelimiter controls whether non-alphanumeric characters are treated as delimiters
 	NonAlphanumericAsDelimiter bool
 	DelimiterDetector DelimiterDetector
-
-
-
 }
 
 // NumberMode defines the strategy for handling numbers during parsing.
@@ -189,9 +186,6 @@ func (b ParserEmitEmpty) Apply(p *ParserConfig) {
 
 // ParserNonAlphanumericAsDelimiter is a typed option for NonAlphanumericAsDelimiter configuration.
 type ParserNonAlphanumericAsDelimiter bool
-
-
-
 
 func (b ParserNonAlphanumericAsDelimiter) Apply(p *ParserConfig) {
 	p.NonAlphanumericAsDelimiter = bool(b)
