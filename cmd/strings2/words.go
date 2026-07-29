@@ -26,6 +26,7 @@ type Words struct {
 	numberSplitting bool
 	nonAlphanumeric bool
 	delimiters      string
+	delimitersFunc  string
 	acronym         []string
 	acronymFromFile []string
 	strict          bool
@@ -156,7 +157,7 @@ func (c *Words) Execute(args []string) error {
 					c.nonAlphanumeric = true
 				}
 
-			case "delimiters", "delimiters-func":
+			case "delimiters":
 				if !hasValue {
 					if i+1 < len(args) {
 						value = args[i+1]
@@ -166,6 +167,17 @@ func (c *Words) Execute(args []string) error {
 					}
 				}
 				c.delimiters = value
+
+			case "delimitersFunc", "delimiters-func":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.delimitersFunc = value
 
 			case "acronym":
 				if !hasValue {
@@ -350,8 +362,9 @@ func (c *RootCmd) NewWords() *Words {
 	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
 	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
 
-	set.StringVar(&v.delimiters, "delimiters-func", "", "Delimiters expression or function")
-	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters expression or function")
+	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters string")
+
+	set.StringVar(&v.delimitersFunc, "delimiters-func", "", "Delimiters function expression")
 
 	set.Var((*StringSlice)(&v.acronym), "acronym", "Acronym to preserve case")
 
@@ -362,7 +375,7 @@ func (c *RootCmd) NewWords() *Words {
 
 	v.CommandAction = func(c *Words) error {
 
-		cli.Words(c.input, c.output, c.jsonOut, c.delimiter, c.noSmartAcronyms, c.numberSplitting, c.nonAlphanumeric, c.delimiters, c.acronym, c.acronymFromFile, c.strict, c.args...)
+		cli.Words(c.input, c.output, c.jsonOut, c.delimiter, c.noSmartAcronyms, c.numberSplitting, c.nonAlphanumeric, c.delimiters, c.delimitersFunc, c.acronym, c.acronymFromFile, c.strict, c.args...)
 		return nil
 	}
 

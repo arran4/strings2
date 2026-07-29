@@ -34,6 +34,8 @@ func TestWordstosnake_Execute(t *testing.T) {
 	args = append(args, "--first-upper")
 	args = append(args, "--first-lower")
 	args = append(args, "--non-alphanumeric")
+	args = append(args, "--delimiters")
+	args = append(args, "test")
 	args = append(args, "--delimiters-func")
 	args = append(args, "test")
 	args = append(args, "--strict")
@@ -76,6 +78,9 @@ func TestWordstosnake_Execute(t *testing.T) {
 	}
 	if cmd.delimiters != "test" {
 		t.Errorf("Expected delimiters to be 'test', got '%v'", cmd.delimiters)
+	}
+	if cmd.delimitersFunc != "test" {
+		t.Errorf("Expected delimitersFunc to be 'test', got '%v'", cmd.delimitersFunc)
 	}
 	if cmd.strict != true {
 		t.Errorf("Expected strict to be true, got '%v'", cmd.strict)

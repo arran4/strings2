@@ -25,6 +25,7 @@ type Parts struct {
 	numberSplitting bool
 	nonAlphanumeric bool
 	delimiters      string
+	delimitersFunc  string
 	strict          bool
 	args            []string
 	SubCommands     map[string]func() Cmd
@@ -142,7 +143,7 @@ func (c *Parts) Execute(args []string) error {
 					c.nonAlphanumeric = true
 				}
 
-			case "delimiters", "delimiters-func":
+			case "delimiters":
 				if !hasValue {
 					if i+1 < len(args) {
 						value = args[i+1]
@@ -152,6 +153,17 @@ func (c *Parts) Execute(args []string) error {
 					}
 				}
 				c.delimiters = value
+
+			case "delimitersFunc", "delimiters-func":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.delimitersFunc = value
 
 			case "strict":
 				if hasValue {
@@ -312,15 +324,16 @@ func (c *RootCmd) NewParts() *Parts {
 	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
 	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
 
-	set.StringVar(&v.delimiters, "delimiters-func", "", "Delimiters expression or function")
-	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters expression or function")
+	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters string")
+
+	set.StringVar(&v.delimitersFunc, "delimiters-func", "", "Delimiters function expression")
 
 	set.BoolVar(&v.strict, "strict", false, "Strict UTF8 mode")
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Parts) error {
 
-		cli.Parts(c.input, c.output, c.jsonOut, c.delimiter, c.numberSplitting, c.nonAlphanumeric, c.delimiters, c.strict, c.args...)
+		cli.Parts(c.input, c.output, c.jsonOut, c.delimiter, c.numberSplitting, c.nonAlphanumeric, c.delimiters, c.delimitersFunc, c.strict, c.args...)
 		return nil
 	}
 

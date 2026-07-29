@@ -14,7 +14,8 @@ Flags:
     --delimiter, -d string                                      Delimiter
     --number-splitting                       (default: false)   Enable number splitting
     --non-alphanumeric, --alphanumeric, -N   (default: false)   Treat non characters as delimiters
-    --delimiters-func, --delimiters string                      Delimiters expression or function
+    --delimiters string                                         Delimiters string
+    --delimiters-func string                                    Delimiters function expression
     --strict                                 (default: false)   Strict UTF8 mode
 
 Positional Arguments:
