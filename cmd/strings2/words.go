@@ -17,21 +17,21 @@ var _ Cmd = (*Words)(nil)
 
 type Words struct {
 	*RootCmd
-	Flags             *flag.FlagSet
-	input             string
-	output            string
-	jsonOut           bool
-	delimiter         string
-	noSmartAcronyms   bool
-	numberSplitting   bool
-	nonAlphanumeric   bool
-	delimiterDetector string
-	acronym           []string
-	acronymFromFile   []string
-	strict            bool
-	args              []string
-	SubCommands       map[string]func() Cmd
-	CommandAction     func(c *Words) error
+	Flags           *flag.FlagSet
+	input           string
+	output          string
+	jsonOut         bool
+	delimiter       string
+	noSmartAcronyms bool
+	numberSplitting bool
+	nonAlphanumeric bool
+	delimiters      string
+	acronym         []string
+	acronymFromFile []string
+	strict          bool
+	args            []string
+	SubCommands     map[string]func() Cmd
+	CommandAction   func(c *Words) error
 }
 
 type UsageDataWords struct {
@@ -156,7 +156,7 @@ func (c *Words) Execute(args []string) error {
 					c.nonAlphanumeric = true
 				}
 
-			case "delimiterDetector", "delimiter-detector":
+			case "delimiters":
 				if !hasValue {
 					if i+1 < len(args) {
 						value = args[i+1]
@@ -165,7 +165,7 @@ func (c *Words) Execute(args []string) error {
 						return fmt.Errorf("flag %s requires a value", name)
 					}
 				}
-				c.delimiterDetector = value
+				c.delimiters = value
 
 			case "acronym":
 				if !hasValue {
@@ -350,7 +350,7 @@ func (c *RootCmd) NewWords() *Words {
 	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
 	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
 
-	set.StringVar(&v.delimiterDetector, "delimiter-detector", "", "Delimiter detector expression")
+	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters expression")
 
 	set.Var((*StringSlice)(&v.acronym), "acronym", "Acronym to preserve case")
 
@@ -361,7 +361,7 @@ func (c *RootCmd) NewWords() *Words {
 
 	v.CommandAction = func(c *Words) error {
 
-		cli.Words(c.input, c.output, c.jsonOut, c.delimiter, c.noSmartAcronyms, c.numberSplitting, c.nonAlphanumeric, c.delimiterDetector, c.acronym, c.acronymFromFile, c.strict, c.args...)
+		cli.Words(c.input, c.output, c.jsonOut, c.delimiter, c.noSmartAcronyms, c.numberSplitting, c.nonAlphanumeric, c.delimiters, c.acronym, c.acronymFromFile, c.strict, c.args...)
 		return nil
 	}
 

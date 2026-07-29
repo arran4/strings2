@@ -17,25 +17,25 @@ var _ Cmd = (*Snake)(nil)
 
 type Snake struct {
 	*RootCmd
-	Flags             *flag.FlagSet
-	input             string
-	output            string
-	delimiter         string
-	screaming         bool
-	whispering        bool
-	firstUpper        bool
-	firstLower        bool
-	mixCaseSupport    bool
-	noSmartAcronyms   bool
-	numberSplitting   bool
-	nonAlphanumeric   bool
-	delimiterDetector string
-	acronym           []string
-	acronymFromFile   []string
-	strict            bool
-	args              []string
-	SubCommands       map[string]func() Cmd
-	CommandAction     func(c *Snake) error
+	Flags           *flag.FlagSet
+	input           string
+	output          string
+	delimiter       string
+	screaming       bool
+	whispering      bool
+	firstUpper      bool
+	firstLower      bool
+	mixCaseSupport  bool
+	noSmartAcronyms bool
+	numberSplitting bool
+	nonAlphanumeric bool
+	delimiters      string
+	acronym         []string
+	acronymFromFile []string
+	strict          bool
+	args            []string
+	SubCommands     map[string]func() Cmd
+	CommandAction   func(c *Snake) error
 }
 
 type UsageDataSnake struct {
@@ -204,7 +204,7 @@ func (c *Snake) Execute(args []string) error {
 					c.nonAlphanumeric = true
 				}
 
-			case "delimiterDetector", "delimiter-detector":
+			case "delimiters":
 				if !hasValue {
 					if i+1 < len(args) {
 						value = args[i+1]
@@ -213,7 +213,7 @@ func (c *Snake) Execute(args []string) error {
 						return fmt.Errorf("flag %s requires a value", name)
 					}
 				}
-				c.delimiterDetector = value
+				c.delimiters = value
 
 			case "acronym":
 				if !hasValue {
@@ -436,7 +436,7 @@ func (c *RootCmd) NewSnake() *Snake {
 	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
 	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
 
-	set.StringVar(&v.delimiterDetector, "delimiter-detector", "", "Delimiter detector expression")
+	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters expression")
 
 	set.Var((*StringSlice)(&v.acronym), "acronym", "Acronym to preserve case")
 
@@ -447,7 +447,7 @@ func (c *RootCmd) NewSnake() *Snake {
 
 	v.CommandAction = func(c *Snake) error {
 
-		cli.Snake(c.input, c.output, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.mixCaseSupport, c.noSmartAcronyms, c.numberSplitting, c.nonAlphanumeric, c.delimiterDetector, c.acronym, c.acronymFromFile, c.strict, c.args...)
+		cli.Snake(c.input, c.output, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.mixCaseSupport, c.noSmartAcronyms, c.numberSplitting, c.nonAlphanumeric, c.delimiters, c.acronym, c.acronymFromFile, c.strict, c.args...)
 		return nil
 	}
 

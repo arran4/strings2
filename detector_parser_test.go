@@ -5,24 +5,48 @@ import (
 )
 
 func TestParseDelimiterDetector(t *testing.T) {
-	expr := "any(numeric, whitespace, nonalphanumeric)"
-	det, err := ParseDelimiterDetector(expr)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	tests := []struct {
+		expr string
+		subs string
+		expected []int
+	}{
+		{
+			expr: "any(numeric, whitespace, nonalphanumeric)",
+			subs: "A1 -",
+			expected: []int{0, 1, 1, 1},
+		},
+		{
+			expr: "s(\"_*-\")",
+			subs: "A_*- ",
+			expected: []int{0, 1, 1, 1, 0},
+		},
+		{
+			expr: "union(s(\"a\"), s(\"b\"))",
+			subs: "abc",
+			expected: []int{1, 1, 0},
+		},
+		{
+			expr: "not(s(\" \"))",
+			subs: "a b",
+			expected: []int{1, 0, 1},
+		},
 	}
 
-	subs, _ := StringToSubParts("A1 -")
+	for _, tt := range tests {
+		det, err := ParseDelimiterDetector(tt.expr)
+		if err != nil {
+			t.Fatalf("unexpected error parsing %q: %v", tt.expr, err)
+		}
 
-	if l := det(subs, 0); l != 0 {
-		t.Errorf("expected 0 for A, got %d", l)
-	}
-	if l := det(subs, 1); l != 1 {
-		t.Errorf("expected 1 for 1, got %d", l)
-	}
-	if l := det(subs, 2); l != 1 {
-		t.Errorf("expected 1 for space, got %d", l)
-	}
-	if l := det(subs, 3); l != 1 {
-		t.Errorf("expected 1 for -, got %d", l)
+		subs, _ := StringToSubParts(tt.subs)
+		if len(subs) != len(tt.expected) {
+			t.Fatalf("test case mismatch for %q: subs len %d != expected len %d", tt.expr, len(subs), len(tt.expected))
+		}
+
+		for i, expected := range tt.expected {
+			if l := det(subs, i); l != expected {
+				t.Errorf("expr %q, char %q at index %d: expected %d, got %d", tt.expr, subs[i].Rune(), i, expected, l)
+			}
+		}
 	}
 }

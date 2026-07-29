@@ -17,18 +17,18 @@ var _ Cmd = (*Parts)(nil)
 
 type Parts struct {
 	*RootCmd
-	Flags             *flag.FlagSet
-	input             string
-	output            string
-	jsonOut           bool
-	delimiter         string
-	numberSplitting   bool
-	nonAlphanumeric   bool
-	delimiterDetector string
-	strict            bool
-	args              []string
-	SubCommands       map[string]func() Cmd
-	CommandAction     func(c *Parts) error
+	Flags           *flag.FlagSet
+	input           string
+	output          string
+	jsonOut         bool
+	delimiter       string
+	numberSplitting bool
+	nonAlphanumeric bool
+	delimiters      string
+	strict          bool
+	args            []string
+	SubCommands     map[string]func() Cmd
+	CommandAction   func(c *Parts) error
 }
 
 type UsageDataParts struct {
@@ -142,7 +142,7 @@ func (c *Parts) Execute(args []string) error {
 					c.nonAlphanumeric = true
 				}
 
-			case "delimiterDetector", "delimiter-detector":
+			case "delimiters":
 				if !hasValue {
 					if i+1 < len(args) {
 						value = args[i+1]
@@ -151,7 +151,7 @@ func (c *Parts) Execute(args []string) error {
 						return fmt.Errorf("flag %s requires a value", name)
 					}
 				}
-				c.delimiterDetector = value
+				c.delimiters = value
 
 			case "strict":
 				if hasValue {
@@ -312,14 +312,14 @@ func (c *RootCmd) NewParts() *Parts {
 	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
 	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
 
-	set.StringVar(&v.delimiterDetector, "delimiter-detector", "", "Delimiter detector expression")
+	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters expression")
 
 	set.BoolVar(&v.strict, "strict", false, "Strict UTF8 mode")
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Parts) error {
 
-		cli.Parts(c.input, c.output, c.jsonOut, c.delimiter, c.numberSplitting, c.nonAlphanumeric, c.delimiterDetector, c.strict, c.args...)
+		cli.Parts(c.input, c.output, c.jsonOut, c.delimiter, c.numberSplitting, c.nonAlphanumeric, c.delimiters, c.strict, c.args...)
 		return nil
 	}
 

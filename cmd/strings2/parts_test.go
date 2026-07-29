@@ -31,7 +31,7 @@ func TestParts_Execute(t *testing.T) {
 	args = append(args, "test")
 	args = append(args, "--number-splitting")
 	args = append(args, "--non-alphanumeric")
-	args = append(args, "--delimiter-detector")
+	args = append(args, "--delimiters")
 	args = append(args, "test")
 	args = append(args, "--strict")
 
@@ -62,8 +62,8 @@ func TestParts_Execute(t *testing.T) {
 	if cmd.nonAlphanumeric != true {
 		t.Errorf("Expected nonAlphanumeric to be true, got '%v'", cmd.nonAlphanumeric)
 	}
-	if cmd.delimiterDetector != "test" {
-		t.Errorf("Expected delimiterDetector to be 'test', got '%v'", cmd.delimiterDetector)
+	if cmd.delimiters != "test" {
+		t.Errorf("Expected delimiters to be 'test', got '%v'", cmd.delimiters)
 	}
 	if cmd.strict != true {
 		t.Errorf("Expected strict to be true, got '%v'", cmd.strict)
