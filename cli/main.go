@@ -87,10 +87,11 @@ func buildOpts(delimiter string, screaming bool, whispering bool, firstUpper boo
 		opts = append(opts, strings2.WithNumberSplitting(true))
 	}
 	if delimiters != "" {
-		det, err := strings2.ParseDelimiterDetector("s(\"" + strings.ReplaceAll(strings.ReplaceAll(delimiters, "\\", "\\\\"), "\"", "\\\"") + "\")")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error parsing delimiters: %v\n", err)
-			os.Exit(1)
+		det := func(subs []strings2.SubPart, index int) int {
+			if strings.ContainsRune(delimiters, subs[index].Rune()) {
+				return 1
+			}
+			return 0
 		}
 		opts = append(opts, strings2.WithDelimiterDetector(det))
 	}
