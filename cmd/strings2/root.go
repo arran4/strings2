@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
+	"strings"
+	"sync"
 
 	"github.com/arran4/strings2/cmd/strings2/templates"
 )
@@ -29,6 +32,17 @@ func (c *InternalCommand) Usage() {
 	c.UsageFunc()
 }
 
+func NewLazyCommand(f func() Cmd) func() Cmd {
+	var once sync.Once
+	var cmd Cmd
+	return func() Cmd {
+		once.Do(func() {
+			cmd = f()
+		})
+		return cmd
+	}
+}
+
 type UserError struct {
 	Err error
 	Msg string
@@ -45,13 +59,13 @@ func NewUserError(err error, msg string) *UserError {
 	return &UserError{Err: err, Msg: msg}
 }
 
-func executeUsage(out io.Writer, templateName string, data interface{}) error {
+func executeUsage(out io.Writer, templateName string, data any) error {
 	return templates.GetTemplates().ExecuteTemplate(out, templateName, data)
 }
 
 type RootCmd struct {
 	*flag.FlagSet
-	Commands      map[string]Cmd
+	Commands      map[string]func() Cmd
 	Version       string
 	Commit        string
 	Date          string
@@ -59,121 +73,249 @@ type RootCmd struct {
 }
 
 func (c *RootCmd) Usage() {
-	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-	c.PrintDefaults()
-	fmt.Fprintln(os.Stderr, "  Commands:")
-	for name := range c.Commands {
-		fmt.Fprintf(os.Stderr, "    %s\n", name)
+	err := executeUsage(os.Stderr, "strings2_usage.txt", UsageDataRootCmd{c, false})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error generating usage: %s\n", err)
 	}
 }
 
 func (c *RootCmd) UsageRecursive() {
-	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-	c.PrintDefaults()
-	fmt.Fprintln(os.Stderr, "  Commands:")
-	fmt.Fprintf(os.Stderr, "    %s\n", "camel")
-	fmt.Fprintf(os.Stderr, "    %s\n", "darwin")
-	fmt.Fprintf(os.Stderr, "    %s\n", "delimited")
-	fmt.Fprintf(os.Stderr, "    %s\n", "kebab")
-	fmt.Fprintf(os.Stderr, "    %s\n", "lowercamel")
-	fmt.Fprintf(os.Stderr, "    %s\n", "parts")
-	fmt.Fprintf(os.Stderr, "    %s\n", "pascal")
-	fmt.Fprintf(os.Stderr, "    %s\n", "screamingdelimited")
-	fmt.Fprintf(os.Stderr, "    %s\n", "screamingkebab")
-	fmt.Fprintf(os.Stderr, "    %s\n", "screamingsnake")
-	fmt.Fprintf(os.Stderr, "    %s\n", "snake")
-	fmt.Fprintf(os.Stderr, "    %s\n", "subparts")
-	fmt.Fprintf(os.Stderr, "    %s\n", "title")
-	fmt.Fprintf(os.Stderr, "    %s\n", "words")
-	fmt.Fprintf(os.Stderr, "    %s\n", "wordstocamel")
-	fmt.Fprintf(os.Stderr, "    %s\n", "wordstodarwin")
-	fmt.Fprintf(os.Stderr, "    %s\n", "wordstokebab")
-	fmt.Fprintf(os.Stderr, "    %s\n", "wordstopascal")
-	fmt.Fprintf(os.Stderr, "    %s\n", "wordstosnake")
-	fmt.Fprintf(os.Stderr, "    %s\n", "wordstotitle")
+	err := executeUsage(os.Stderr, "strings2_usage.txt", UsageDataRootCmd{c, true})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error generating usage: %s\n", err)
+	}
+}
+
+type UsageDataRootCmd struct {
+	*RootCmd
+	Recursive bool
 }
 
 func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 	c := &RootCmd{
 		FlagSet:  flag.NewFlagSet(name, flag.ExitOnError),
-		Commands: make(map[string]Cmd),
+		Commands: make(map[string]func() Cmd),
 		Version:  version,
 		Commit:   commit,
 		Date:     date,
 	}
 	c.FlagSet.Usage = c.Usage
 
-	c.Commands["camel"] = c.NewCamel()
-	c.Commands["darwin"] = c.NewDarwin()
-	c.Commands["delimited"] = c.NewDelimited()
-	c.Commands["kebab"] = c.NewKebab()
-	c.Commands["lowercamel"] = c.NewLowercamel()
-	c.Commands["parts"] = c.NewParts()
-	c.Commands["pascal"] = c.NewPascal()
-	c.Commands["screamingdelimited"] = c.NewScreamingdelimited()
-	c.Commands["screamingkebab"] = c.NewScreamingkebab()
-	c.Commands["screamingsnake"] = c.NewScreamingsnake()
-	c.Commands["snake"] = c.NewSnake()
-	c.Commands["subparts"] = c.NewSubparts()
-	c.Commands["title"] = c.NewTitle()
-	c.Commands["words"] = c.NewWords()
-	c.Commands["wordstocamel"] = c.NewWordstocamel()
-	c.Commands["wordstodarwin"] = c.NewWordstodarwin()
-	c.Commands["wordstokebab"] = c.NewWordstokebab()
-	c.Commands["wordstopascal"] = c.NewWordstopascal()
-	c.Commands["wordstosnake"] = c.NewWordstosnake()
-	c.Commands["wordstotitle"] = c.NewWordstotitle()
-	c.Commands["help"] = &InternalCommand{
-		Exec: func(args []string) error {
-			for _, arg := range args {
-				if arg == "-deep" {
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewCamel() })
+		c.Commands["camel"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewDarwin() })
+		c.Commands["darwin"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewDelimited() })
+		c.Commands["delimited"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewKebab() })
+		c.Commands["kebab"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewLowercamel() })
+		c.Commands["lowercamel"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewParts() })
+		c.Commands["parts"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewPascal() })
+		c.Commands["pascal"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewScreamingdelimited() })
+		c.Commands["screamingdelimited"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewScreamingkebab() })
+		c.Commands["screamingkebab"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewScreamingsnake() })
+		c.Commands["screamingsnake"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewSnake() })
+		c.Commands["snake"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewSubparts() })
+		c.Commands["subparts"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewTitle() })
+		c.Commands["title"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewWords() })
+		c.Commands["words"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewWordstocamel() })
+		c.Commands["wordstocamel"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewWordstodarwin() })
+		c.Commands["wordstodarwin"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewWordstokebab() })
+		c.Commands["wordstokebab"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewWordstopascal() })
+		c.Commands["wordstopascal"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewWordstosnake() })
+		c.Commands["wordstosnake"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewWordstotitle() })
+		c.Commands["wordstotitle"] = subCmd
+
+	}
+	c.Commands["help"] = func() Cmd {
+		return &InternalCommand{
+			Exec: func(args []string) error {
+				if slices.Contains(args, "-deep") {
 					c.UsageRecursive()
 					return nil
 				}
-			}
-			c.Usage()
-			return nil
-		},
-		UsageFunc: c.Usage,
+				c.Usage()
+				return nil
+			},
+			UsageFunc: c.Usage,
+		}
 	}
-	c.Commands["usage"] = &InternalCommand{
-		Exec: func(args []string) error {
-			for _, arg := range args {
-				if arg == "-deep" {
+	c.Commands["usage"] = func() Cmd {
+		return &InternalCommand{
+			Exec: func(args []string) error {
+				if slices.Contains(args, "-deep") {
 					c.UsageRecursive()
 					return nil
 				}
-			}
-			c.Usage()
-			return nil
-		},
-		UsageFunc: c.Usage,
+				c.Usage()
+				return nil
+			},
+			UsageFunc: c.Usage,
+		}
 	}
-	c.Commands["version"] = &InternalCommand{
-		Exec: func(args []string) error {
-			fmt.Printf("Version: %s\nCommit: %s\nDate: %s\n", c.Version, c.Commit, c.Date)
-			return nil
-		},
-		UsageFunc: func() {
-			fmt.Fprintf(os.Stderr, "Usage: %s version\n", os.Args[0])
-		},
+	c.Commands["version"] = func() Cmd {
+		return &InternalCommand{
+			Exec: func(args []string) error {
+				fmt.Printf("Version: %s\nCommit: %s\nDate: %s\n", c.Version, c.Commit, c.Date)
+				return nil
+			},
+			UsageFunc: func() {
+				fmt.Fprintf(os.Stderr, "Usage: %s version\n", os.Args[0])
+			},
+		}
 	}
 	return c, nil
 }
 
 func (c *RootCmd) Execute(args []string) error {
-	if err := c.Parse(args); err != nil {
-		return NewUserError(err, fmt.Sprintf("flag parse error %s", err.Error()))
+	var remainingArgs []string
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if arg == "--" {
+			remainingArgs = append(remainingArgs, args[i+1:]...)
+			break
+		}
+		if strings.HasPrefix(arg, "--") {
+			if arg == "--help" {
+				c.Usage()
+				return nil
+			}
+			name := arg[2:]
+			value := ""
+			hasValue := false
+			if strings.Contains(name, "=") {
+				parts := strings.SplitN(name, "=", 2)
+				name = parts[0]
+				value = parts[1]
+				hasValue = true
+			}
+			_ = value
+			_ = hasValue
+			switch name {
+			default:
+				return fmt.Errorf("unknown flag: --%s", name)
+			}
+		} else if strings.HasPrefix(arg, "-") && arg != "-" {
+			// Short flags
+			shorts := arg[1:]
+			for j := 0; j < len(shorts); j++ {
+				char := string(shorts[j])
+				if char == "h" {
+					c.Usage()
+					return nil
+				}
+				found := false
+				if !found {
+					return fmt.Errorf("unknown flag: -%s", char)
+				}
+			}
+		} else {
+			remainingArgs = append(remainingArgs, args[i:]...)
+			break
+		}
 	}
-	remainingArgs := c.Args()
-	if len(remainingArgs) < 1 {
-		c.Usage()
-		return nil
+
+	if len(remainingArgs) > 0 {
+		if cmd, ok := c.Commands[remainingArgs[0]]; ok {
+			return cmd().Execute(remainingArgs[1:])
+		}
 	}
-	cmd, ok := c.Commands[remainingArgs[0]]
-	if !ok {
-		c.Usage()
+	c.Usage()
+	if len(remainingArgs) > 0 {
 		return fmt.Errorf("unknown command: %s", remainingArgs[0])
 	}
-	return cmd.Execute(remainingArgs[1:])
+	return nil
 }

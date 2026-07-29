@@ -142,6 +142,7 @@ type ParserConfig struct {
 	EmitEmpty bool
 	// NonAlphanumericAsDelimiter controls whether non-alphanumeric characters are treated as delimiters
 	NonAlphanumericAsDelimiter bool
+	DelimiterDetector DelimiterDetector
 }
 
 // NumberMode defines the strategy for handling numbers during parsing.
@@ -262,10 +263,12 @@ func DetectPartitioner(stats Stats, config ...*ParserConfig) Partitioner {
 	numberMode := NumberModeNone
 	emitEmpty := false
 	nonAlphanumeric := false
+	var detector DelimiterDetector
 	if len(config) > 0 && config[0] != nil {
 		numberMode = config[0].NumberMode
 		emitEmpty = config[0].EmitEmpty
 		nonAlphanumeric = config[0].NonAlphanumericAsDelimiter
+		detector = config[0].DelimiterDetector
 	}
 
 	return NewPartitioner(PartitionerConfig{
@@ -274,6 +277,7 @@ func DetectPartitioner(stats Stats, config ...*ParserConfig) Partitioner {
 		NumberMode:                 numberMode,
 		EmitEmpty:                  emitEmpty,
 		NonAlphanumericAsDelimiter: nonAlphanumeric,
+		DelimiterDetector:          detector,
 	})
 }
 
