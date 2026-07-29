@@ -28,7 +28,6 @@ type Title struct {
 	mixCaseSupport  bool
 	noSmartAcronyms bool
 	numberSplitting bool
-	nonAlphanumeric bool
 	delimiters      string
 	delimitersFunc  string
 	acronym         []string
@@ -194,17 +193,6 @@ func (c *Title) Execute(args []string) error {
 					c.numberSplitting = true
 				}
 
-			case "nonAlphanumeric", "non-alphanumeric", "alphanumeric":
-				if hasValue {
-					b, err := strconv.ParseBool(value)
-					if err != nil {
-						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
-					}
-					c.nonAlphanumeric = b
-				} else {
-					c.nonAlphanumeric = true
-				}
-
 			case "delimiters":
 				if !hasValue {
 					if i+1 < len(args) {
@@ -367,11 +355,6 @@ func (c *Title) Execute(args []string) error {
 					c.mixCaseSupport = true
 				}
 
-				if char == "N" {
-					found = true
-					c.nonAlphanumeric = true
-				}
-
 				if !found {
 					return fmt.Errorf("unknown flag: -%s", char)
 				}
@@ -444,10 +427,6 @@ func (c *RootCmd) NewTitle() *Title {
 
 	set.BoolVar(&v.numberSplitting, "number-splitting", false, "Enable number splitting")
 
-	set.BoolVar(&v.nonAlphanumeric, "non-alphanumeric", false, "Treat non characters as delimiters")
-	set.BoolVar(&v.nonAlphanumeric, "alphanumeric", false, "Treat non characters as delimiters")
-	set.BoolVar(&v.nonAlphanumeric, "N", false, "Treat non characters as delimiters")
-
 	set.StringVar(&v.delimiters, "delimiters", "", "Delimiters string")
 
 	set.StringVar(&v.delimitersFunc, "delimiters-func", "", "Delimiters function expression")
@@ -461,7 +440,7 @@ func (c *RootCmd) NewTitle() *Title {
 
 	v.CommandAction = func(c *Title) error {
 
-		cli.Title(c.input, c.output, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.mixCaseSupport, c.noSmartAcronyms, c.numberSplitting, c.nonAlphanumeric, c.delimiters, c.delimitersFunc, c.acronym, c.acronymFromFile, c.strict, c.args...)
+		cli.Title(c.input, c.output, c.delimiter, c.screaming, c.whispering, c.firstUpper, c.firstLower, c.mixCaseSupport, c.noSmartAcronyms, c.numberSplitting, c.delimiters, c.delimitersFunc, c.acronym, c.acronymFromFile, c.strict, c.args...)
 		return nil
 	}
 

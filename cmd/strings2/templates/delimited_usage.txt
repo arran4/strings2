@@ -8,22 +8,21 @@ Subcommands:
 
 
 Flags:
-    --input, -i string                                          Input file or - for stdin
-    --output, -o string                                         Output file or - for stdout
-    --delimiter, -d string                   (default: ".")     Delimiter
-    --screaming, -S                          (default: false)   Screaming mode
-    --whispering, -w                         (default: false)   Whispering mode
-    --first-upper, -U                        (default: false)   First char upper
-    --first-lower, -l                        (default: false)   First char lower
-    --mix-case-support, -m                   (default: false)   Mix case support
-    --no-smart-acronyms                      (default: false)   Disable smart acronyms
-    --number-splitting                       (default: false)   Enable number splitting
-    --non-alphanumeric, --alphanumeric, -N   (default: false)   Treat non characters as delimiters
-    --delimiters string                                         Delimiters string
-    --delimiters-func string                                    Delimiters function expression
-    --acronym []string                       (default: [])      Acronym to preserve case
-    --acronym-from-file []string             (default: [])      File containing acronyms to preserve case
-    --strict                                 (default: false)   Strict UTF8 mode
+    --input, -i string                                Input file or - for stdin
+    --output, -o string                               Output file or - for stdout
+    --delimiter, -d string         (default: ".")     Delimiter
+    --screaming, -S                (default: false)   Screaming mode
+    --whispering, -w               (default: false)   Whispering mode
+    --first-upper, -U              (default: false)   First char upper
+    --first-lower, -l              (default: false)   First char lower
+    --mix-case-support, -m         (default: false)   Mix case support
+    --no-smart-acronyms            (default: false)   Disable smart acronyms
+    --number-splitting             (default: false)   Enable number splitting
+    --delimiters string                               Delimiters string
+    --delimiters-func string                          Delimiters function expression
+    --acronym []string             (default: [])      Acronym to preserve case
+    --acronym-from-file []string   (default: [])      File containing acronyms to preserve case
+    --strict                       (default: false)   Strict UTF8 mode
 
 Positional Arguments:
     args       String to convert if file/stdin not provided

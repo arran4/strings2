@@ -33,7 +33,6 @@ func TestWordstocamel_Execute(t *testing.T) {
 	args = append(args, "--whispering")
 	args = append(args, "--first-upper")
 	args = append(args, "--first-lower")
-	args = append(args, "--non-alphanumeric")
 	args = append(args, "--delimiters")
 	args = append(args, "test")
 	args = append(args, "--delimiters-func")
@@ -72,9 +71,6 @@ func TestWordstocamel_Execute(t *testing.T) {
 	}
 	if cmd.firstLower != true {
 		t.Errorf("Expected firstLower to be true, got '%v'", cmd.firstLower)
-	}
-	if cmd.nonAlphanumeric != true {
-		t.Errorf("Expected nonAlphanumeric to be true, got '%v'", cmd.nonAlphanumeric)
 	}
 	if cmd.delimiters != "test" {
 		t.Errorf("Expected delimiters to be 'test', got '%v'", cmd.delimiters)
