@@ -213,6 +213,10 @@ Options are composable so multiple behaviours can be applied at once. See the do
 
 - Support slices for flags when the gosubc version supports it.
 
+## Contributing and engineering guidance
+
+Before changing public behaviour, tests, parsers or generation rules, see [repository-specific agent/contributor guidance](AGENTS.md). The applicable rationale is collected in [Suggested Coding Standards](https://arran4.github.io/blog/post/2026/055-suggested-coding-standards-for-repositories-and-agents/); this is selective guidance, not a blanket rewrite policy. The [standards adoption issue](https://github.com/arran4/strings2/issues/72) tracks the required implementation/test audit separately from documentation.
+
 ## License
 
 This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE) file for details.
