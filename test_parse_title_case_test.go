@@ -39,16 +39,22 @@ func TestParseTitleCaseToParts_PartitionerPrecedence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-    if len(defaultParts) != 1 {
-        t.Errorf("expected default parts len 1, got %d", len(defaultParts))
-    }
 
-	// 2. Custom partitioner behavior (WithSnakeCasePartitioner drops the delimiter underscore by default)
+	defaultWords := strings2.PartsToWords(defaultParts, &strings2.ParserConfig{})
+	expectedDefaultWordsStr := `[]strings2.Word{"hello_world"}`
+	if fmt.Sprintf("%#v", defaultWords) != expectedDefaultWordsStr {
+		t.Errorf("default parts to words: expected %s, got %#v", expectedDefaultWordsStr, defaultWords)
+	}
+
+	// 2. Custom partitioner behavior (WithSnakeCasePartitioner splits by underscore)
 	customParts, err := strings2.ParseTitleCaseToParts(input, strings2.WithSnakeCasePartitioner())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-    if len(customParts) != 2 {
-        t.Errorf("expected custom parts len 2, got %d", len(customParts))
-    }
+
+	customWords := strings2.PartsToWords(customParts, &strings2.ParserConfig{})
+	expectedCustomWordsStr := `[]strings2.Word{"hello", "world"}`
+	if fmt.Sprintf("%#v", customWords) != expectedCustomWordsStr {
+		t.Errorf("custom parts to words: expected %s, got %#v", expectedCustomWordsStr, customWords)
+	}
 }

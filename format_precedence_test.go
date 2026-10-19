@@ -9,7 +9,7 @@ import (
 func TestFormatPrecedence(t *testing.T) {
 	words := []strings2.Word{strings2.ExactCaseWord("helloWorld")}
 
-	// OptionMixCaseSupport is applied BEFORE screaming, screaming overwrites case.
+	// Configuration is collected first, resulting in screaming mode overwriting case of mixed-case boundaries.
 	resScreaming := strings2.ToFormattedCase(words, strings2.OptionMixCaseSupport(), strings2.OptionDelimiter("-"), strings2.OptionCaseMode(strings2.CMScreaming))
 	if resScreaming != "HELLO-WORLD" {
 		t.Errorf("OptionMixCaseSupport with Screaming expected HELLO-WORLD, got %s", resScreaming)
