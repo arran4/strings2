@@ -93,7 +93,7 @@ func ExampleOptionMixCaseSupport() {
 	res := strings2.ToFormattedCase(input, strings2.OptionMixCaseSupport(), strings2.OptionDelimiter("-"))
 	fmt.Println(res)
 
-	// ExactCaseWord does not normalize case, so MixCaseSupport works perfectly.
+	// ExactCaseWord does not normalize case, so MixCaseSupport operates as expected.
 	input2 := []strings2.Word{strings2.ExactCaseWord("camelCase")}
 	res2 := strings2.ToFormattedCase(input2, strings2.OptionMixCaseSupport(), strings2.OptionDelimiter("-"))
 	fmt.Println(res2)
