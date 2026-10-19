@@ -375,6 +375,7 @@ func OptionSmartTitleAcronymPredicate(pred func(string) bool) Option {
 }
 
 // OptionMixCaseSupport enables splitting of mixed case words (e.g. CamelCase) into separate words based on uppercase letters.
+// Note: This operates on formatting, not parsing. For `FirstUpperCaseWord`, it might not work as expected because `FirstUpperCaseWord` normalizes the word to lower case before applying First Upper.
 func OptionMixCaseSupport() Option {
 	return func(cfg *caseConfig) { cfg.mixCaseSupport = true }
 }

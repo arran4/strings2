@@ -415,6 +415,9 @@ func ParseDarwinCaseToParts(input string, opts ...any) ([]Part, error) {
 // WithTitleCasePartitioner returns a ParserOption that configures a partitioner for Title Case (space delimited).
 func WithTitleCasePartitioner() ParserOption {
 	return funcParserOption(func(p *ParserConfig) {
+		if p.Partitioner != nil {
+			return
+		}
 		p.Partitioner = NewPartitioner(PartitionerConfig{
 			Delimiters:                 map[rune]bool{' ': true},
 			SplitCamel:                 false,
