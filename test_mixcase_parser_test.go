@@ -17,7 +17,7 @@ func TestMixCase_PartitionerConfig(t *testing.T) {
 	}
 	// The number mode is not passed to the TitleCasePartitioner because it was instantiated BEFORE WithNumberMode was encountered.
 	// So we expect "hello123world" as a single block for default number mode behavior.
-	expectedStrAfter := []strings2.Word{strings2.ExactCaseWord("hello123world")}
+	expectedStrAfter := []strings2.Word{strings2.SingleCaseWord("hello123world")}
 	if !reflect.DeepEqual(wordsNumberModeAfter, expectedStrAfter) {
 		t.Errorf("expected %#v, got %#v", expectedStrAfter, wordsNumberModeAfter)
 	}
@@ -27,7 +27,7 @@ func TestMixCase_PartitionerConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	expectedStrBefore := []strings2.Word{strings2.ExactCaseWord("hello"), strings2.ExactCaseWord("123"), strings2.ExactCaseWord("world")}
+	expectedStrBefore := []strings2.Word{strings2.SingleCaseWord("hello"), strings2.AcronymWord("123"), strings2.SingleCaseWord("world")}
 	if !reflect.DeepEqual(wordsNumberModeBefore, expectedStrBefore) {
 		t.Errorf("expected %#v, got %#v", expectedStrBefore, wordsNumberModeBefore)
 	}
@@ -39,7 +39,7 @@ func TestMixCase_PartitionerConfig(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	// Option applies to root parser config but partitioner already created, so emit empty wasn't enabled for the partitioner logic.
-	expectedEmitEmptyAfter := []strings2.Word{strings2.ExactCaseWord("hello")}
+	expectedEmitEmptyAfter := []strings2.Word{strings2.SingleCaseWord("hello")}
 	if !reflect.DeepEqual(wordsEmitEmptyAfter, expectedEmitEmptyAfter) {
 		t.Errorf("EmitEmpty After Partitioner: expected %#v, got %#v", expectedEmitEmptyAfter, wordsEmitEmptyAfter)
 	}
@@ -49,7 +49,7 @@ func TestMixCase_PartitionerConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	expectedEmitEmptyBefore := []strings2.Word{strings2.ExactCaseWord(""), strings2.ExactCaseWord("hello")}
+	expectedEmitEmptyBefore := []strings2.Word{strings2.ExactCaseWord(""), strings2.SingleCaseWord("hello")}
 	if !reflect.DeepEqual(wordsEmitEmptyBefore, expectedEmitEmptyBefore) {
 		t.Errorf("EmitEmpty Before Partitioner: expected %#v, got %#v", expectedEmitEmptyBefore, wordsEmitEmptyBefore)
 	}

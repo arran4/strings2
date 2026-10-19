@@ -1,7 +1,7 @@
 package strings2_test
 
 import (
-	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/arran4/strings2"
@@ -15,9 +15,9 @@ func TestParseTitleCase_PartitionerPrecedence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	expectedDefaultStr := `[]strings2.Word{"hello_world"}`
-	if fmt.Sprintf("%#v", defaultWords) != expectedDefaultStr {
-		t.Errorf("default behavior: expected %s, got %#v", expectedDefaultStr, defaultWords)
+	expectedDefault := []strings2.Word{strings2.SingleCaseWord("hello_world")}
+	if !reflect.DeepEqual(defaultWords, expectedDefault) {
+		t.Errorf("default behavior: expected %#v, got %#v", expectedDefault, defaultWords)
 	}
 
 	// 2. Custom partitioner behavior (should override space delimiter with underscore)
@@ -25,9 +25,9 @@ func TestParseTitleCase_PartitionerPrecedence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	expectedCustomStr := `[]strings2.Word{"hello", "world"}`
-	if fmt.Sprintf("%#v", customWords) != expectedCustomStr {
-		t.Errorf("custom partitioner behavior: expected %s, got %#v", expectedCustomStr, customWords)
+	expectedCustom := []strings2.Word{strings2.SingleCaseWord("hello"), strings2.SingleCaseWord("world")}
+	if !reflect.DeepEqual(customWords, expectedCustom) {
+		t.Errorf("custom partitioner behavior: expected %#v, got %#v", expectedCustom, customWords)
 	}
 }
 
@@ -41,9 +41,9 @@ func TestParseTitleCaseToParts_PartitionerPrecedence(t *testing.T) {
 	}
 
 	defaultWords := strings2.PartsToWords(defaultParts, &strings2.ParserConfig{})
-	expectedDefaultWordsStr := `[]strings2.Word{"hello_world"}`
-	if fmt.Sprintf("%#v", defaultWords) != expectedDefaultWordsStr {
-		t.Errorf("default parts to words: expected %s, got %#v", expectedDefaultWordsStr, defaultWords)
+	expectedDefaultWords := []strings2.Word{strings2.SingleCaseWord("hello_world")}
+	if !reflect.DeepEqual(defaultWords, expectedDefaultWords) {
+		t.Errorf("default parts to words: expected %#v, got %#v", expectedDefaultWords, defaultWords)
 	}
 
 	// 2. Custom partitioner behavior (WithSnakeCasePartitioner splits by underscore)
@@ -53,8 +53,8 @@ func TestParseTitleCaseToParts_PartitionerPrecedence(t *testing.T) {
 	}
 
 	customWords := strings2.PartsToWords(customParts, &strings2.ParserConfig{})
-	expectedCustomWordsStr := `[]strings2.Word{"hello", "world"}`
-	if fmt.Sprintf("%#v", customWords) != expectedCustomWordsStr {
-		t.Errorf("custom parts to words: expected %s, got %#v", expectedCustomWordsStr, customWords)
+	expectedCustomWords := []strings2.Word{strings2.SingleCaseWord("hello"), strings2.SingleCaseWord("world")}
+	if !reflect.DeepEqual(customWords, expectedCustomWords) {
+		t.Errorf("custom parts to words: expected %#v, got %#v", expectedCustomWords, customWords)
 	}
 }
